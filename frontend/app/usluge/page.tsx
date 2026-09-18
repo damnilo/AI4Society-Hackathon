@@ -93,7 +93,7 @@ function UslugeBody() {
                 disabled={busy === s.slug}
                 onClick={() => start(s.example, s.slug, s.title)}
               >
-                {busy === s.slug ? "Tražim…" : "Ovo mi treba"}
+                {busy === s.slug ? "Tražim u katalogu…" : "Ovo mi treba"}
               </button>
             </article>
           ))}

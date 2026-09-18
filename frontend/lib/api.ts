@@ -10,6 +10,7 @@ import { mockGuide, mockMatch } from "./mocks";
 import type { DocumentStatus, Guide, MatchResponse, WalletDocument } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const MATCH_TIMEOUT_MS = 60_000;
 
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -126,13 +127,22 @@ async function readDetail(response: Response): Promise<string> {
   return explainError(response.status, "");
 }
 
-async function requestJson<T>(path: string, init: RequestInit): Promise<T | null> {
+function isAbortError(err: unknown): boolean {
+  return err instanceof DOMException && err.name === "AbortError";
+}
+
+async function requestJson<T>(
+  path: string,
+  init: RequestInit,
+  timeoutMs?: number,
+): Promise<T | null> {
   const headers = new Headers(init.headers);
   for (const [key, value] of Object.entries(authHeaders())) {
     headers.set(key, value);
   }
+  const signal = timeoutMs ? AbortSignal.timeout(timeoutMs) : init.signal;
   try {
-    let response = await fetch(`${API_URL}${path}`, { ...init, headers });
+    let response = await fetch(`${API_URL}${path}`, { ...init, headers, signal });
     if (response.status === 401) {
       const refreshed = await tryRefresh();
       const retryHeaders = new Headers(init.headers);
@@ -143,7 +153,11 @@ async function requestJson<T>(path: string, init: RequestInit): Promise<T | null
       } else {
         clearSession();
       }
-      response = await fetch(`${API_URL}${path}`, { ...init, headers: retryHeaders });
+      response = await fetch(`${API_URL}${path}`, {
+        ...init,
+        headers: retryHeaders,
+        signal,
+      });
     }
     if (!response.ok) {
       throw new ApiError(response.status, await readDetail(response));
@@ -151,6 +165,9 @@ async function requestJson<T>(path: string, init: RequestInit): Promise<T | null
     return (await response.json()) as T;
   } catch (err) {
     if (err instanceof ApiError) throw err;
+    if (isAbortError(err)) {
+      throw new ApiError(0, "Matching traje predugo. Pokušajte kraći opis ili ponovo.");
+    }
     return null;
   }
 }
@@ -219,26 +236,54 @@ function toGuide(row: BackendGuide): Guide {
 }
 
 export async function createCase(text: string): Promise<MatchResponse> {
-  const row = await requestJson<BackendCase>("/cases", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
+  const row = await requestJson<BackendCase>(
+    "/cases",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    },
+    MATCH_TIMEOUT_MS,
+  );
   if (row) return toMatch(row);
-  return mockMatch(text);
+  throw new ApiError(0, "API nije dostupan. Proverite da li backend radi na localhost:8000.");
 }
 
 export async function retryCase(caseId: string, text: string): Promise<MatchResponse> {
   if (isUuid(caseId)) {
-    const row = await requestJson<BackendCase>(`/cases/${caseId}/retry`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
+    const row = await requestJson<BackendCase>(
+      `/cases/${caseId}/retry`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      },
+      MATCH_TIMEOUT_MS,
+    );
     if (row) return toMatch(row);
     throw new ApiError(0, "API nije dostupan. Proverite da li backend radi na localhost:8000.");
   }
   return mockMatch(text);
+}
+
+export async function clarifyCase(
+  caseId: string,
+  answers: Record<string, string>,
+): Promise<MatchResponse> {
+  if (!isUuid(caseId)) {
+    throw new ApiError(0, "Dopuna pitanja radi samo uz pravi zahtev na API-ju.");
+  }
+  const row = await requestJson<BackendCase>(
+    `/cases/${caseId}/clarify`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers }),
+    },
+    MATCH_TIMEOUT_MS,
+  );
+  if (row) return toMatch(row);
+  throw new ApiError(0, "API nije dostupan. Proverite da li backend radi na localhost:8000.");
 }
 
 export async function fetchCase(caseId: string): Promise<(MatchResponse & { text: string }) | null> {
