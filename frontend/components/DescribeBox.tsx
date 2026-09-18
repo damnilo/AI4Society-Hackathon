@@ -96,7 +96,7 @@ export function DescribeBox({
       />
       <div className="row">
         <button className="btn btn-primary" type="button" onClick={submit} disabled={busy}>
-          {busy ? "Tražim…" : "Nađi proceduru"}
+          {busy ? "Tražim u katalogu…" : "Nađi proceduru"}
         </button>
         <button className="btn btn-ghost" type="button" onClick={listen}>
           Reci naglas

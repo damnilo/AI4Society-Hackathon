@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ClarifyBox } from "@/components/ClarifyBox";
 import { DescribeBox } from "@/components/DescribeBox";
 import { fetchCase, isUuid } from "@/lib/api";
 import { SERVICES } from "@/lib/catalog";
@@ -93,11 +94,11 @@ export default function PredloziPage() {
         )}
       </p>
       {stored.need_clarification && stored.questions && stored.questions.length > 0 ? (
-        <ul className="note">
-          {stored.questions.map((q) => (
-            <li key={q}>{q}</li>
-          ))}
-        </ul>
+        <ClarifyBox
+          caseId={caseId}
+          questions={stored.questions}
+          originalText={stored.text}
+        />
       ) : null}
 
       {cards.length === 0 ? (
