@@ -38,6 +38,7 @@ def _case_out(row: Case) -> CaseOut:
         questions=row.questions,
         from_place=row.from_place,
         to_place=row.to_place,
+        text=row.raw_text,
     )
 
 
@@ -129,6 +130,14 @@ def create_case(
                 session.add(doc)
         session.commit()
     return _case_out(_run_match(session, row, body.text))
+
+
+@router.get("/cases/{case_id}", response_model=CaseOut)
+def get_case(case_id: UUID, session: Session = Depends(get_session)) -> CaseOut:
+    row = session.get(Case, str(case_id))
+    if not row:
+        raise HTTPException(status_code=404, detail="Case not found")
+    return _case_out(row)
 
 
 @router.post("/cases/{case_id}/retry", response_model=CaseOut)

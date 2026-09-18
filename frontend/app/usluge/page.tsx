@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { createCase } from "@/lib/api";
+import { ApiError, createCase } from "@/lib/api";
 import { GROUPS, servicesInGroup, type GroupId } from "@/lib/catalog";
 
 function isGroup(value: string | null): value is GroupId {
@@ -17,11 +17,13 @@ function UslugeBody() {
   const group: GroupId = isGroup(raw) ? raw : "dokumenta";
   const items = servicesInGroup(group);
   const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState("");
   const current = GROUPS.find((g) => g.id === group);
 
   async function start(example: string, slug: string, title: string) {
     if (busy) return;
     setBusy(slug);
+    setError("");
     try {
       const result = await createCase(example);
       sessionStorage.setItem(
@@ -36,6 +38,8 @@ function UslugeBody() {
         }),
       );
       router.push(`/predlozi/${result.case_id}`);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Matching nije uspeo.");
     } finally {
       setBusy(null);
     }
@@ -60,6 +64,8 @@ function UslugeBody() {
           </Link>
         ))}
       </div>
+
+      {error ? <p className="alert">{error}</p> : null}
 
       {items.length === 0 ? (
         <div className="panel">

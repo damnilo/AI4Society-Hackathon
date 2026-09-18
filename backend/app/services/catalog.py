@@ -12,13 +12,31 @@ ROOT = Path(__file__).resolve().parents[2]
 SEED_DIR = ROOT / "seed"
 
 
+def _apply(row_obj: object, data: dict) -> None:
+    for key, value in data.items():
+        setattr(row_obj, key, value)
+
+
 def seed_catalog(session: Session) -> None:
-    if session.scalar(select(Procedure.slug).limit(1)) is not None:
-        return
+    """Upsert seed JSON so Phase 2 catalog tweaks apply without deleting the DB."""
     _seed_places(session)
     _seed_offices(session)
     _seed_procedures(session)
     session.commit()
+
+
+def catalog_for_matching(session: Session) -> list[dict[str, object]]:
+    """Compact catalog for xAI. No streets, offices, or legal excerpts."""
+    rows = session.scalars(select(Procedure)).all()
+    return [
+        {
+            "slug": row.slug,
+            "title": row.title,
+            "plain_summary": row.plain_summary,
+            "intent_examples": row.intent_examples,
+        }
+        for row in rows
+    ]
 
 
 def _seed_places(session: Session) -> None:
@@ -33,16 +51,19 @@ def _seed_places(session: Session) -> None:
             if parent and session.get(Place, parent) is None:
                 next_round.append(row)
                 continue
-            session.add(
-                Place(
-                    id=row["id"],
-                    kind=row["kind"],
-                    parent_id=row.get("parent_id"),
-                    name_lat=row["name_lat"],
-                    name_cyr=row["name_cyr"],
-                    aliases=row.get("aliases") or [],
-                )
-            )
+            existing = session.get(Place, row["id"])
+            payload = {
+                "id": row["id"],
+                "kind": row["kind"],
+                "parent_id": row.get("parent_id"),
+                "name_lat": row["name_lat"],
+                "name_cyr": row["name_cyr"],
+                "aliases": row.get("aliases") or [],
+            }
+            if existing:
+                _apply(existing, payload)
+            else:
+                session.add(Place(**payload))
             session.flush()
         remaining = next_round
     if remaining:
@@ -52,13 +73,21 @@ def _seed_places(session: Session) -> None:
 def _seed_offices(session: Session) -> None:
     rows: list[dict] = json.loads((SEED_DIR / "offices.json").read_text(encoding="utf-8"))
     for row in rows:
-        session.add(Office(**row))
+        existing = session.get(Office, row["id"])
+        if existing:
+            _apply(existing, row)
+        else:
+            session.add(Office(**row))
 
 
 def _seed_procedures(session: Session) -> None:
     rows: list[dict] = json.loads((SEED_DIR / "procedures.json").read_text(encoding="utf-8"))
     for row in rows:
-        session.add(Procedure(**row))
+        existing = session.get(Procedure, row["slug"])
+        if existing:
+            _apply(existing, row)
+        else:
+            session.add(Procedure(**row))
 
 
 def extract_from_to(session: Session, text: str) -> tuple[str | None, str | None]:

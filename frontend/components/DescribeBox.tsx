@@ -52,6 +52,12 @@ export function DescribeBox({
         return;
       }
       router.push(next);
+    } catch (err) {
+      setNote(
+        err instanceof Error
+          ? err.message
+          : "Matching nije uspeo. Proverite da li API radi na localhost:8000.",
+      );
     } finally {
       setBusy(false);
     }
