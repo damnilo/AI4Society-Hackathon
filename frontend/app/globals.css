@@ -343,8 +343,13 @@ ol li {
   font-size: 1.05rem;
 }
 
-.note {
-  color: var(--muted);
+.alert {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+label.big + input.describe {
+  margin-bottom: 16px;
 }
 
 @media (max-width: 900px) {

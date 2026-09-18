@@ -2,15 +2,21 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { DescribeBox } from "@/components/DescribeBox";
+import { AUTH_EVENT, getSessionUser } from "@/lib/auth";
 import { GROUPS } from "@/lib/catalog";
-import { getSavedName } from "@/lib/session";
+import { DescribeBox } from "@/components/DescribeBox";
 
 export default function HomePage() {
   const [name, setName] = useState<string | null>(null);
 
   useEffect(() => {
-    setName(getSavedName());
+    const sync = () => {
+      const user = getSessionUser();
+      setName(user?.name || null);
+    };
+    sync();
+    window.addEventListener(AUTH_EVENT, sync);
+    return () => window.removeEventListener(AUTH_EVENT, sync);
   }, []);
 
   return (
@@ -18,8 +24,8 @@ export default function HomePage() {
       <h1>Dobrodošli{name ? `, ${name}` : ""}</h1>
       <p className="lede">
         Opišite šta želite da završite. Predložićemo proceduru, šta da ponesete
-        i gde da odete. Ne podnosimo zahtev umesto vas i ne pratimo status na
-        eUpravi.
+        i gde da odete. Ne podnosimo zahtev umesto vas. Nalog je opciono — samo
+        ako želite da sačuvate skenove.
       </p>
 
       <DescribeBox />

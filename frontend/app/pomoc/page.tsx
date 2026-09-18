@@ -25,6 +25,15 @@ export default function PomocPage() {
         </ul>
       </div>
 
+      <div className="panel">
+        <h2 style={{ marginTop: 0 }}>Nalog i papiri</h2>
+        <p>
+          Prijava je opciona. Čuva samo skenove koje vi otpremite, da ih ne
+          unosite svaki put. Možete da obrišete papir ili da se odjavite.
+          Traženje procedure radi i kao gost.
+        </p>
+      </div>
+
       <div className="disclaimer">
         Ako niste sigurni, opišite problem svojim rečima. Ako nijedna kartica
         nije tačna, dopunite opis.
