@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -12,7 +12,14 @@ from app.models import User
 from app.schemas import AuthLogin, AuthRegister, RefreshBody, TokenOut
 
 router = APIRouter(tags=["auth"])
-pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def _verify_password(password: str, password_hash: str) -> bool:
+    return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
 def _tokens(user_id: str) -> TokenOut:
@@ -37,7 +44,7 @@ def register(body: AuthRegister, session: Session = Depends(get_session)) -> Tok
         raise HTTPException(status_code=409, detail="Email already registered")
     user = User(
         email=body.email.lower(),
-        password_hash=pwd.hash(body.password),
+        password_hash=_hash_password(body.password),
         name=body.name,
         municipality=body.municipality,
     )
@@ -50,7 +57,7 @@ def register(body: AuthRegister, session: Session = Depends(get_session)) -> Tok
 @router.post("/auth/login", response_model=TokenOut)
 def login(body: AuthLogin, session: Session = Depends(get_session)) -> TokenOut:
     user = session.scalars(select(User).where(User.email == body.email.lower())).first()
-    if not user or not pwd.verify(body.password, user.password_hash):
+    if not user or not _verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return _tokens(user.id)
 

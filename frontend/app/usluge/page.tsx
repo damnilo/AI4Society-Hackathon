@@ -19,14 +19,21 @@ function UslugeBody() {
   const [busy, setBusy] = useState<string | null>(null);
   const current = GROUPS.find((g) => g.id === group);
 
-  async function start(example: string, slug: string) {
+  async function start(example: string, slug: string, title: string) {
     if (busy) return;
     setBusy(slug);
     try {
       const result = await createCase(example);
       sessionStorage.setItem(
         "putokaz-case",
-        JSON.stringify({ ...result, text: example, fileName: "" }),
+        JSON.stringify({
+          ...result,
+          text: example,
+          fileName: "",
+          source: "catalog",
+          pickedTitle: title,
+          pickedSlug: slug,
+        }),
       );
       router.push(`/predlozi/${result.case_id}`);
     } finally {
@@ -78,7 +85,7 @@ function UslugeBody() {
                 className="btn btn-primary"
                 type="button"
                 disabled={busy === s.slug}
-                onClick={() => start(s.example, s.slug)}
+                onClick={() => start(s.example, s.slug, s.title)}
               >
                 {busy === s.slug ? "Tražim…" : "Ovo mi treba"}
               </button>

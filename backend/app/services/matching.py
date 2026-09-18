@@ -20,12 +20,17 @@ DEMO_MOVE = "selim se iz pirota u beograd"
 
 def is_demo_expired(text: str) -> bool:
     n = normalize(text)
-    return "istekl" in n and "licn" in n
+    expired = "istekl" in n or "истекл" in n
+    licna = "licn" in n or "личн" in n
+    return expired and licna
 
 
 def is_demo_move(text: str) -> bool:
     n = normalize(text)
-    return "sel" in n and "pirot" in n and "beograd" in n
+    move = "sel" in n or "сели" in n or "presel" in n or "пресел" in n
+    pirot = "pirot" in n or "пирот" in n
+    beograd = "beograd" in n or "београд" in n
+    return move and pirot and beograd
 
 
 def _candidate(proc: Procedure, score: float, rationale: str) -> CandidateOut:
