@@ -66,6 +66,7 @@ def dashboard(user: User = Depends(get_current_user), session: Session = Depends
                 questions=row.questions,
                 from_place=row.from_place,
                 to_place=row.to_place,
+                text=row.raw_text,
             )
             for row in cases
         ],
@@ -100,6 +101,7 @@ def claim_case(
         questions=row.questions,
         from_place=row.from_place,
         to_place=row.to_place,
+        text=row.raw_text,
     )
 
 

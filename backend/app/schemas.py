@@ -38,6 +38,7 @@ class CaseOut(BaseModel):
     questions: list[str]
     from_place: Optional[str] = None
     to_place: Optional[str] = None
+    text: str = ""
 
 
 class RetryBody(BaseModel):

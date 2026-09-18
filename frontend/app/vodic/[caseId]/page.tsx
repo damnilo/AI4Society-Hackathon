@@ -12,16 +12,27 @@ function VodicBody() {
   const params = useSearchParams();
   const slug = params.get("slug") ?? "licna-karta-zamena";
   const [guide, setGuide] = useState<Guide | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-    fetchGuide(caseId, slug).then((g) => {
-      if (!cancelled) setGuide(g);
-    });
+    fetchGuide(caseId, slug)
+      .then((g) => {
+        if (!cancelled) setGuide(g);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Vodič nije dostupan.");
+        }
+      });
     return () => {
       cancelled = true;
     };
   }, [caseId, slug]);
+
+  if (error) {
+    return <p className="alert">{error}</p>;
+  }
 
   if (!guide) {
     return <p>Pripremam vodič…</p>;

@@ -108,6 +108,13 @@ export const SERVICES: {
     example: "selio sam se, treba mi novi lekar",
   },
   {
+    slug: "saglasnost-vlasnika-prebivaliste",
+    title: "Saglasnost vlasnika za prebivalište",
+    summary: "Kad se prijavljuješ na tuđi stan, vlasnik daje saglasnost (i preko eUprave).",
+    group: "gradjanske",
+    example: "gazda treba da da saglasnost za prijavu",
+  },
+  {
     slug: "registracija-vozila",
     title: "Registracija vozila",
     summary: "Registracija ili produženje registracije.",

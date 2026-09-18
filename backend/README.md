@@ -24,4 +24,6 @@ docker compose up --build
 
 Matching i prilog uz case rade **bez naloga**. Nalog je novčanik (`/auth/*`, `/documents`, `GET /me`, `POST /me/claim`). Gostovi fajlovi imaju `user_id=null` i `purge_at` (~48h). Fajlovi su AES-GCM na disku; ne logujemo email ni ime fajla.
 
+Seed JSON se **upsert-uje** pri startu — izmene u `backend/seed/*.json` ulaze bez brisanja `putokaz.db`.
+
 Demo POST `/cases`: `"istekla mi je lična"` i `"selim se iz Pirota u Beograd"`.

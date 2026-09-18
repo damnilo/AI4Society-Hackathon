@@ -39,6 +39,22 @@ def main() -> None:
         slugs = [c["slug"] for c in guest.json()["candidates"]]
         if "prijava-prebivalista" not in slugs:
             fail(f"expected move slug, got {slugs}")
+        loaded = client.get(f"/cases/{case_id}")
+        if loaded.status_code != 200 or not loaded.json().get("text"):
+            fail(f"GET case {loaded.status_code} {loaded.text}")
+        if any("institution" in c for c in loaded.json()["candidates"]):
+            fail("candidate cards must not include institution")
+        picked = client.post(
+            f"/cases/{case_id}/select",
+            json={"slug": "prijava-prebivalista"},
+        )
+        if picked.status_code != 200:
+            fail(f"select {picked.status_code} {picked.text}")
+        office = picked.json().get("office") or {}
+        if "Ljermontova" not in str(office.get("address")):
+            fail(f"expected Ljermontova, got {office}")
+        if "Pirot" in str(office.get("address")):
+            fail(f"must not resolve to Pirot: {office}")
 
         secret = b"guest-scan-payload-do-not-store-plain"
         attach = client.post(

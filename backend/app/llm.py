@@ -1,3 +1,5 @@
+from typing import Any
+
 import httpx
 
 from app.config import settings
@@ -33,37 +35,43 @@ def ping_xai() -> dict[str, str | bool]:
             "detail": "xAI models OK",
             "model": settings.xai_model,
         }
-    except httpx.HTTPError as exc:
+    except httpx.HTTPError:
         return {
             "configured": True,
             "ok": False,
-            "detail": str(exc),
+            "detail": "xAI unreachable",
             "model": settings.xai_model,
         }
 
 
-def complete_xai(system: str, user: str) -> str:
-    """Chat Completions — Faza 2 matching. Faza 0 samo ping."""
+def complete_xai(system: str, user: str, *, json_object: bool = True) -> str:
+    """Chat Completions for matching. Never log `user` — may contain PII."""
     if not settings.xai_api_key:
         raise RuntimeError("XAI_API_KEY nije postavljen")
-    response = httpx.post(
-        f"{XAI_BASE}/chat/completions",
-        headers={"Authorization": f"Bearer {settings.xai_api_key}"},
-        json={
-            "model": settings.xai_model,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            "temperature": 0.2,
-        },
-        timeout=45.0,
-    )
-    response.raise_for_status()
-    data = response.json()
-    return str(data["choices"][0]["message"]["content"])
+    payload: dict[str, Any] = {
+        "model": settings.xai_model,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        "temperature": 0.2,
+    }
+    if json_object:
+        payload["response_format"] = {"type": "json_object"}
+    try:
+        response = httpx.post(
+            f"{XAI_BASE}/chat/completions",
+            headers={"Authorization": f"Bearer {settings.xai_api_key}"},
+            json=payload,
+            timeout=45.0,
+        )
+        response.raise_for_status()
+        data = response.json()
+        return str(data["choices"][0]["message"]["content"])
+    except httpx.HTTPError as exc:
+        raise RuntimeError("xAI matching failed") from exc
 
 
 def extract_document_openai_vision(_image_bytes: bytes) -> dict[str, str | None]:
-    """Faza 3: OpenAI Vision. Placeholder u Fazi 0."""
+    """Faza 3: OpenAI Vision. Matching in Faza 2 is text-only."""
     raise NotImplementedError("Vision je Faza 3")

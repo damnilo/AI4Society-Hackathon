@@ -17,7 +17,10 @@ paths:
   /cases:
     post:
       summary: Matching iz teksta (gost ili Bearer)
-      description: Opcioni Authorization. document_ids samo iz novčanika ulogovanog.
+      description: Opcioni Authorization. document_ids samo iz novčanika ulogovanog. Kartice bez institucije.
+  /cases/{case_id}:
+    get:
+      summary: Case + kandidati (gost, UUID)
       requestBody:
         content:
           application/json:

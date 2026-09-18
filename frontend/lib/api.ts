@@ -27,6 +27,7 @@ type BackendCase = {
   candidates: BackendCandidate[];
   need_clarification: boolean;
   questions?: string[];
+  text?: string;
 };
 
 type BackendStep = {
@@ -144,9 +145,12 @@ async function requestJson<T>(path: string, init: RequestInit): Promise<T | null
       }
       response = await fetch(`${API_URL}${path}`, { ...init, headers: retryHeaders });
     }
-    if (!response.ok) return null;
+    if (!response.ok) {
+      throw new ApiError(response.status, await readDetail(response));
+    }
     return (await response.json()) as T;
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
     return null;
   }
 }
@@ -232,8 +236,16 @@ export async function retryCase(caseId: string, text: string): Promise<MatchResp
       body: JSON.stringify({ text }),
     });
     if (row) return toMatch(row);
+    throw new ApiError(0, "API nije dostupan. Proverite da li backend radi na localhost:8000.");
   }
   return mockMatch(text);
+}
+
+export async function fetchCase(caseId: string): Promise<(MatchResponse & { text: string }) | null> {
+  if (!isUuid(caseId)) return null;
+  const row = await requestJson<BackendCase>(`/cases/${caseId}`, { method: "GET" });
+  if (!row) return null;
+  return { ...toMatch(row), text: row.text ?? "" };
 }
 
 export async function fetchGuide(caseId: string, slug: string): Promise<Guide> {
@@ -244,6 +256,7 @@ export async function fetchGuide(caseId: string, slug: string): Promise<Guide> {
       body: JSON.stringify({ slug }),
     });
     if (row) return toGuide(row);
+    throw new ApiError(0, "Vodič nije dostupan. Proverite da li API radi.");
   }
   return mockGuide(slug);
 }

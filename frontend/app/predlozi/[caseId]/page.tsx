@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { DescribeBox } from "@/components/DescribeBox";
+import { fetchCase, isUuid } from "@/lib/api";
 import { SERVICES } from "@/lib/catalog";
 import type { Candidate, StoredCase } from "@/lib/types";
 
@@ -33,17 +34,34 @@ export default function PredloziPage() {
 
   useEffect(() => {
     const raw = sessionStorage.getItem("putokaz-case");
-    if (!raw) {
+    if (raw) {
+      const parsed = JSON.parse(raw) as StoredCase;
+      if (parsed.case_id === caseId) {
+        setStored(parsed);
+        setRetryOpen(parsed.need_clarification && parsed.source !== "catalog");
+        return;
+      }
+    }
+    if (!isUuid(caseId)) {
       router.replace("/");
       return;
     }
-    const parsed = JSON.parse(raw) as StoredCase;
-    if (parsed.case_id !== caseId) {
-      router.replace("/");
-      return;
-    }
-    setStored(parsed);
-    setRetryOpen(parsed.need_clarification && parsed.source !== "catalog");
+    void fetchCase(caseId)
+      .then((row) => {
+        if (!row) {
+          router.replace("/");
+          return;
+        }
+        const next: StoredCase = {
+          ...row,
+          text: row.text,
+          source: "typed",
+        };
+        sessionStorage.setItem("putokaz-case", JSON.stringify(next));
+        setStored(next);
+        setRetryOpen(next.need_clarification);
+      })
+      .catch(() => router.replace("/"));
   }, [caseId, router]);
 
   const cards = useMemo(
