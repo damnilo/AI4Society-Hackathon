@@ -19,6 +19,7 @@ export type RequiredDoc = {
   how_to_obtain: string;
   status: DocumentStatus;
   note?: string;
+  extracted_expiry?: string | null;
 };
 
 export type Office = {
@@ -68,5 +69,7 @@ export type WalletDocument = {
   content_type: string;
   case_id: string | null;
   status: string | null;
+  extracted_type?: string | null;
+  extracted_expiry?: string | null;
   purge_at?: string | null;
 };

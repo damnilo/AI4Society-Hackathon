@@ -330,6 +330,9 @@ ol li {
 .badge.complete {
   color: var(--ok);
 }
+.badge.unreadable {
+  color: var(--muted);
+}
 
 .office {
   font-size: 1.15rem;
