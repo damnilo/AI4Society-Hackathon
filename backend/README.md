@@ -28,4 +28,10 @@ Seed JSON se **upsert-uje** pri startu — izmene u `backend/seed/*.json` ulaze 
 
 Matching (Faza 2): demo keš samo za tačne rečenice na POST `/cases` (ne substring, ne `/retry`/`/clarify`). Inače xAI nad katalogom, jedan pokušaj ~15s u threadu, van DB transakcije. Ako Grok padne, keyword fallback. Kartice nemaju instituciju.
 
+```bash
+python tests/test_bug_regressions.py
+python scripts/smoke_phase1.py
+python scripts/smoke_phase2.py
+```
+
 Demo POST `/cases`: `"istekla mi je lična"` i `"selim se iz Pirota u Beograd"`.
