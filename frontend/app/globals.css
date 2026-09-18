@@ -146,7 +146,8 @@ label.big {
 }
 
 textarea.describe,
-input.describe {
+input.describe,
+select.describe {
   width: 100%;
   min-height: 140px;
   resize: vertical;
@@ -156,13 +157,15 @@ input.describe {
   background: #fff;
 }
 
-input.describe {
+input.describe,
+select.describe {
   min-height: 64px;
   resize: none;
 }
 
 textarea.describe:focus,
-input.describe:focus {
+input.describe:focus,
+select.describe:focus {
   outline: 3px solid var(--accent-2);
   border-color: var(--accent);
 }
@@ -351,7 +354,8 @@ ol li {
   font-weight: 700;
 }
 
-label.big + input.describe {
+label.big + input.describe,
+label.big + select.describe {
   margin-bottom: 16px;
 }
 

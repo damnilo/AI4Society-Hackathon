@@ -155,6 +155,10 @@ class MeOut(BaseModel):
     gdpr_note: str
 
 
+class MePatch(BaseModel):
+    municipality: Optional[str] = None
+
+
 class DashboardOut(BaseModel):
     user_id: UUID
     email: str
