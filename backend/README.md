@@ -32,9 +32,12 @@ Faza 3: OpenAI Vision na jpg/png pri uploadu (case ili novčanik). `GET /cases/{
 
 Faza 5: `POST /auth/register` i `PATCH /me` primaju `municipality` (`beograd` | `pirot` | `nis`). `POST /cases/{id}/select` koristi mesto sa naloga **samo** ako u tekstu nema grada. Tekst (Pirot→Beograd) uvek pobedi nalog. Gost i dalje dobija „Nedostaje mesto prebivališta“.
 
+TTS: `POST /cases/{id}/speech` → mp3 preko OpenAI `gpt-4o-mini-tts` (srpski). Ako 503, FE čita `speechSynthesis`.
+
 ```bash
 python tests/test_bug_regressions.py
 python tests/test_phase3_documents.py
+python tests/test_tts.py
 python scripts/smoke_phase1.py
 python scripts/smoke_phase2.py
 ```

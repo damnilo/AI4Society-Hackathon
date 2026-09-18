@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
   ApiError,
   attachCaseDocument,
   fetchCase,
   fetchGuide,
+  fetchGuideSpeech,
   refreshGuideDocuments,
   retryCase,
 } from "@/lib/api";
@@ -59,12 +60,29 @@ function guideSpeechText(guide: Guide): string {
   return parts.join(" ");
 }
 
-function pickSerbianVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
-  return (
-    voices.find((voice) => voice.lang.toLowerCase().startsWith("sr")) ??
-    voices.find((voice) => voice.lang.toLowerCase().includes("rs")) ??
-    null
-  );
+function pickReadableVoice(voices: SpeechSynthesisVoice[]): {
+  voice: SpeechSynthesisVoice | null;
+  kind: "sr" | "south" | "other";
+} {
+  const sr =
+    voices.find((voice) => {
+      const lang = voice.lang.toLowerCase();
+      const name = voice.name.toLowerCase();
+      return (
+        lang.startsWith("sr") ||
+        lang.includes("sr-") ||
+        name.includes("serbian") ||
+        name.includes("srpski")
+      );
+    }) ?? null;
+  if (sr) return { voice: sr, kind: "sr" };
+  const south =
+    voices.find((voice) => {
+      const lang = voice.lang.toLowerCase();
+      return lang.startsWith("hr") || lang.startsWith("bs") || lang.startsWith("sl");
+    }) ?? null;
+  if (south) return { voice: south, kind: "south" };
+  return { voice: voices[0] ?? null, kind: "other" };
 }
 
 function loadVoices(): Promise<SpeechSynthesisVoice[]> {
@@ -120,11 +138,34 @@ function VodicBody() {
   const [attachNote, setAttachNote] = useState("");
   const [attachBusy, setAttachBusy] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [speechLoading, setSpeechLoading] = useState(false);
   const [speechNote, setSpeechNote] = useState("");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  function releaseAudio() {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    const audio = audioRef.current;
+    if (audio) {
+      audio.onended = null;
+      audio.onerror = null;
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      audioRef.current = null;
+    }
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    window.speechSynthesis?.cancel();
+  }
 
   useEffect(() => {
     return () => {
-      window.speechSynthesis?.cancel();
+      releaseAudio();
     };
   }, []);
 
@@ -210,34 +251,94 @@ function VodicBody() {
     }
   }
 
-  async function speakGuide() {
-    if (!guide) return;
+  async function speakWithBrowser(current: Guide) {
     if (!window.speechSynthesis) {
-      setSpeechNote("Glas nije dostupan u ovom pregledaču. Pročitajte vodič na ekranu.");
-      return;
-    }
-    setSpeechNote("");
-    const voices = await loadVoices();
-    const voice = pickSerbianVoice(voices);
-    if (voices.length > 0 && !voice) {
-      setSpeechNote("Srpski glas nije dostupan u ovom pregledaču. Pročitajte vodič na ekranu.");
-      return;
-    }
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(guideSpeechText(guide));
-    utterance.lang = "sr-RS";
-    if (voice) utterance.voice = voice;
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => {
+      setSpeechLoading(false);
       setSpeaking(false);
-      setSpeechNote("Čitanje nije uspelo.");
+      setSpeechNote("Glas nije dostupan. Pročitajte vodič na ekranu.");
+      return;
+    }
+    const voices = await loadVoices();
+    const picked = pickReadableVoice(voices);
+    setSpeechNote(
+      picked.kind === "sr"
+        ? "Serverski glas nije dostupan — čitam glasom pregledača."
+        : picked.kind === "south"
+          ? "Serverski glas nije dostupan — čitam srodnim jezikom pregledača."
+          : "Serverski glas nije dostupan — čitam podrazumevanim glasom pregledača.",
+    );
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(guideSpeechText(current));
+    utterance.lang = picked.voice?.lang || "sr-RS";
+    if (picked.voice) utterance.voice = picked.voice;
+    utterance.onend = () => {
+      setSpeechLoading(false);
+      setSpeaking(false);
     };
+    utterance.onerror = () => {
+      setSpeechLoading(false);
+      setSpeaking(false);
+      setSpeechNote("Čitanje nije uspelo. Pročitajte vodič na ekranu.");
+    };
+    setSpeechLoading(false);
     setSpeaking(true);
     window.speechSynthesis.speak(utterance);
   }
 
+  async function speakGuide() {
+    if (!guide) return;
+    releaseAudio();
+    setSpeechNote("");
+    setSpeechLoading(true);
+    setSpeaking(true);
+    const abort = new AbortController();
+    abortRef.current = abort;
+    const audio = new Audio();
+    audioRef.current = audio;
+    try {
+      const blob = await fetchGuideSpeech(caseId, slug, abort.signal);
+      if (abort.signal.aborted || audioRef.current !== audio) {
+        setSpeechLoading(false);
+        setSpeaking(false);
+        return;
+      }
+      if (!blob.size) {
+        throw new ApiError(503, "Glas trenutno nije dostupan");
+      }
+      const url = URL.createObjectURL(blob);
+      objectUrlRef.current = url;
+      audio.src = url;
+      audio.onended = () => {
+        setSpeechLoading(false);
+        setSpeaking(false);
+        releaseAudio();
+      };
+      audio.onerror = () => {
+        void speakWithBrowser(guide);
+      };
+      await audio.play();
+      setSpeechLoading(false);
+    } catch (err) {
+      if (abort.signal.aborted || audioRef.current !== audio) {
+        setSpeechLoading(false);
+        setSpeaking(false);
+        return;
+      }
+      const canFallback =
+        err instanceof ApiError && (err.status === 503 || err.status === 0);
+      if (canFallback || !(err instanceof ApiError)) {
+        await speakWithBrowser(guide);
+        return;
+      }
+      setSpeechLoading(false);
+      setSpeaking(false);
+      setSpeechNote(err.message || "Čitanje nije uspelo.");
+    }
+  }
+
   function stopSpeech() {
-    window.speechSynthesis?.cancel();
+    releaseAudio();
+    setSpeechLoading(false);
     setSpeaking(false);
   }
 
@@ -265,7 +366,8 @@ function VodicBody() {
         </button>
       </div>
       {speechNote ? <p className="alert">{speechNote}</p> : null}
-      {speaking ? <p className="note">Čitam vodič…</p> : null}
+      {speechLoading ? <p className="note">Pripremam glas…</p> : null}
+      {speaking && !speechLoading ? <p className="note">Čitam vodič…</p> : null}
 
       <div className="panel">
         <h2 style={{ marginTop: 0 }}>Koraci</h2>

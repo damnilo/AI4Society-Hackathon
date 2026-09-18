@@ -11,6 +11,7 @@ import type { DocumentStatus, Guide, MatchResponse, RequiredDoc, WalletDocument 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const MATCH_TIMEOUT_MS = 60_000;
+const TTS_TIMEOUT_MS = 45_000;
 
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -365,6 +366,49 @@ export async function fetchGuide(caseId: string, slug: string): Promise<Guide> {
   const status = await fetchDocumentStatus(caseId);
   if (!status?.items) return guide;
   return mergeDocStatus(guide, status);
+}
+
+export async function fetchGuideSpeech(
+  caseId: string,
+  slug: string,
+  signal?: AbortSignal,
+): Promise<Blob> {
+  if (!isUuid(caseId)) {
+    throw new ApiError(0, "Glas nije dostupan.");
+  }
+  const headers = new Headers({ "Content-Type": "application/json" });
+  for (const [key, value] of Object.entries(authHeaders())) {
+    headers.set(key, value);
+  }
+  const timeout = AbortSignal.timeout(TTS_TIMEOUT_MS);
+  const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
+  let response = await fetch(`${API_URL}/cases/${caseId}/speech`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ slug }),
+    signal: combined,
+  });
+  if (response.status === 401) {
+    const refreshed = await tryRefresh();
+    const retryHeaders = new Headers({ "Content-Type": "application/json" });
+    if (refreshed) {
+      for (const [key, value] of Object.entries(authHeaders())) {
+        retryHeaders.set(key, value);
+      }
+    } else {
+      clearSession();
+    }
+    response = await fetch(`${API_URL}/cases/${caseId}/speech`, {
+      method: "POST",
+      headers: retryHeaders,
+      body: JSON.stringify({ slug }),
+      signal: combined,
+    });
+  }
+  if (!response.ok) {
+    throw new ApiError(response.status, await readDetail(response));
+  }
+  return await response.blob();
 }
 
 export async function attachCaseDocument(

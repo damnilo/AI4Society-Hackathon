@@ -3,10 +3,12 @@ from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal, get_session
 from app.deps import get_optional_user
+from app.llm import synthesize_speech_openai
 from app.models import Case, Document, Office, Procedure, User
 from app.schemas import (
     DISCLAIMER,
@@ -36,6 +38,7 @@ from app.services.extraction import (
     scan_note_for_docs,
 )
 from app.services.matching import load_catalog_procs, rank_procedures
+from app.services.speech import script_from_guide
 from app.services import storage
 
 router = APIRouter(tags=["cases"])
@@ -357,3 +360,32 @@ def document_status(case_id: UUID, session: Session = Depends(get_session)) -> D
         as_of=date.today(),
     )
     return DocumentStatusOut(case_id=row.id, items=items, disclaimer=DISCLAIMER, as_of=date.today())
+
+
+@router.post("/cases/{case_id}/speech")
+async def speak_guide(
+    case_id: UUID,
+    body: SelectBody,
+    session: Session = Depends(get_session),
+    user: User | None = Depends(get_optional_user),
+) -> Response:
+    guide = select_procedure(case_id, body, session, user)
+    row = session.get(Case, str(case_id))
+    if not row or not row.selected_slug:
+        raise HTTPException(status_code=404, detail="Case or selection not found")
+    procedure = session.get(Procedure, row.selected_slug)
+    if not procedure:
+        raise HTTPException(status_code=404, detail="Procedure not found")
+    attached, pool = collect_pool(session, row)
+    items = build_checklist(
+        required_documents=procedure.required_documents,
+        pool=pool,
+        attached=attached,
+        as_of=date.today(),
+    )
+    script = script_from_guide(guide, items)
+    try:
+        audio = await asyncio.to_thread(synthesize_speech_openai, script)
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="Glas trenutno nije dostupan")
+    return Response(content=audio, media_type="audio/mpeg")

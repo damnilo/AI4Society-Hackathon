@@ -61,6 +61,12 @@ paths:
         Posle select. complete / missing / expired / unreadable / mismatch
         prema poljima sa skena. Bez fajla: missing + „Nije priložen.“
         PDF/nečitko: unreadable. Istekao datum: expired. Nije pravna overa.
+  /cases/{case_id}/speech:
+    post:
+      summary: OpenAI TTS vodiča (mp3)
+      description: >
+        Isti sadržaj kao vodič (koraci, šalter, šta fali). Nije LLM tekst.
+        503 ako nema OPENAI_API_KEY ili TTS padne — FE tada koristi speechSynthesis.
   /auth/register:
     post: { summary: Nalog; vraća JWT + user_id/email/name }
   /auth/login:
