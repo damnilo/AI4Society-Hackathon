@@ -60,3 +60,11 @@ export type StoredCase = MatchResponse & {
   pickedTitle?: string;
   pickedSlug?: string;
 };
+
+export type WalletDocument = {
+  id: string;
+  original_filename: string;
+  content_type: string;
+  case_id: string | null;
+  status: string | null;
+};

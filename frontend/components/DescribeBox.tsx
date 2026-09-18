@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createCase, retryCase } from "@/lib/api";
+import { attachCaseDocument, createCase, isUuid, retryCase } from "@/lib/api";
 
 export function DescribeBox({
   heading = "Šta želite da završite?",
@@ -16,16 +16,27 @@ export function DescribeBox({
   const router = useRouter();
   const [text, setText] = useState(preset);
   const [busy, setBusy] = useState(false);
-  const [fileName, setFileName] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [note, setNote] = useState("");
 
   async function submit() {
     const value = text.trim();
     if (!value || busy) return;
     setBusy(true);
+    setNote("");
     try {
       const result = caseId
         ? await retryCase(caseId, value)
         : await createCase(value);
+      let fileName = file?.name ?? "";
+      if (file && isUuid(result.case_id)) {
+        const attached = await attachCaseDocument(result.case_id, file);
+        if (!attached) {
+          setNote("Procedura je nađena, ali prilog nije primljen. Možete da nastavite.");
+        }
+      } else if (file && !isUuid(result.case_id)) {
+        fileName = "";
+      }
       sessionStorage.setItem(
         "putokaz-case",
         JSON.stringify({
@@ -90,11 +101,16 @@ export function DescribeBox({
             type="file"
             accept="image/*,.pdf"
             hidden
-            onChange={(e) => setFileName(e.target.files?.[0]?.name ?? "")}
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
         </label>
-        {fileName ? <span className="note">Priloženo: {fileName}</span> : null}
+        {file ? <span className="note">Priloženo: {file.name}</span> : null}
       </div>
+      <p className="note" style={{ marginBottom: 0 }}>
+        Prijava nije potrebna. Prilog ide uz ovaj zahtev. Da sačuvate sken za
+        sledeći put, otvorite Dokumenta posle prijave.
+      </p>
+      {note ? <p className="alert">{note}</p> : null}
     </div>
   );
 }

@@ -1,6 +1,13 @@
+import {
+  authHeaders,
+  clearSession,
+  getRefreshToken,
+  setSessionUser,
+  setTokens,
+} from "./auth";
 import { documentLabel, institutionLabel } from "./labels";
 import { mockGuide, mockMatch } from "./mocks";
-import type { DocumentStatus, Guide, MatchResponse } from "./types";
+import type { DocumentStatus, Guide, MatchResponse, WalletDocument } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -56,8 +63,62 @@ type BackendGuide = {
   disclaimer: string;
 };
 
-function isUuid(value: string): boolean {
+export function isUuid(value: string): boolean {
   return UUID.test(value);
+}
+
+type TokenResponse = {
+  access_token: string;
+  refresh_token: string;
+};
+
+type MeDashboard = {
+  name: string;
+  email: string;
+};
+
+type BackendDocument = {
+  id: string;
+  original_filename: string;
+  content_type: string;
+  case_id: string | null;
+  status: string | null;
+};
+
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+function explainError(status: number, detail: string): string {
+  if (detail === "Email already registered") return "Ovaj email je već registrovan.";
+  if (detail === "Invalid credentials") return "Pogrešan email ili lozinka.";
+  if (detail === "Not authenticated" || detail === "Invalid token") {
+    return "Prijava je istekla. Prijavite se ponovo.";
+  }
+  if (status === 401) return "Prijava je istekla. Prijavite se ponovo.";
+  if (detail) return detail;
+  return "Nešto nije u redu. Pokušajte ponovo.";
+}
+
+async function readDetail(response: Response): Promise<string> {
+  const data: unknown = await response.json().catch(() => null);
+  if (data && typeof data === "object" && "detail" in data) {
+    const detail = (data as { detail: unknown }).detail;
+    if (typeof detail === "string") return explainError(response.status, detail);
+    if (Array.isArray(detail) && detail[0] && typeof detail[0] === "object") {
+      const first = detail[0] as { msg?: string };
+      if (first.msg === "String should have at least 8 characters") {
+        return "Lozinka mora imati najmanje 8 karaktera.";
+      }
+      if (first.msg) return first.msg;
+    }
+  }
+  return explainError(response.status, "");
 }
 
 async function requestJson<T>(path: string, init: RequestInit): Promise<T | null> {
@@ -165,4 +226,163 @@ export async function fetchGuide(caseId: string, slug: string): Promise<Guide> {
     if (row) return toGuide(row);
   }
   return mockGuide(slug);
+}
+
+export async function attachCaseDocument(
+  caseId: string,
+  file: File,
+): Promise<WalletDocument | null> {
+  if (!isUuid(caseId)) return null;
+  const body = new FormData();
+  body.append("file", file);
+  try {
+    const response = await fetch(`${API_URL}/cases/${caseId}/documents`, {
+      method: "POST",
+      body,
+    });
+    if (!response.ok) return null;
+    return toWalletDoc((await response.json()) as BackendDocument);
+  } catch {
+    return null;
+  }
+}
+
+let refreshInFlight: Promise<boolean> | null = null;
+
+async function tryRefresh(): Promise<boolean> {
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    const refresh = getRefreshToken();
+    if (!refresh) return false;
+    try {
+      const response = await fetch(`${API_URL}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refresh }),
+      });
+      if (!response.ok) {
+        clearSession();
+        return false;
+      }
+      const tokens = (await response.json()) as TokenResponse;
+      setTokens(tokens.access_token, tokens.refresh_token);
+      return true;
+    } catch {
+      clearSession();
+      return false;
+    }
+  })();
+  try {
+    return await refreshInFlight;
+  } finally {
+    refreshInFlight = null;
+  }
+}
+
+async function authRequest<T>(path: string, init: RequestInit, retried = false): Promise<T> {
+  const headers = new Headers(init.headers);
+  const tokenHeaders = authHeaders();
+  for (const [key, value] of Object.entries(tokenHeaders)) {
+    headers.set(key, value);
+  }
+  const response = await fetch(`${API_URL}${path}`, { ...init, headers });
+  if (response.status === 401 && !retried) {
+    const ok = await tryRefresh();
+    if (ok) return authRequest<T>(path, init, true);
+    clearSession();
+    throw new ApiError(401, explainError(401, "Not authenticated"));
+  }
+  if (!response.ok) {
+    if (response.status === 401) clearSession();
+    throw new ApiError(response.status, await readDetail(response));
+  }
+  if (response.status === 204) return undefined as T;
+  return (await response.json()) as T;
+}
+
+function toWalletDoc(row: BackendDocument): WalletDocument {
+  return {
+    id: String(row.id),
+    original_filename: row.original_filename,
+    content_type: row.content_type,
+    case_id: row.case_id ? String(row.case_id) : null,
+    status: row.status,
+  };
+}
+
+async function storeAuth(tokens: TokenResponse, fallbackName: string, fallbackEmail: string): Promise<void> {
+  setTokens(tokens.access_token, tokens.refresh_token);
+  try {
+    const me = await authRequest<MeDashboard>("/me/dashboard", { method: "GET" });
+    setSessionUser({
+      name: me.name || fallbackName,
+      email: me.email || fallbackEmail,
+    });
+  } catch {
+    setSessionUser({ name: fallbackName, email: fallbackEmail });
+  }
+}
+
+export async function registerAccount(input: {
+  email: string;
+  password: string;
+  name: string;
+}): Promise<void> {
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: input.email,
+      password: input.password,
+      name: input.name,
+    }),
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, await readDetail(response));
+  }
+  const tokens = (await response.json()) as TokenResponse;
+  await storeAuth(tokens, input.name, input.email);
+}
+
+export async function loginAccount(input: {
+  email: string;
+  password: string;
+}): Promise<void> {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: input.email,
+      password: input.password,
+    }),
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, await readDetail(response));
+  }
+  const tokens = (await response.json()) as TokenResponse;
+  await storeAuth(tokens, "", input.email);
+}
+
+export function logoutAccount(): void {
+  clearSession();
+}
+
+export async function listWalletDocuments(): Promise<WalletDocument[]> {
+  const rows = await authRequest<BackendDocument[]>("/documents", { method: "GET" });
+  return rows.map(toWalletDoc);
+}
+
+export async function uploadWalletDocument(file: File): Promise<WalletDocument> {
+  const body = new FormData();
+  body.append("file", file);
+  return toWalletDoc(
+    await authRequest<BackendDocument>("/documents", {
+      method: "POST",
+      body,
+    }),
+  );
+}
+
+export async function deleteWalletDocument(id: string): Promise<void> {
+  await authRequest<unknown>(`/documents/${id}`, { method: "DELETE" });
 }

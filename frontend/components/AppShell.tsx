@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getSavedName } from "@/lib/session";
+import { AUTH_EVENT, getSessionUser } from "@/lib/auth";
 
 const links = [
   { href: "/", label: "Početna" },
@@ -14,10 +14,20 @@ const links = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
-  const [name, setName] = useState<string | null>(null);
+  const [label, setLabel] = useState("Prijava");
 
   useEffect(() => {
-    setName(getSavedName());
+    const sync = () => {
+      const user = getSessionUser();
+      setLabel(user?.name || user?.email || "Prijava");
+    };
+    sync();
+    window.addEventListener(AUTH_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(AUTH_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
   }, [path]);
 
   return (
@@ -44,7 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="topbar">
           <span className="note">Velika slova, jedan korak u isto vreme.</span>
           <Link className="guest" href="/prijava">
-            {name ?? "Prijava"}
+            {label}
             <span aria-hidden="true"> ◯</span>
           </Link>
         </div>
