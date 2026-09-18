@@ -7,7 +7,7 @@ import { getSessionUser } from "@/lib/auth";
 import { ApiError, loginAccount, logoutAccount, registerAccount } from "@/lib/api";
 
 const GDPR =
-  "Nalog nije obavezan da biste našli proceduru. Čuvamo email, ime i skenove koje sami otpremite, da ih ne unosite svaki put. Putokaz nije eUprava i ne šalje zahtev umesto vas. Možete da obrišete papir ili da se odjavite kad god želite.";
+  "Nalog nije obavezan da biste našli proceduru. Čuvamo email, ime i skenove koje sami otpremite, da ih ne unosite svaki put. Prilog gosta se briše posle 48 sati ako ga nalogom ne preuzmete. Putokaz nije eUprava i ne šalje zahtev umesto vas.";
 
 export default function PrijavaPage() {
   const router = useRouter();

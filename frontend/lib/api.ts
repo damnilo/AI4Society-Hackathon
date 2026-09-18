@@ -70,11 +70,14 @@ export function isUuid(value: string): boolean {
 type TokenResponse = {
   access_token: string;
   refresh_token: string;
+  name?: string;
+  email?: string;
 };
 
-type MeDashboard = {
+type MeProfile = {
   name: string;
   email: string;
+  gdpr_note?: string;
 };
 
 type BackendDocument = {
@@ -83,6 +86,7 @@ type BackendDocument = {
   content_type: string;
   case_id: string | null;
   status: string | null;
+  purge_at?: string | null;
 };
 
 export class ApiError extends Error {
@@ -122,8 +126,24 @@ async function readDetail(response: Response): Promise<string> {
 }
 
 async function requestJson<T>(path: string, init: RequestInit): Promise<T | null> {
+  const headers = new Headers(init.headers);
+  for (const [key, value] of Object.entries(authHeaders())) {
+    headers.set(key, value);
+  }
   try {
-    const response = await fetch(`${API_URL}${path}`, init);
+    let response = await fetch(`${API_URL}${path}`, { ...init, headers });
+    if (response.status === 401) {
+      const refreshed = await tryRefresh();
+      const retryHeaders = new Headers(init.headers);
+      if (refreshed) {
+        for (const [key, value] of Object.entries(authHeaders())) {
+          retryHeaders.set(key, value);
+        }
+      } else {
+        clearSession();
+      }
+      response = await fetch(`${API_URL}${path}`, { ...init, headers: retryHeaders });
+    }
     if (!response.ok) return null;
     return (await response.json()) as T;
   } catch {
@@ -236,10 +256,24 @@ export async function attachCaseDocument(
   const body = new FormData();
   body.append("file", file);
   try {
-    const response = await fetch(`${API_URL}/cases/${caseId}/documents`, {
+    const headers = authHeaders();
+    let response = await fetch(`${API_URL}/cases/${caseId}/documents`, {
       method: "POST",
+      headers,
       body,
     });
+    if (response.status === 401) {
+      const refreshed = await tryRefresh();
+      const retryHeaders = refreshed ? authHeaders() : {};
+      if (!refreshed) clearSession();
+      const retryBody = new FormData();
+      retryBody.append("file", file);
+      response = await fetch(`${API_URL}/cases/${caseId}/documents`, {
+        method: "POST",
+        headers: retryHeaders,
+        body: retryBody,
+      });
+    }
     if (!response.ok) return null;
     return toWalletDoc((await response.json()) as BackendDocument);
   } catch {
@@ -307,20 +341,43 @@ function toWalletDoc(row: BackendDocument): WalletDocument {
     content_type: row.content_type,
     case_id: row.case_id ? String(row.case_id) : null,
     status: row.status,
+    purge_at: row.purge_at ?? null,
   };
+}
+
+async function claimOpenCase(): Promise<void> {
+  if (typeof window === "undefined") return;
+  const raw = sessionStorage.getItem("putokaz-case");
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw) as { case_id?: string };
+    if (!parsed.case_id || !isUuid(parsed.case_id)) return;
+    await authRequest<unknown>("/me/claim", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ case_id: parsed.case_id }),
+    });
+  } catch {
+    // Gostov case nije obavezan — matching ne sme da padne zbog claim-a.
+  }
 }
 
 async function storeAuth(tokens: TokenResponse, fallbackName: string, fallbackEmail: string): Promise<void> {
   setTokens(tokens.access_token, tokens.refresh_token);
+  const fromToken = {
+    name: tokens.name || fallbackName,
+    email: tokens.email || fallbackEmail,
+  };
   try {
-    const me = await authRequest<MeDashboard>("/me/dashboard", { method: "GET" });
+    const me = await authRequest<MeProfile>("/me", { method: "GET" });
     setSessionUser({
-      name: me.name || fallbackName,
-      email: me.email || fallbackEmail,
+      name: me.name || fromToken.name,
+      email: me.email || fromToken.email,
     });
   } catch {
-    setSessionUser({ name: fallbackName, email: fallbackEmail });
+    setSessionUser(fromToken);
   }
+  await claimOpenCase();
 }
 
 export async function registerAccount(input: {
