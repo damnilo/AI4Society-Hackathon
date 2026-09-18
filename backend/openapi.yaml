@@ -1,0 +1,61 @@
+openapi: 3.1.0
+info:
+  title: Putokaz API
+  version: 0.1.0
+  description: |
+    Ugovor FE/BE. Živi spec: GET /openapi.json (FastAPI).
+    Kartice kandidata nemaju instituciju. Adresa šaltera samo u guide posle select.
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      summary: DB + broj seed zapisa
+  /health/llm:
+    get:
+      summary: Ping xAI (models)
+  /cases:
+    post:
+      summary: Matching iz teksta (gost)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string }
+                document_ids:
+                  type: array
+                  items: { type: string, format: uuid }
+  /cases/{case_id}/retry:
+    post:
+      summary: Dopuni opis, isti prilozi
+  /cases/{case_id}/clarify:
+    post:
+      summary: Odgovori na podpitanja
+  /cases/{case_id}/select:
+    post:
+      summary: Izbor procedure → guide + office
+  /cases/{case_id}/guide:
+    get:
+      summary: Vodič posle select
+  /cases/{case_id}/documents:
+    post:
+      summary: Prilog uz case (gost), multipart file
+  /cases/{case_id}/document-status:
+    get:
+      summary: Checklist vs required_documents
+  /auth/register:
+    post: { summary: Nalog }
+  /auth/login:
+    post: { summary: Login JWT }
+  /auth/refresh:
+    post: { summary: Refresh JWT }
+  /documents:
+    get: { summary: Novčanik }
+    post: { summary: Upload u novčanik (nalog) }
+  /documents/{document_id}:
+    delete: { summary: Obriši svoj dokument }
+  /me/dashboard:
+    get: { summary: Dokumenti + case-ovi }

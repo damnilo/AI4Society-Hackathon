@@ -1,0 +1,1 @@
+"""Putokaz FastAPI backend."""

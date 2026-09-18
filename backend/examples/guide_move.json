@@ -1,0 +1,13 @@
+{
+  "selected_slug": "prijava-prebivalista",
+  "office": {
+    "id": "pu-beograd-upravni",
+    "name": "Policijska uprava za grad Beograd — Uprava za upravne poslove",
+    "address": "Ljermontova (Ljermontovljeva) 12a, 11107 Beograd (Voždovac)",
+    "phone": "011/3470-200",
+    "lat": 44.7828,
+    "lng": 20.4906
+  },
+  "office_missing": false,
+  "note": "Ne PU Pirot. LLM ne sme da izmisli ovu adresu."
+}

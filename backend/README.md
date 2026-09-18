@@ -1,0 +1,25 @@
+# Putokaz backend (Faza 0)
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+# ubaci XAI_API_KEY iz api_keys.txt (SPACEX_API_KEY)
+uvicorn app.main:app --reload --port 8000
+```
+
+SQLite podrazumevano (`putokaz.db`). Seed ulazi pri startu.
+
+```bash
+docker compose up --build
+```
+
+- `GET http://localhost:8000/health`
+- `GET http://localhost:8000/health/llm`
+- `GET http://localhost:8000/docs`
+- Mock JSON: `examples/`
+- FE: `NEXT_PUBLIC_API_URL=http://localhost:8000`
+
+Demo POST `/cases`: `"istekla mi je lična"` i `"selim se iz Pirota u Beograd"`.

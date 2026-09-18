@@ -1,3 +1,12 @@
 api_keys.txt
 .env
 PLAN.md
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+backend/.venv/
+backend/putokaz.db
+backend/uploads/
+*.egg-info/
+.pytest_cache/

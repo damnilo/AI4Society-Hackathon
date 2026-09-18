@@ -1,0 +1,33 @@
+{
+  "request": { "text": "selim se iz Pirota u Beograd" },
+  "response": {
+    "case_id": "22222222-2222-2222-2222-222222222222",
+    "candidates": [
+      {
+        "slug": "prijava-prebivalista",
+        "title": "Prijava prebivališta",
+        "plain_summary": "Prijava stalnog mesta življenja na novoj adresi. Šalter je po NOVOJ adresi.",
+        "score": 0.94,
+        "rationale": "Selidba iz jednog grada u drugi obično znači stalno prebivalište na novoj adresi."
+      },
+      {
+        "slug": "prijava-boravista",
+        "title": "Prijava boravišta",
+        "plain_summary": "Privremeni boravak, nije ista procedura kao prebivalište.",
+        "score": 0.48,
+        "rationale": "Ako selidba nije stalna, to je boravište."
+      },
+      {
+        "slug": "izbor-izabranog-lekara",
+        "title": "Izbor / promena izabranog lekara",
+        "plain_summary": "Posle selidbe često treba novi lekar. Nije MUP.",
+        "score": 0.33,
+        "rationale": "Sledeći korak posle prijave adrese, ne prvi."
+      }
+    ],
+    "need_clarification": false,
+    "questions": [],
+    "from_place": "pirot",
+    "to_place": "beograd"
+  }
+}
