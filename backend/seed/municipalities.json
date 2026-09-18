@@ -1,0 +1,242 @@
+[
+  {
+    "id": "beograd",
+    "kind": "city",
+    "parent_id": null,
+    "name_lat": "Beograd",
+    "name_cyr": "Београд",
+    "aliases": ["beograd", "beogradu", "beograda", "bg", "београд", "београду", "београда", "grad beograd", "град београд"]
+  },
+  {
+    "id": "vozdovac",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Voždovac",
+    "name_cyr": "Вождовац",
+    "aliases": ["vozdovac", "voždovac", "vozhdovac", "вождовац", "вождовцу"]
+  },
+  {
+    "id": "vracar",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Vračar",
+    "name_cyr": "Врачар",
+    "aliases": ["vracar", "vračar", "врачар"]
+  },
+  {
+    "id": "zvezdara",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Zvezdara",
+    "name_cyr": "Звездара",
+    "aliases": ["zvezdara", "звездара"]
+  },
+  {
+    "id": "savski-venac",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Savski Venac",
+    "name_cyr": "Савски Венац",
+    "aliases": ["savski venac", "savski-venac", "савски венац"]
+  },
+  {
+    "id": "stari-grad",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Stari Grad",
+    "name_cyr": "Стари Град",
+    "aliases": ["stari grad", "stari-grad", "стари град"]
+  },
+  {
+    "id": "novi-beograd",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Novi Beograd",
+    "name_cyr": "Нови Београд",
+    "aliases": ["novi beograd", "novi-beograd", "nbg", "нови београд"]
+  },
+  {
+    "id": "zemun",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Zemun",
+    "name_cyr": "Земун",
+    "aliases": ["zemun", "земун"]
+  },
+  {
+    "id": "beograd-palilula",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Palilula (Beograd)",
+    "name_cyr": "Палилула (Београд)",
+    "aliases": ["palilula", "палилула"]
+  },
+  {
+    "id": "cukarica",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Čukarica",
+    "name_cyr": "Чукарица",
+    "aliases": ["cukarica", "čukarica", "чукарица"]
+  },
+  {
+    "id": "rakovica",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_cyr": "Раковица",
+    "name_lat": "Rakovica",
+    "aliases": ["rakovica", "раковица"]
+  },
+  {
+    "id": "surcin",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Surčin",
+    "name_cyr": "Сурчин",
+    "aliases": ["surcin", "surčin", "сурчин"]
+  },
+  {
+    "id": "obrenovac",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Obrenovac",
+    "name_cyr": "Обреновац",
+    "aliases": ["obrenovac", "обреновац"]
+  },
+  {
+    "id": "barajevo",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Barajevo",
+    "name_cyr": "Барајево",
+    "aliases": ["barajevo", "барајево"]
+  },
+  {
+    "id": "grocka",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Grocka",
+    "name_cyr": "Гроцка",
+    "aliases": ["grocka", "gročka", "гроцка"]
+  },
+  {
+    "id": "mladenovac",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Mladenovac",
+    "name_cyr": "Младеновац",
+    "aliases": ["mladenovac", "младеновац"]
+  },
+  {
+    "id": "lazarevac",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Lazarevac",
+    "name_cyr": "Лазаревац",
+    "aliases": ["lazarevac", "лазаревац"]
+  },
+  {
+    "id": "sopot",
+    "kind": "municipality",
+    "parent_id": "beograd",
+    "name_lat": "Sopot",
+    "name_cyr": "Сопот",
+    "aliases": ["sopot", "сопот"]
+  },
+  {
+    "id": "niski",
+    "kind": "district",
+    "parent_id": null,
+    "name_lat": "Niški okrug",
+    "name_cyr": "Нишки округ",
+    "aliases": ["niski", "niški", "нишки округ"]
+  },
+  {
+    "id": "nis",
+    "kind": "city",
+    "parent_id": "niski",
+    "name_lat": "Niš",
+    "name_cyr": "Ниш",
+    "aliases": ["nis", "niš", "nisu", "nišu", "ниш", "нишу"]
+  },
+  {
+    "id": "nis-medijana",
+    "kind": "municipality",
+    "parent_id": "nis",
+    "name_lat": "Medijana",
+    "name_cyr": "Медијана",
+    "aliases": ["medijana", "медијана"]
+  },
+  {
+    "id": "nis-palilula",
+    "kind": "municipality",
+    "parent_id": "nis",
+    "name_lat": "Palilula (Niš)",
+    "name_cyr": "Палилула (Ниш)",
+    "aliases": ["palilula nis", "палилула ниш"]
+  },
+  {
+    "id": "nis-pantelej",
+    "kind": "municipality",
+    "parent_id": "nis",
+    "name_lat": "Pantelej",
+    "name_cyr": "Пантелеј",
+    "aliases": ["pantelej", "пантелеј"]
+  },
+  {
+    "id": "nis-crveni-krst",
+    "kind": "municipality",
+    "parent_id": "nis",
+    "name_lat": "Crveni Krst",
+    "name_cyr": "Црвени Крст",
+    "aliases": ["crveni krst", "црвени крст"]
+  },
+  {
+    "id": "nis-niska-banja",
+    "kind": "municipality",
+    "parent_id": "nis",
+    "name_lat": "Niška Banja",
+    "name_cyr": "Нишка Бања",
+    "aliases": ["niska banja", "niška banja", "нишка бања"]
+  },
+  {
+    "id": "pirotski",
+    "kind": "district",
+    "parent_id": null,
+    "name_lat": "Pirotski okrug",
+    "name_cyr": "Пиротски округ",
+    "aliases": ["pirotski", "пиротски округ"]
+  },
+  {
+    "id": "pirot",
+    "kind": "municipality",
+    "parent_id": "pirotski",
+    "name_lat": "Pirot",
+    "name_cyr": "Пирот",
+    "aliases": ["pirot", "pirotu", "pirota", "пирот", "пироту", "пирота"]
+  },
+  {
+    "id": "bela-palanka",
+    "kind": "municipality",
+    "parent_id": "pirotski",
+    "name_lat": "Bela Palanka",
+    "name_cyr": "Бела Паланка",
+    "aliases": ["bela palanka", "бела паланка"]
+  },
+  {
+    "id": "babusnica",
+    "kind": "municipality",
+    "parent_id": "pirotski",
+    "name_lat": "Babušnica",
+    "name_cyr": "Бабушница",
+    "aliases": ["babusnica", "babušnica", "бабушница"]
+  },
+  {
+    "id": "dimitrovgrad",
+    "kind": "municipality",
+    "parent_id": "pirotski",
+    "name_lat": "Dimitrovgrad",
+    "name_cyr": "Димитровград",
+    "aliases": ["dimitrovgrad", "димитровград"]
+  }
+]

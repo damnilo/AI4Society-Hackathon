@@ -1,0 +1,44 @@
+[
+  {
+    "id": "pu-pirot",
+    "institution": "mup",
+    "covers_place_id": "pirotski",
+    "covers_municipality": "pirot",
+    "covers_district": "pirotski",
+    "name": "Policijska uprava u Pirotu",
+    "address": "Jevrejska 17, 18300 Pirot",
+    "phone": "010/353-077",
+    "lat": 43.1555,
+    "lng": 22.5858,
+    "source_url": "https://www.mup.gov.rs/wps/portal/sr/Kontakti",
+    "notes": "Pokrije pirotski okrug i sve opštine ispod (Pirot, Bela Palanka, Babušnica, Dimitrovgrad). Nije šalter za novo prebivalište u Beogradu."
+  },
+  {
+    "id": "pu-beograd-upravni",
+    "institution": "mup",
+    "covers_place_id": "beograd",
+    "covers_municipality": "beograd",
+    "covers_district": "beograd",
+    "name": "Policijska uprava za grad Beograd — Uprava za upravne poslove",
+    "address": "Ljermontova (Ljermontovljeva) 12a, 11107 Beograd (Voždovac)",
+    "phone": "011/3470-200",
+    "lat": 44.7828,
+    "lng": 20.4906,
+    "source_url": "https://www.mup.gov.rs/wps/portal/sr/gradjani/dokumenta/prebivaliste",
+    "notes": "Pokrije grad Beograd i sve gradske opštine (Voždovac, Zvezdara, Novi Beograd, …). Demo: Pirot→Beograd / Voždovac → ova adresa."
+  },
+  {
+    "id": "pu-nis",
+    "institution": "mup",
+    "covers_place_id": "niski",
+    "covers_municipality": "nis",
+    "covers_district": "niski",
+    "name": "Policijska uprava u Nišu",
+    "address": "Nade Tomić 14, 18000 Niš",
+    "phone": "018/511-222",
+    "lat": 43.321,
+    "lng": 21.8954,
+    "source_url": "https://www.mup.gov.rs/wps/portal/sr/Kontakti",
+    "notes": "Pokrije niški okrug, grad Niš i gradske opštine (Medijana, Pantelej, …)."
+  }
+]
