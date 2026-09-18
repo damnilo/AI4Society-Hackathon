@@ -125,6 +125,7 @@ export default function DokumentaPage() {
                   <p className="note" style={{ margin: "6px 0 0" }}>
                     {doc.content_type || "fajl"}
                     {doc.status ? ` · ${doc.status}` : ""}
+                    {doc.purge_at ? " · gostov prilog, preuzet u nalog" : ""}
                   </p>
                 </div>
                 <button
@@ -142,8 +143,9 @@ export default function DokumentaPage() {
       )}
 
       <p className="disclaimer">
-        Skenovi ostaju na vašem nalogu dok ih ne obrišete. Ovo nije overa da je
-        dokument originalan, niti slanje na eUpravu.
+        Skenovi na nalogu ostaju dok ih ne obrišete. Prilog gosta uz zahtev se
+        briše posle 48 sati ako se nalogom ne preuzme. Ovo nije overa dokumenta
+        niti slanje na eUpravu.
       </p>
     </>
   );

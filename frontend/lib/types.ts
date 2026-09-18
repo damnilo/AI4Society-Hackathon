@@ -67,4 +67,5 @@ export type WalletDocument = {
   content_type: string;
   case_id: string | null;
   status: string | null;
+  purge_at?: string | null;
 };
