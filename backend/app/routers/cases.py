@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date
 from uuid import UUID
 
@@ -5,7 +6,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.db import SessionLocal, get_session
 from app.deps import get_optional_user
 from app.models import Case, Document, Office, Procedure, User
 from app.schemas import (
@@ -24,7 +25,7 @@ from app.schemas import (
     SelectBody,
 )
 from app.services.catalog import extract_from_to, resolve_office
-from app.services.matching import match_procedures
+from app.services.matching import load_catalog_procs, rank_procedures
 from app.services import storage
 
 router = APIRouter(tags=["cases"])
@@ -42,21 +43,42 @@ def _case_out(row: Case) -> CaseOut:
     )
 
 
-def _run_match(session: Session, row: Case, text: str) -> Case:
-    from_place, to_place = extract_from_to(session, text)
-    candidates, need, questions = match_procedures(session, text)
-    row.raw_text = text
-    row.from_place = from_place
-    row.to_place = to_place
-    row.candidates = [item.model_dump() for item in candidates]
-    row.need_clarification = need
-    row.questions = questions
-    row.selected_slug = None
-    row.resolved_office_id = None
-    session.add(row)
-    session.commit()
-    session.refresh(row)
-    return row
+def _run_match(
+    case_id: str,
+    text: str,
+    *,
+    persist_text: bool,
+    use_demo_cache: bool,
+) -> Case:
+    with SessionLocal() as session:
+        row = session.get(Case, case_id)
+        if not row:
+            raise HTTPException(status_code=404, detail="Case not found")
+        from_place, to_place = extract_from_to(session, text)
+        by_slug = load_catalog_procs(session)
+        session.commit()
+
+    candidates, need, questions = rank_procedures(
+        by_slug, text, use_demo_cache=use_demo_cache
+    )
+
+    with SessionLocal() as session:
+        row = session.get(Case, case_id)
+        if not row:
+            raise HTTPException(status_code=404, detail="Case not found")
+        if persist_text:
+            row.raw_text = text
+        row.from_place = from_place
+        row.to_place = to_place
+        row.candidates = [item.model_dump() for item in candidates]
+        row.need_clarification = need
+        row.questions = questions
+        row.selected_slug = None
+        row.resolved_office_id = None
+        session.add(row)
+        session.commit()
+        session.refresh(row)
+        return row
 
 
 def _guide(session: Session, row: Case, procedure: Procedure) -> GuideOut:
@@ -99,7 +121,7 @@ def _guide(session: Session, row: Case, procedure: Procedure) -> GuideOut:
 
 
 @router.post("/cases", response_model=CaseOut)
-def create_case(
+async def create_case(
     body: CaseCreate,
     session: Session = Depends(get_session),
     user: User | None = Depends(get_optional_user),
@@ -129,7 +151,17 @@ def create_case(
                 doc.case_id = row.id
                 session.add(doc)
         session.commit()
-    return _case_out(_run_match(session, row, body.text))
+    case_id = str(row.id)
+    text = body.text
+    session.close()
+    matched = await asyncio.to_thread(
+        _run_match,
+        case_id,
+        text,
+        persist_text=True,
+        use_demo_cache=True,
+    )
+    return _case_out(matched)
 
 
 @router.get("/cases/{case_id}", response_model=CaseOut)
@@ -141,22 +173,50 @@ def get_case(case_id: UUID, session: Session = Depends(get_session)) -> CaseOut:
 
 
 @router.post("/cases/{case_id}/retry", response_model=CaseOut)
-def retry_case(case_id: UUID, body: RetryBody, session: Session = Depends(get_session)) -> CaseOut:
+async def retry_case(
+    case_id: UUID, body: RetryBody, session: Session = Depends(get_session)
+) -> CaseOut:
     row = session.get(Case, str(case_id))
     if not row:
         raise HTTPException(status_code=404, detail="Case not found")
-    return _case_out(_run_match(session, row, body.text))
+    row.extra_answers = {}
+    session.add(row)
+    session.commit()
+    case_id = str(row.id)
+    text = body.text
+    session.close()
+    matched = await asyncio.to_thread(
+        _run_match,
+        case_id,
+        text,
+        persist_text=True,
+        use_demo_cache=True,
+    )
+    return _case_out(matched)
 
 
 @router.post("/cases/{case_id}/clarify", response_model=CaseOut)
-def clarify_case(case_id: UUID, body: ClarifyBody, session: Session = Depends(get_session)) -> CaseOut:
+async def clarify_case(
+    case_id: UUID, body: ClarifyBody, session: Session = Depends(get_session)
+) -> CaseOut:
     row = session.get(Case, str(case_id))
     if not row:
         raise HTTPException(status_code=404, detail="Case not found")
-    row.extra_answers = {**row.extra_answers, **body.answers}
+    row.extra_answers = {**(row.extra_answers or {}), **body.answers}
     extra = " ".join(str(value) for value in body.answers.values())
     combined = f"{row.raw_text}\n{extra}".strip()
-    return _case_out(_run_match(session, row, combined))
+    session.add(row)
+    session.commit()
+    case_id = str(row.id)
+    session.close()
+    matched = await asyncio.to_thread(
+        _run_match,
+        case_id,
+        combined,
+        persist_text=False,
+        use_demo_cache=False,
+    )
+    return _case_out(matched)
 
 
 @router.post("/cases/{case_id}/select", response_model=GuideOut)

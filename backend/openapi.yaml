@@ -20,9 +20,6 @@ paths:
       description: >
         Demo keš za dve rečenice, inače xAI nad katalogom (slug/title/summary/examples).
         Kartice bez institucije. document_ids samo iz novčanika ulogovanog.
-  /cases/{case_id}:
-    get:
-      summary: Case + kandidati (gost, UUID)
       requestBody:
         content:
           application/json:
@@ -34,6 +31,9 @@ paths:
                 document_ids:
                   type: array
                   items: { type: string, format: uuid }
+  /cases/{case_id}:
+    get:
+      summary: Case + kandidati (gost, UUID)
   /cases/{case_id}/retry:
     post:
       summary: Dopuni opis, isti prilozi
