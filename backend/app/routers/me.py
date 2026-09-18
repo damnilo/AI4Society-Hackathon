@@ -17,6 +17,7 @@ from app.schemas import (
     DashboardOut,
     DocumentOut,
     MeOut,
+    MePatch,
 )
 from app.services.extraction import run_extraction
 from app.services import storage
@@ -40,6 +41,26 @@ def to_document_out(doc: Document) -> DocumentOut:
 
 @router.get("/me", response_model=MeOut)
 def me(user: User = Depends(get_current_user)) -> MeOut:
+    return MeOut(
+        user_id=str(user.id),
+        email=user.email,
+        name=user.name,
+        municipality=user.municipality,
+        retention_hours=settings.document_retention_hours,
+        gdpr_note=GDPR_NOTE,
+    )
+
+
+@router.patch("/me", response_model=MeOut)
+def patch_me(
+    body: MePatch,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> MeOut:
+    user.municipality = body.municipality
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return MeOut(
         user_id=str(user.id),
         email=user.email,

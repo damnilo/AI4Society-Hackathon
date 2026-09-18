@@ -30,6 +30,8 @@ Matching (Faza 2): demo keš samo za tačne rečenice na POST `/cases` (ne subst
 
 Faza 3: OpenAI Vision na jpg/png pri uploadu (case ili novčanik). `GET /cases/{id}/document-status` = complete / missing / expired / unreadable / mismatch. PDF i nečitko → unreadable. Nije pravna overa.
 
+Faza 5: `POST /auth/register` i `PATCH /me` primaju `municipality` (`beograd` | `pirot` | `nis`). `POST /cases/{id}/select` koristi mesto sa naloga **samo** ako u tekstu nema grada. Tekst (Pirot→Beograd) uvek pobedi nalog. Gost i dalje dobija „Nedostaje mesto prebivališta“.
+
 ```bash
 python tests/test_bug_regressions.py
 python tests/test_phase3_documents.py

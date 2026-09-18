@@ -68,7 +68,8 @@ paths:
   /auth/refresh:
     post: { summary: Refresh JWT }
   /me:
-    get: { summary: Profil + GDPR/retention tekst }
+    get: { summary: Profil + GDPR/retention tekst; municipality ako je na nalogu }
+    patch: { summary: "Ažuriraj municipality: beograd | pirot | nis" }
   /me/claim:
     post: { summary: Preuzmi gostov case i priloge u novčanik }
   /documents:
