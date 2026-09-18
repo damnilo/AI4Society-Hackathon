@@ -70,10 +70,14 @@ type BackendDocStatusItem = {
   status: string;
   message: string;
   how_to_obtain?: string;
+  document_id?: string | null;
+  extracted_expiry?: string | null;
 };
 
 type BackendDocStatus = {
   items: BackendDocStatusItem[];
+  disclaimer?: string;
+  as_of?: string;
 };
 
 export function isUuid(value: string): boolean {
@@ -99,6 +103,8 @@ type BackendDocument = {
   content_type: string;
   case_id: string | null;
   status: string | null;
+  extracted_type?: string | null;
+  extracted_expiry?: string | null;
   purge_at?: string | null;
 };
 
@@ -247,13 +253,18 @@ function toGuide(row: BackendGuide): Guide {
   };
 }
 
-export async function createCase(text: string): Promise<MatchResponse> {
+export async function createCase(
+  text: string,
+  documentIds: string[] = [],
+): Promise<MatchResponse> {
   const row = await requestJson<BackendCase>(
     "/cases",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify(
+        documentIds.length > 0 ? { text, document_ids: documentIds } : { text },
+      ),
     },
     MATCH_TIMEOUT_MS,
   );
@@ -305,24 +316,35 @@ export async function fetchCase(caseId: string): Promise<(MatchResponse & { text
   return { ...toMatch(row), text: row.text ?? "" };
 }
 
-function applyDocStatus(guide: Guide, items: BackendDocStatusItem[]): Guide {
-  const byType = new Map(items.map((item) => [item.type, item]));
-  const documents: RequiredDoc[] = guide.documents.map((doc) => {
-    const item = byType.get(doc.type);
-    if (!item) return doc;
+function mergeDocStatus(guide: Guide, status: BackendDocStatus): Guide {
+  const previous = new Map(guide.documents.map((doc) => [doc.type, doc]));
+  const documents: RequiredDoc[] = status.items.map((item) => {
+    const prev = previous.get(item.type);
     return {
-      ...doc,
+      type: item.type,
+      label: documentLabel(item.type),
+      how_to_obtain: item.how_to_obtain || prev?.how_to_obtain || "",
       status: toStatus(item.status),
-      how_to_obtain: item.how_to_obtain || doc.how_to_obtain,
-      note: item.message || doc.note,
+      note: item.message || prev?.note,
+      extracted_expiry: item.extracted_expiry ?? prev?.extracted_expiry ?? null,
     };
   });
-  return { ...guide, documents };
+  return {
+    ...guide,
+    documents,
+    disclaimer: status.disclaimer || guide.disclaimer,
+  };
 }
 
 export async function fetchDocumentStatus(caseId: string): Promise<BackendDocStatus | null> {
   if (!isUuid(caseId)) return null;
   return requestJson<BackendDocStatus>(`/cases/${caseId}/document-status`, { method: "GET" });
+}
+
+export async function refreshGuideDocuments(guide: Guide, caseId: string): Promise<Guide> {
+  const status = await fetchDocumentStatus(caseId);
+  if (!status?.items) return guide;
+  return mergeDocStatus(guide, status);
 }
 
 export async function fetchGuide(caseId: string, slug: string): Promise<Guide> {
@@ -340,7 +362,7 @@ export async function fetchGuide(caseId: string, slug: string): Promise<Guide> {
   const guide = toGuide(row);
   const status = await fetchDocumentStatus(caseId);
   if (!status?.items) return guide;
-  return applyDocStatus(guide, status.items);
+  return mergeDocStatus(guide, status);
 }
 
 export async function attachCaseDocument(
@@ -436,6 +458,8 @@ function toWalletDoc(row: BackendDocument): WalletDocument {
     content_type: row.content_type,
     case_id: row.case_id ? String(row.case_id) : null,
     status: row.status,
+    extracted_type: row.extracted_type ?? null,
+    extracted_expiry: row.extracted_expiry ?? null,
     purge_at: row.purge_at ?? null,
   };
 }

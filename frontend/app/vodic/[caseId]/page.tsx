@@ -3,9 +3,19 @@
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { ApiError, fetchCase, fetchGuide, retryCase } from "@/lib/api";
-import { STATUS_LABEL } from "@/lib/labels";
-import type { Guide, StoredCase } from "@/lib/types";
+import {
+  ApiError,
+  attachCaseDocument,
+  fetchCase,
+  fetchGuide,
+  refreshGuideDocuments,
+  retryCase,
+} from "@/lib/api";
+import { formatScanExpiry, STATUS_LABEL } from "@/lib/labels";
+import type { Guide, RequiredDoc, StoredCase } from "@/lib/types";
+
+const SCAN_PENDING = "Provera skena";
+const ACCEPT = ".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf";
 
 function readStoredText(caseId: string): string {
   if (typeof window === "undefined") return "";
@@ -19,6 +29,39 @@ function readStoredText(caseId: string): string {
   }
 }
 
+function awaitingScan(docs: RequiredDoc[]): boolean {
+  return docs.some((doc) => (doc.note ?? "").includes(SCAN_PENDING));
+}
+
+function DocRow({ doc }: { doc: RequiredDoc }) {
+  const expiry = formatScanExpiry(doc.extracted_expiry);
+  const showHow = doc.status === "missing" && doc.how_to_obtain;
+  const showNote = doc.status !== "complete" && Boolean(doc.note);
+  return (
+    <div className="doc">
+      <div>
+        <strong>{doc.label}</strong>
+        {showNote ? (
+          <p className="note" style={{ margin: "6px 0 0" }}>
+            {doc.note}
+          </p>
+        ) : null}
+        {showHow ? (
+          <p className="note" style={{ margin: "6px 0 0" }}>
+            {doc.how_to_obtain}
+          </p>
+        ) : null}
+        {expiry ? (
+          <p className="note" style={{ margin: "6px 0 0" }}>
+            {expiry}
+          </p>
+        ) : null}
+      </div>
+      <span className={`badge ${doc.status}`}>{STATUS_LABEL[doc.status]}</span>
+    </div>
+  );
+}
+
 function VodicBody() {
   const { caseId } = useParams<{ caseId: string }>();
   const params = useSearchParams();
@@ -28,12 +71,20 @@ function VodicBody() {
   const [place, setPlace] = useState("");
   const [placeBusy, setPlaceBusy] = useState(false);
   const [placeNote, setPlaceNote] = useState("");
+  const [attachNote, setAttachNote] = useState("");
+  const [attachBusy, setAttachBusy] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     fetchGuide(caseId, slug)
-      .then((g) => {
-        if (!cancelled) setGuide(g);
+      .then(async (g) => {
+        if (cancelled) return;
+        setGuide(g);
+        if (!awaitingScan(g.documents)) return;
+        await new Promise((resolve) => window.setTimeout(resolve, 2000));
+        if (cancelled) return;
+        const next = await refreshGuideDocuments(g, caseId);
+        if (!cancelled) setGuide(next);
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -81,6 +132,30 @@ function VodicBody() {
     }
   }
 
+  async function onAttach(file: File | undefined) {
+    if (!file || attachBusy || !guide) return;
+    setAttachBusy(true);
+    setAttachNote("");
+    try {
+      const saved = await attachCaseDocument(caseId, file);
+      if (!saved) {
+        setAttachNote("Prilog nije primljen. Možete da nastavite bez njega.");
+        return;
+      }
+      let next = await refreshGuideDocuments(guide, caseId);
+      setGuide(next);
+      if (awaitingScan(next.documents)) {
+        await new Promise((resolve) => window.setTimeout(resolve, 2000));
+        next = await refreshGuideDocuments(next, caseId);
+        setGuide(next);
+      }
+    } catch (err) {
+      setAttachNote(err instanceof Error ? err.message : "Prilog nije primljen.");
+    } finally {
+      setAttachBusy(false);
+    }
+  }
+
   if (error) {
     return <p className="alert">{error}</p>;
   }
@@ -114,17 +189,25 @@ function VodicBody() {
       <div className="panel">
         <h2 style={{ marginTop: 0 }}>Šta da ponesete</h2>
         {guide.documents.map((d) => (
-          <div key={d.type} className="doc">
-            <div>
-              <strong>{d.label}</strong>
-              <p className="note" style={{ margin: "6px 0 0" }}>
-                {d.how_to_obtain}
-                {d.note ? ` ${d.note}` : ""}
-              </p>
-            </div>
-            <span className={`badge ${d.status}`}>{STATUS_LABEL[d.status]}</span>
-          </div>
+          <DocRow key={d.type} doc={d} />
         ))}
+        <div className="row">
+          <label className="file">
+            {attachBusy ? "Šaljem sken…" : "Priloži papir uz ovaj vodič"}
+            <input
+              type="file"
+              accept={ACCEPT}
+              hidden
+              disabled={attachBusy}
+              onChange={(e) => {
+                const chosen = e.target.files?.[0];
+                e.target.value = "";
+                void onAttach(chosen);
+              }}
+            />
+          </label>
+        </div>
+        {attachNote ? <p className="alert">{attachNote}</p> : null}
         <p className="disclaimer" style={{ marginTop: 18 }}>
           {guide.disclaimer}
         </p>
@@ -133,14 +216,10 @@ function VodicBody() {
       <div className="panel">
         <h2 style={{ marginTop: 0 }}>Gde da odete</h2>
         {guide.office_missing || !guide.office ? (
-          <p>
-            {guide.office_missing_reason ||
-              "Adresa kancelarije još nije u katalogu za ovaj slučaj."}
-          </p>
           <>
             <p>
-              Nismo mogli da odredimo šalter — u tekstu nema mesta. Unesite grad
-              ili opštinu. Ulicu ne izmišljamo.
+              {guide.office_missing_reason ||
+                "Nismo mogli da odredimo šalter — u tekstu nema mesta. Unesite grad ili opštinu. Ulicu ne izmišljamo."}
             </p>
             <label className="big" htmlFor="mesto">
               U kom mestu ste?

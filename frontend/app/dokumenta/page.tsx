@@ -9,7 +9,24 @@ import {
   listWalletDocuments,
   uploadWalletDocument,
 } from "@/lib/api";
-import type { WalletDocument } from "@/lib/types";
+import { DISCLAIMER } from "@/lib/copy";
+import { documentLabel, STATUS_LABEL } from "@/lib/labels";
+import type { DocumentStatus, WalletDocument } from "@/lib/types";
+
+function walletCaption(doc: WalletDocument): { title: string; detail: string } {
+  const title = doc.extracted_type
+    ? documentLabel(doc.extracted_type)
+    : doc.original_filename;
+  const parts: string[] = [];
+  if (doc.extracted_type) parts.push(doc.original_filename);
+  if (doc.extracted_expiry) parts.push(`važi do ${doc.extracted_expiry}`);
+  if (doc.status && doc.status in STATUS_LABEL) {
+    parts.push(STATUS_LABEL[doc.status as DocumentStatus]);
+  }
+  if (doc.purge_at) parts.push("gostov prilog, preuzet u nalog");
+  if (parts.length === 0) parts.push(doc.content_type || "fajl");
+  return { title, detail: parts.join(" · ") };
+}
 
 export default function DokumentaPage() {
   const [ready, setReady] = useState(false);
@@ -118,34 +135,34 @@ export default function DokumentaPage() {
           {docs.length === 0 ? (
             <p className="note">Još nema sačuvanih papira.</p>
           ) : (
-            docs.map((doc) => (
-              <div key={doc.id} className="doc">
-                <div>
-                  <strong>{doc.original_filename}</strong>
-                  <p className="note" style={{ margin: "6px 0 0" }}>
-                    {doc.content_type || "fajl"}
-                    {doc.status ? ` · ${doc.status}` : ""}
-                    {doc.purge_at ? " · gostov prilog, preuzet u nalog" : ""}
-                  </p>
+            docs.map((doc) => {
+              const caption = walletCaption(doc);
+              return (
+                <div key={doc.id} className="doc">
+                  <div>
+                    <strong>{caption.title}</strong>
+                    <p className="note" style={{ margin: "6px 0 0" }}>
+                      {caption.detail}
+                    </p>
+                  </div>
+                  <button
+                    className="btn btn-ghost"
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void onDelete(doc.id)}
+                  >
+                    Obriši
+                  </button>
                 </div>
-                <button
-                  className="btn btn-ghost"
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void onDelete(doc.id)}
-                >
-                  Obriši
-                </button>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}
 
       <p className="disclaimer">
-        Skenovi na nalogu ostaju dok ih ne obrišete. Prilog gosta uz zahtev se
-        briše posle 48 sati ako se nalogom ne preuzme. Ovo nije overa dokumenta
-        niti slanje na eUpravu.
+        {DISCLAIMER} Skenovi na nalogu ostaju dok ih ne obrišete. Prilog gosta
+        uz zahtev se briše posle 48 sati ako se nalogom ne preuzme.
       </p>
     </>
   );

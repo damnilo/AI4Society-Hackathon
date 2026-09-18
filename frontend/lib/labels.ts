@@ -41,3 +41,8 @@ export function institutionLabel(code: string): string {
 export function documentLabel(type: string): string {
   return DOC_LABEL[type] ?? type.replaceAll("_", " ");
 }
+
+export function formatScanExpiry(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return `Na skenu: važi do ${value}`;
+}

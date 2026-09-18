@@ -1,3 +1,5 @@
+import { DISCLAIMER } from "@/lib/copy";
+
 export default function PomocPage() {
   return (
     <>
@@ -12,7 +14,7 @@ export default function PomocPage() {
         <ol className="steps" style={{ paddingLeft: 22 }}>
           <li>Na početnoj opišite šta treba, ili izaberite brzi pristup.</li>
           <li>Izaberite jednu od 2–3 ponuđene procedure.</li>
-          <li>Pročitajte korake, šta fali i tačnu adresu šaltera.</li>
+          <li>Pročitajte korake, šta fali / je isteklo i tačnu adresu šaltera.</li>
         </ol>
       </div>
 
@@ -21,7 +23,10 @@ export default function PomocPage() {
         <ul>
           <li>Ne šaljemo zahtev umesto vas.</li>
           <li>Ne zakazujemo termin i ne pratimo „moji postupci“.</li>
-          <li>Ne overavamo da je dokument originalan. Checklist je šta da ponesete, ne provera skena.</li>
+          <li>
+            Checklist jeste provera polja sa skena (ima, fali, datum). Nije
+            pravna overa niti dokaz da je papir originalan.
+          </li>
         </ul>
       </div>
 
@@ -34,10 +39,7 @@ export default function PomocPage() {
         </p>
       </div>
 
-      <div className="disclaimer">
-        Ako niste sigurni, opišite problem svojim rečima. Ako nijedna kartica
-        nije tačna, dopunite opis.
-      </div>
+      <p className="disclaimer">{DISCLAIMER}</p>
     </>
   );
 }
