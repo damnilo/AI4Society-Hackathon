@@ -137,3 +137,41 @@ def extract_document_openai_vision(
         return {"raw": str(data["choices"][0]["message"]["content"])}
     except httpx.HTTPError as exc:
         raise RuntimeError("OpenAI Vision failed") from exc
+
+
+TTS_INSTRUCTIONS = (
+    "Speak clearly in Serbian (srpski). Calm civic guide. "
+    "Read only the given text. Do not add extra words."
+)
+TTS_TIMEOUT_SEC = 30.0
+MAX_TTS_CHARS = 3500
+
+
+def synthesize_speech_openai(text: str, *, timeout: float = TTS_TIMEOUT_SEC) -> bytes:
+    """OpenAI TTS → mp3. Never log `text` (may include an address)."""
+    if not settings.openai_api_key:
+        raise RuntimeError("OPENAI_API_KEY nije postavljen")
+    clipped = text.strip()[:MAX_TTS_CHARS]
+    if not clipped:
+        raise RuntimeError("Nema teksta za čitanje")
+    payload: dict[str, Any] = {
+        "model": settings.openai_tts_model,
+        "input": clipped,
+        "voice": settings.openai_tts_voice,
+        "instructions": TTS_INSTRUCTIONS,
+        "response_format": "mp3",
+    }
+    try:
+        response = httpx.post(
+            f"{OPENAI_BASE}/audio/speech",
+            headers={"Authorization": f"Bearer {settings.openai_api_key}"},
+            json=payload,
+            timeout=timeout,
+        )
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise RuntimeError("OpenAI TTS failed") from exc
+    audio = response.content
+    if not audio:
+        raise RuntimeError("OpenAI TTS failed")
+    return audio
