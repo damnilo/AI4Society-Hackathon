@@ -100,6 +100,15 @@ class DemoCacheUnitTests(unittest.TestCase):
         )
         self.assertNotEqual([c.score for c in skipped][:3], CACHE_EXPIRED)
 
+    def test_clip_keeps_skenovi_when_user_text_is_long(self) -> None:
+        scan = '[skenovi] [{"type": "licna_karta", "expiry": "2020-01-01", "status": "expired"}]'
+        long_text = ("x" * 2000) + "\n\n" + scan
+        clipped = matching._clip_for_xai(long_text)
+        self.assertIn("[skenovi]", clipped)
+        self.assertIn("licna_karta", clipped)
+        self.assertIn("2020-01-01", clipped)
+        self.assertLess(len(clipped.split("[skenovi]", 1)[0]), 1300)
+
 
 class OfficeReasonUnitTests(unittest.TestCase):
     def test_missing_place_vs_catalog_gap(self) -> None:

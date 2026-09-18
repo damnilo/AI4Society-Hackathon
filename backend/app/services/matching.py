@@ -90,6 +90,17 @@ def is_demo_move(text: str) -> bool:
     return _folded(text) in DEMO_MOVE_KEYS
 
 
+def _clip_for_xai(text: str) -> str:
+    """Keep [skenovi] JSON even when the user text is long."""
+    body = text.strip()
+    marker = "\n\n[skenovi]"
+    if marker in body:
+        user_part, scan_part = body.split(marker, 1)
+        budget = max(240, MAX_TEXT_CHARS - len(marker) - len(scan_part))
+        return f"{user_part[:budget].rstrip()}{marker}{scan_part}"
+    return body[:MAX_TEXT_CHARS]
+
+
 def load_catalog_procs(session: Session) -> dict[str, CatalogProc]:
     rows = session.scalars(select(Procedure)).all()
     loaded: dict[str, CatalogProc] = {}
@@ -205,7 +216,7 @@ def _xai_match(
 ) -> tuple[list[CandidateOut], bool, list[str]] | None:
     if not settings.xai_api_key:
         return None
-    clipped = text.strip()[:MAX_TEXT_CHARS]
+    clipped = _clip_for_xai(text)
     compact: list[dict[str, object]] = []
     for proc in by_slug.values():
         compact.append(
