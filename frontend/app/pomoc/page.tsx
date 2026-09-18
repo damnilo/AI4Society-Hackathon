@@ -21,7 +21,7 @@ export default function PomocPage() {
         <ul>
           <li>Ne šaljemo zahtev umesto vas.</li>
           <li>Ne zakazujemo termin i ne pratimo „moji postupci“.</li>
-          <li>Ne overavamo da je dokument originalan — samo da li fali ili je istekao datum na skenu.</li>
+          <li>Ne overavamo da je dokument originalan. Checklist je šta da ponesete, ne provera skena.</li>
         </ul>
       </div>
 

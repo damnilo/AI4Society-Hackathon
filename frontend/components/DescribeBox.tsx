@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { attachCaseDocument, createCase, isUuid, retryCase } from "@/lib/api";
+import type { MatchResponse } from "@/lib/types";
 
 export function DescribeBox({
   heading = "Šta želite da završite?",
@@ -18,40 +19,50 @@ export function DescribeBox({
   const [busy, setBusy] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [note, setNote] = useState("");
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+
+  function persist(result: MatchResponse, value: string, fileName: string) {
+    sessionStorage.setItem(
+      "putokaz-case",
+      JSON.stringify({
+        ...result,
+        text: value,
+        fileName,
+        source: "typed",
+      }),
+    );
+  }
+
+  function go(path: string) {
+    if (caseId && path === `/predlozi/${caseId}`) {
+      window.location.assign(path);
+      return;
+    }
+    router.push(path);
+  }
 
   async function submit() {
     const value = text.trim();
     if (!value || busy) return;
     setBusy(true);
     setNote("");
+    setPendingPath(null);
     try {
-      const result = caseId
-        ? await retryCase(caseId, value)
-        : await createCase(value);
+      const result = caseId ? await retryCase(caseId, value) : await createCase(value);
       let fileName = file?.name ?? "";
       if (file && isUuid(result.case_id)) {
         const attached = await attachCaseDocument(result.case_id, file);
+        persist(result, value, attached ? fileName : "");
         if (!attached) {
-          setNote("Procedura je nađena, ali prilog nije primljen. Možete da nastavite.");
+          setNote("Procedura je nađena, ali prilog nije primljen. Ostajete ovde dok ne nastavite.");
+          setPendingPath(`/predlozi/${result.case_id}`);
+          return;
         }
-      } else if (file && !isUuid(result.case_id)) {
-        fileName = "";
+      } else {
+        if (file && !isUuid(result.case_id)) fileName = "";
+        persist(result, value, fileName);
       }
-      sessionStorage.setItem(
-        "putokaz-case",
-        JSON.stringify({
-          ...result,
-          text: value,
-          fileName,
-          source: "typed",
-        }),
-      );
-      const next = `/predlozi/${result.case_id}`;
-      if (caseId && result.case_id === caseId) {
-        window.location.assign(next);
-        return;
-      }
-      router.push(next);
+      go(`/predlozi/${result.case_id}`);
     } catch (err) {
       setNote(
         err instanceof Error
@@ -70,9 +81,10 @@ export function DescribeBox({
     };
     const Speech = win.SpeechRecognition ?? win.webkitSpeechRecognition;
     if (!Speech) {
-      setText((t) => t || "istekla mi je lična");
+      setNote("Glas nije dostupan u ovom pregledaču. Ukucajte šta treba.");
       return;
     }
+    setNote("");
     const rec = new Speech();
     rec.lang = "sr-RS";
     rec.onresult = (ev) => {
@@ -95,7 +107,7 @@ export function DescribeBox({
         placeholder="Npr. selim se iz Pirota u Beograd, ili: istekla mi je lična"
       />
       <div className="row">
-        <button className="btn btn-primary" type="button" onClick={submit} disabled={busy}>
+        <button className="btn btn-primary" type="button" onClick={() => void submit()} disabled={busy}>
           {busy ? "Tražim u katalogu…" : "Nađi proceduru"}
         </button>
         <button className="btn btn-ghost" type="button" onClick={listen}>
@@ -117,6 +129,13 @@ export function DescribeBox({
         sledeći put, otvorite Dokumenta posle prijave.
       </p>
       {note ? <p className="alert">{note}</p> : null}
+      {pendingPath ? (
+        <div className="row">
+          <button className="btn btn-primary" type="button" onClick={() => go(pendingPath)}>
+            Nastavi bez priloga
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
