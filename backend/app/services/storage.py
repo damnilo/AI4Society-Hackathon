@@ -73,6 +73,17 @@ def reencrypt_for_user(doc: Document, user_id: str) -> None:
     path.write_bytes(encrypt_bytes(plain, new_owner))
 
 
+def load_plaintext(doc: Document) -> bytes:
+    """Decrypt a stored blob. Never log the path or filename."""
+    path = Path(doc.storage_path)
+    blob = path.read_bytes()
+    owner = owner_label(user_id=doc.user_id, case_id=doc.case_id)
+    try:
+        return decrypt_bytes(blob, owner)
+    except Exception:
+        return blob
+
+
 def delete_file(storage_path: str | None) -> None:
     if not storage_path:
         return

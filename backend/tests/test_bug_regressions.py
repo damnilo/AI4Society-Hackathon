@@ -26,6 +26,7 @@ os.environ["UPLOAD_DIR"] = str(tmpdir / "uploads")
 os.environ["JWT_SECRET"] = "test-secret-bugs"
 os.environ["MASTER_KEY"] = "test-master-key-bugs"
 os.environ["XAI_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = ""
 
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -43,10 +44,10 @@ from app.services.match_parse import CatalogProc, candidate_out  # noqa: E402
 from app.db import SessionLocal  # noqa: E402
 
 settings.xai_api_key = ""
+settings.openai_api_key = ""
 
 CACHE_EXPIRED = [0.92, 0.41, 0.28]
 CACHE_MOVE = [0.94, 0.48, 0.33]
-SCAN_MSG = "Provera skena je sledeći korak"
 MISSING_PLACE = "Nedostaje mesto prebivališta"
 CATALOG_GAP = "Adresa kancelarije još nije u katalogu za ovo mesto."
 
@@ -170,9 +171,9 @@ class SourceContractTests(unittest.TestCase):
         self.assertEqual(params["timeout"].default, 15.0)
         self.assertEqual(matching.XAI_TIMEOUT_SEC, 15.0)
 
-    def test_vision_not_implemented(self) -> None:
-        with self.assertRaises(NotImplementedError):
-            extract_document_openai_vision(b"scan")
+    def test_vision_requires_api_key(self) -> None:
+        with self.assertRaises(RuntimeError):
+            extract_document_openai_vision(b"\xff\xd8\xffdummy", mime="image/jpeg")
 
     def test_parser_module_avoids_sqlalchemy(self) -> None:
         code = (
@@ -358,9 +359,8 @@ class ApiRegressionTests(unittest.TestCase):
         self.assertIsNone(attached.json().get("extracted_type"))
         scanned = self.client.get(f"/cases/{created['case_id']}/document-status")
         items = scanned.json()["items"]
-        self.assertTrue(all(item["status"] == "missing" for item in items))
-        self.assertTrue(all(item["message"] == SCAN_MSG for item in items))
-        self.assertTrue(all(item.get("document_id") is None for item in items))
+        self.assertTrue(all(item["status"] == "unreadable" for item in items))
+        self.assertTrue(all("čitljiv" in item["message"].lower() for item in items))
         self.assertFalse(any("nije priložen" in item["message"].lower() for item in items))
 
     def test_file_on_other_case_does_not_count(self) -> None:

@@ -1,0 +1,17 @@
+{
+  "selected_slug": "licna-karta-zamena",
+  "items": [
+    {
+      "type": "licna_karta",
+      "status": "expired",
+      "message": "Na skenu piše da važi do 2020-03-01. Provera je samo rok i kompletnost sa skena, nije pravna overa.",
+      "extracted_expiry": "2020-03-01"
+    },
+    {
+      "type": "uplatnica_euprava",
+      "status": "missing",
+      "message": "Nije priložen."
+    }
+  ],
+  "note": "Vision čita tip i rok. Nije pravna overa."
+}

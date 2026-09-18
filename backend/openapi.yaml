@@ -58,8 +58,9 @@ paths:
     get:
       summary: Checklist vs required_documents
       description: >
-        Bez extracted_type nije „nije priložen“ ako fajl jeste na case-u —
-        missing + „Provera skena je sledeći korak“. Vision je Faza 3.
+        Posle select. complete / missing / expired / unreadable / mismatch
+        prema poljima sa skena. Bez fajla: missing + „Nije priložen.“
+        PDF/nečitko: unreadable. Istekao datum: expired. Nije pravna overa.
   /auth/register:
     post: { summary: Nalog; vraća JWT + user_id/email/name }
   /auth/login:
