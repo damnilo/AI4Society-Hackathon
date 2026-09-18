@@ -37,6 +37,7 @@ export type Guide = {
   euprava_url?: string;
   office: Office;
   office_missing: boolean;
+  office_missing_reason?: string;
   steps: { title: string; description: string }[];
   documents: RequiredDoc[];
   related: { slug: string; title: string }[];

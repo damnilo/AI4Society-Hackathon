@@ -132,6 +132,35 @@ def ancestors(session: Session, place_id: str) -> list[str]:
     return chain
 
 
+def office_target(
+    *,
+    jurisdiction_rule: str,
+    from_place: str | None,
+    to_place: str | None,
+) -> str | None:
+    if jurisdiction_rule == "new_residence":
+        return to_place
+    return from_place or to_place
+
+
+def missing_office_reason(
+    *,
+    jurisdiction_rule: str,
+    from_place: str | None,
+    to_place: str | None,
+    office: Office | None,
+) -> str | None:
+    if office is not None:
+        return None
+    if not office_target(
+        jurisdiction_rule=jurisdiction_rule,
+        from_place=from_place,
+        to_place=to_place,
+    ):
+        return "Nedostaje mesto prebivališta"
+    return "Adresa kancelarije još nije u katalogu za ovo mesto."
+
+
 def resolve_office(
     session: Session,
     *,
@@ -140,7 +169,11 @@ def resolve_office(
     from_place: str | None,
     to_place: str | None,
 ) -> Office | None:
-    target = to_place if jurisdiction_rule == "new_residence" else from_place or to_place
+    target = office_target(
+        jurisdiction_rule=jurisdiction_rule,
+        from_place=from_place,
+        to_place=to_place,
+    )
     if not target:
         return None
     chain = ancestors(session, target)

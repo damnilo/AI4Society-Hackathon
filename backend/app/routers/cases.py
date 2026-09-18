@@ -24,7 +24,7 @@ from app.schemas import (
     RetryBody,
     SelectBody,
 )
-from app.services.catalog import extract_from_to, resolve_office
+from app.services.catalog import extract_from_to, missing_office_reason, resolve_office
 from app.services.matching import load_catalog_procs, rank_procedures
 from app.services import storage
 
@@ -116,6 +116,12 @@ def _guide(session: Session, row: Case, procedure: Procedure) -> GuideOut:
         last_verified_at=procedure.last_verified_at,
         office=office_out,
         office_missing=office_out is None,
+        office_missing_reason=missing_office_reason(
+            jurisdiction_rule=procedure.jurisdiction_rule,
+            from_place=row.from_place,
+            to_place=row.to_place,
+            office=office_row,
+        ),
         disclaimer=DISCLAIMER,
     )
 
@@ -190,7 +196,7 @@ async def retry_case(
         case_id,
         text,
         persist_text=True,
-        use_demo_cache=True,
+        use_demo_cache=False,
     )
     return _case_out(matched)
 
@@ -324,11 +330,16 @@ def document_status(case_id: UUID, session: Session = Depends(get_session)) -> D
         doc_type = str(req.get("type"))
         match = next((doc for doc in pool if doc.extracted_type == doc_type), None)
         if match is None:
+            has_case_file = len(attached) > 0
             items.append(
                 DocumentStatusItem(
                     type=doc_type,
                     status="missing",
-                    message="Nije priložen. Vision ekstrakcija je Faza 3 — ovo je checklist.",
+                    message=(
+                        "Provera skena je sledeći korak"
+                        if has_case_file
+                        else "Nije priložen."
+                    ),
                     how_to_obtain=str(req.get("how_to_obtain") or ""),
                 )
             )

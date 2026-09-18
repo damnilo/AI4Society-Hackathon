@@ -26,6 +26,6 @@ Matching i prilog uz case rade **bez naloga**. Nalog je novčanik (`/auth/*`, `/
 
 Seed JSON se **upsert-uje** pri startu — izmene u `backend/seed/*.json` ulaze bez brisanja `putokaz.db`.
 
-Matching (Faza 2): demo keš samo na prvi unos (ne na /clarify). Inače xAI nad katalogom, jedan pokušaj ~15s u threadu, van DB transakcije. Ako Grok padne, keyword fallback. Kartice nemaju instituciju.
+Matching (Faza 2): demo keš samo za tačne rečenice na POST `/cases` (ne substring, ne `/retry`/`/clarify`). Inače xAI nad katalogom, jedan pokušaj ~15s u threadu, van DB transakcije. Ako Grok padne, keyword fallback. Kartice nemaju instituciju.
 
 Demo POST `/cases`: `"istekla mi je lična"` i `"selim se iz Pirota u Beograd"`.

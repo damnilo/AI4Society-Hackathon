@@ -82,7 +82,10 @@ function VodicBody() {
       <div className="panel">
         <h2 style={{ marginTop: 0 }}>Gde da odete</h2>
         {guide.office_missing || !guide.office ? (
-          <p>Adresa kancelarije još nije u katalogu za ovaj slučaj.</p>
+          <p>
+            {guide.office_missing_reason ||
+              "Adresa kancelarije još nije u katalogu za ovaj slučaj."}
+          </p>
         ) : (
           <p className="office">
             <strong>{guide.office.name}</strong>

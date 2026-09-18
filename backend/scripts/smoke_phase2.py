@@ -120,6 +120,15 @@ def test_live() -> None:
         if cache_scores == [0.92, 0.41, 0.28]:
             fail("demo cache must not run on clarify")
 
+        retried = client.post(
+            f"/cases/{demo.json()['case_id']}/retry",
+            json={"text": "istekla mi je lična, ustvari pasoš"},
+        )
+        if retried.status_code != 200:
+            fail(f"retry {retried.status_code} {retried.text}")
+        if [c["score"] for c in retried.json()["candidates"]][:3] == [0.92, 0.41, 0.28]:
+            fail("demo cache must not run on retry")
+
 
 def main() -> None:
     test_parser()

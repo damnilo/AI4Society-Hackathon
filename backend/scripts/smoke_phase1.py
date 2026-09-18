@@ -20,17 +20,87 @@ os.environ["MASTER_KEY"] = "test-master-key-phase1"
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.main import app  # noqa: E402
+from app.services.matching import is_demo_expired, is_demo_move  # noqa: E402
 
 
 def fail(msg: str) -> None:
     raise SystemExit(f"FAIL: {msg}")
 
 
+CACHE_EXPIRED = [0.92, 0.41, 0.28]
+
+
 def main() -> None:
+    if not is_demo_expired("istekla mi je lična") or not is_demo_expired("  Istekla mi je lična  "):
+        fail("exact demo expired sentence must match")
+    if is_demo_expired("istekla mi je lična, ustvari pasoš"):
+        fail("demo cache must not match a sentence that only contains the demo text")
+    if not is_demo_move("selim se iz Pirota u Beograd"):
+        fail("exact demo move sentence must match")
+    if is_demo_move("selim se iz Pirota u Beograd, ali nije stalno"):
+        fail("demo move cache must be exact")
+
     with TestClient(app) as client:
         health = client.get("/health")
         if health.status_code != 200 or health.json().get("catalog", {}).get("procedures", 0) < 1:
             fail(f"health {health.status_code} {health.text}")
+
+        expired = client.post("/cases", json={"text": "istekla mi je lična"})
+        if expired.status_code != 200:
+            fail(f"expired case {expired.status_code} {expired.text}")
+        if [c["score"] for c in expired.json()["candidates"]][:3] != CACHE_EXPIRED:
+            fail("exact demo sentence must hit cache")
+        contains = client.post(
+            "/cases", json={"text": "istekla mi je lična, ustvari pasoš"}
+        )
+        if contains.status_code != 200:
+            fail(f"contains case {contains.status_code} {contains.text}")
+        if [c["score"] for c in contains.json()["candidates"]][:3] == CACHE_EXPIRED:
+            fail("substring must not hit demo cache")
+        retried = client.post(
+            f"/cases/{expired.json()['case_id']}/retry",
+            json={"text": "istekla mi je lična, ustvari pasoš"},
+        )
+        if retried.status_code != 200:
+            fail(f"retry {retried.status_code} {retried.text}")
+        if [c["score"] for c in retried.json()["candidates"]][:3] == CACHE_EXPIRED:
+            fail("retry must not use demo cache")
+
+        no_place = client.post(
+            f"/cases/{expired.json()['case_id']}/select",
+            json={"slug": "licna-karta-zamena"},
+        )
+        if no_place.status_code != 200:
+            fail(f"select without place {no_place.status_code} {no_place.text}")
+        if no_place.json().get("office") is not None:
+            fail(f"must not pick a random PU: {no_place.json().get('office')}")
+        if not no_place.json().get("office_missing"):
+            fail("office_missing should be true without place")
+        if no_place.json().get("office_missing_reason") != "Nedostaje mesto prebivališta":
+            fail(f"missing place reason: {no_place.json().get('office_missing_reason')}")
+        bare_docs = client.get(f"/cases/{expired.json()['case_id']}/document-status")
+        if bare_docs.status_code != 200:
+            fail(f"document-status {bare_docs.status_code} {bare_docs.text}")
+        if not any(
+            item["message"] == "Nije priložen." for item in bare_docs.json()["items"]
+        ):
+            fail(f"no-file status should say not attached: {bare_docs.json()['items']}")
+
+        with_place = client.post(
+            f"/cases/{expired.json()['case_id']}/retry",
+            json={"text": "istekla mi je lična u Pirotu"},
+        )
+        if with_place.status_code != 200:
+            fail(f"retry with place {with_place.status_code} {with_place.text}")
+        picked_lk = client.post(
+            f"/cases/{expired.json()['case_id']}/select",
+            json={"slug": "licna-karta-zamena"},
+        )
+        lk_office = picked_lk.json().get("office") or {}
+        if "Jevrejska" not in str(lk_office.get("address")):
+            fail(f"place after retry should resolve PU Pirot, got {lk_office}")
+        if picked_lk.json().get("office_missing"):
+            fail("office should be present after place is in text")
 
         guest = client.post("/cases", json={"text": "selim se iz Pirota u Beograd"})
         if guest.status_code != 200:
@@ -79,6 +149,14 @@ def main() -> None:
             fail(f"guest attach must have user_id null, got {body}")
         if not body.get("purge_at"):
             fail("guest attach missing purge_at")
+        status = client.get(f"/cases/{case_id}/document-status")
+        if status.status_code != 200:
+            fail(f"document-status {status.status_code} {status.text}")
+        messages = [item["message"] for item in status.json()["items"]]
+        if any("nije priložen" in msg.lower() for msg in messages):
+            fail(f"file on case must not look unattached: {messages}")
+        if not any("provera skena je sledeći korak" in msg.lower() for msg in messages):
+            fail(f"expected scan-next-step message: {messages}")
 
         stored = list((tmpdir / "uploads").glob("*.enc"))
         if not stored:
