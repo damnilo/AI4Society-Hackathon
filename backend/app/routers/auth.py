@@ -1,0 +1,66 @@
+from datetime import datetime, timedelta, timezone
+
+from fastapi import APIRouter, Depends, HTTPException
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.config import settings
+from app.db import get_session
+from app.models import User
+from app.schemas import AuthLogin, AuthRegister, RefreshBody, TokenOut
+
+router = APIRouter(tags=["auth"])
+pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def _tokens(user_id: str) -> TokenOut:
+    now = datetime.now(timezone.utc)
+    access = jwt.encode(
+        {"sub": str(user_id), "exp": now + timedelta(hours=8), "typ": "access"},
+        settings.jwt_secret,
+        algorithm="HS256",
+    )
+    refresh = jwt.encode(
+        {"sub": str(user_id), "exp": now + timedelta(days=7), "typ": "refresh"},
+        settings.jwt_secret,
+        algorithm="HS256",
+    )
+    return TokenOut(access_token=access, refresh_token=refresh)
+
+
+@router.post("/auth/register", response_model=TokenOut)
+def register(body: AuthRegister, session: Session = Depends(get_session)) -> TokenOut:
+    existing = session.scalars(select(User).where(User.email == body.email.lower())).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Email already registered")
+    user = User(
+        email=body.email.lower(),
+        password_hash=pwd.hash(body.password),
+        name=body.name,
+        municipality=body.municipality,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return _tokens(user.id)
+
+
+@router.post("/auth/login", response_model=TokenOut)
+def login(body: AuthLogin, session: Session = Depends(get_session)) -> TokenOut:
+    user = session.scalars(select(User).where(User.email == body.email.lower())).first()
+    if not user or not pwd.verify(body.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return _tokens(user.id)
+
+
+@router.post("/auth/refresh", response_model=TokenOut)
+def refresh(body: RefreshBody) -> TokenOut:
+    try:
+        payload = jwt.decode(body.refresh_token, settings.jwt_secret, algorithms=["HS256"])
+        if payload.get("typ") != "refresh":
+            raise JWTError("wrong type")
+        return _tokens(str(payload["sub"]))
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail="Invalid refresh token") from exc
