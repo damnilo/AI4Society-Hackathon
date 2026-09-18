@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     upload_dir: str = "./uploads"
     master_key: str = "dev-only-not-for-prod"
+    document_retention_hours: int = 48
 
     @property
     def cors_origin_list(self) -> list[str]:

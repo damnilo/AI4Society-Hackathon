@@ -16,7 +16,8 @@ paths:
       summary: Ping xAI (models)
   /cases:
     post:
-      summary: Matching iz teksta (gost)
+      summary: Matching iz teksta (gost ili Bearer)
+      description: Opcioni Authorization. document_ids samo iz novčanika ulogovanog.
       requestBody:
         content:
           application/json:
@@ -47,14 +48,18 @@ paths:
     get:
       summary: Checklist vs required_documents
   /auth/register:
-    post: { summary: Nalog }
+    post: { summary: Nalog; vraća JWT + user_id/email/name }
   /auth/login:
     post: { summary: Login JWT }
   /auth/refresh:
     post: { summary: Refresh JWT }
+  /me:
+    get: { summary: Profil + GDPR/retention tekst }
+  /me/claim:
+    post: { summary: Preuzmi gostov case i priloge u novčanik }
   /documents:
-    get: { summary: Novčanik }
-    post: { summary: Upload u novčanik (nalog) }
+    get: { summary: Novčanik (samo vlasnik) }
+    post: { summary: Upload u novčanik, AES-GCM }
   /documents/{document_id}:
     delete: { summary: Obriši svoj dokument }
   /me/dashboard:

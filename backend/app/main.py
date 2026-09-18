@@ -7,6 +7,7 @@ from app.config import settings
 from app.db import SessionLocal, init_db
 from app.routers import auth, cases, health, me
 from app.services.catalog import seed_catalog
+from app.services import storage
 
 
 @asynccontextmanager
@@ -14,6 +15,7 @@ async def lifespan(_app: FastAPI):
     init_db()
     with SessionLocal() as session:
         seed_catalog(session)
+        storage.purge_expired_documents(session)
     yield
 
 

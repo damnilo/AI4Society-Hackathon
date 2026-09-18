@@ -1,4 +1,4 @@
-# Putokaz backend (Faza 0)
+# Putokaz backend (Faza 0–1)
 
 ```bash
 cd backend
@@ -21,5 +21,7 @@ docker compose up --build
 - `GET http://localhost:8000/docs`
 - Mock JSON: `examples/`
 - FE: `NEXT_PUBLIC_API_URL=http://localhost:8000`
+
+Matching i prilog uz case rade **bez naloga**. Nalog je novčanik (`/auth/*`, `/documents`, `GET /me`, `POST /me/claim`). Gostovi fajlovi imaju `user_id=null` i `purge_at` (~48h). Fajlovi su AES-GCM na disku; ne logujemo email ni ime fajla.
 
 Demo POST `/cases`: `"istekla mi je lična"` i `"selim se iz Pirota u Beograd"`.
