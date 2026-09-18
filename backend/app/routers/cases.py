@@ -22,7 +22,12 @@ from app.schemas import (
     RetryBody,
     SelectBody,
 )
-from app.services.catalog import extract_from_to, missing_office_reason, resolve_office
+from app.services.catalog import (
+    apply_account_municipality,
+    extract_from_to,
+    missing_office_reason,
+    resolve_office,
+)
 from app.services.extraction import (
     build_checklist,
     collect_pool,
@@ -235,13 +240,27 @@ async def clarify_case(
 
 
 @router.post("/cases/{case_id}/select", response_model=GuideOut)
-def select_procedure(case_id: UUID, body: SelectBody, session: Session = Depends(get_session)) -> GuideOut:
+def select_procedure(
+    case_id: UUID,
+    body: SelectBody,
+    session: Session = Depends(get_session),
+    user: User | None = Depends(get_optional_user),
+) -> GuideOut:
     row = session.get(Case, str(case_id))
     if not row:
         raise HTTPException(status_code=404, detail="Case not found")
     procedure = session.get(Procedure, body.slug)
     if not procedure:
         raise HTTPException(status_code=404, detail="Procedure not found")
+    from_place, to_place = apply_account_municipality(
+        session,
+        jurisdiction_rule=procedure.jurisdiction_rule,
+        from_place=row.from_place,
+        to_place=row.to_place,
+        municipality=user.municipality if user else None,
+    )
+    row.from_place = from_place
+    row.to_place = to_place
     office = resolve_office(
         session,
         institution=procedure.institution,

@@ -132,6 +132,33 @@ def ancestors(session: Session, place_id: str) -> list[str]:
     return chain
 
 
+def place_id_from_label(session: Session, label: str | None) -> str | None:
+    """Map nalog/UI label (Beograd, pirot, Niš) to places.id."""
+    if not label or not str(label).strip():
+        return None
+    from_place, to_place = extract_from_to(session, str(label).strip())
+    return to_place or from_place
+
+
+def apply_account_municipality(
+    session: Session,
+    *,
+    jurisdiction_rule: str,
+    from_place: str | None,
+    to_place: str | None,
+    municipality: str | None,
+) -> tuple[str | None, str | None]:
+    """Text places always win. Account city only if extract found none."""
+    if from_place or to_place:
+        return from_place, to_place
+    place_id = place_id_from_label(session, municipality)
+    if not place_id:
+        return from_place, to_place
+    if jurisdiction_rule == "new_residence":
+        return from_place, place_id
+    return place_id, to_place or place_id
+
+
 def office_target(
     *,
     jurisdiction_rule: str,

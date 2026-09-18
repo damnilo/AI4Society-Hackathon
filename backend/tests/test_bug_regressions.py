@@ -36,6 +36,7 @@ from app.main import app  # noqa: E402
 from app.routers import cases as cases_router  # noqa: E402
 from app.services import matching  # noqa: E402
 from app.services.catalog import (  # noqa: E402
+    apply_account_municipality,
     missing_office_reason,
     office_target,
     resolve_office,
@@ -152,6 +153,34 @@ class OfficeReasonUnitTests(unittest.TestCase):
             ),
             CATALOG_GAP,
         )
+
+    def test_account_municipality_only_when_no_text_place(self) -> None:
+        with SessionLocal() as session:
+            none_from, none_to = apply_account_municipality(
+                session,
+                jurisdiction_rule="current_residence",
+                from_place=None,
+                to_place=None,
+                municipality="beograd",
+            )
+            self.assertEqual(none_from, "beograd")
+            kept_from, kept_to = apply_account_municipality(
+                session,
+                jurisdiction_rule="new_residence",
+                from_place="pirot",
+                to_place="beograd",
+                municipality="nis",
+            )
+            self.assertEqual((kept_from, kept_to), ("pirot", "beograd"))
+            new_from, new_to = apply_account_municipality(
+                session,
+                jurisdiction_rule="new_residence",
+                from_place=None,
+                to_place=None,
+                municipality="Niš",
+            )
+            self.assertIsNone(new_from)
+            self.assertEqual(new_to, "nis")
 
 
 class SourceContractTests(unittest.TestCase):
@@ -395,6 +424,88 @@ class ApiRegressionTests(unittest.TestCase):
         self.assertNotIn("requestBody", spec["paths"]["/cases/{case_id}"]["get"])
         self.assertIn("requestBody", spec["paths"]["/cases"]["post"])
         self.assertIn("office_missing_reason", spec["components"]["schemas"]["GuideOut"]["properties"])
+
+    def test_account_municipality_fills_office_when_text_has_no_place(self) -> None:
+        email = "faza5-mesto@example.com"
+        reg = self.client.post(
+            "/auth/register",
+            json={
+                "email": email,
+                "password": "password1",
+                "name": "Ana",
+                "municipality": "beograd",
+            },
+        )
+        self.assertEqual(reg.status_code, 200, reg.text)
+        headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+        me = self.client.get("/me", headers=headers).json()
+        self.assertEqual(me["municipality"], "beograd")
+        created = self.client.post(
+            "/cases", json={"text": "istekla mi je lična"}, headers=headers
+        ).json()
+        guide = self.client.post(
+            f"/cases/{created['case_id']}/select",
+            json={"slug": "licna-karta-zamena"},
+            headers=headers,
+        ).json()
+        self.assertFalse(guide["office_missing"])
+        self.assertIn("Ljermontova", guide["office"]["address"])
+        self.assertNotIn("Jevrejska", guide["office"]["address"])
+
+    def test_text_place_beats_account_municipality(self) -> None:
+        email = "faza5-tekst@example.com"
+        reg = self.client.post(
+            "/auth/register",
+            json={
+                "email": email,
+                "password": "password1",
+                "name": "Ana",
+                "municipality": "pirot",
+            },
+        )
+        self.assertEqual(reg.status_code, 200, reg.text)
+        headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+        created = self.client.post(
+            "/cases",
+            json={"text": "selim se iz Pirota u Beograd"},
+            headers=headers,
+        ).json()
+        guide = self.client.post(
+            f"/cases/{created['case_id']}/select",
+            json={"slug": "prijava-prebivalista"},
+            headers=headers,
+        ).json()
+        self.assertIn("Ljermontova", guide["office"]["address"])
+        self.assertNotIn("Pirot", guide["office"]["address"])
+
+    def test_guest_select_still_asks_for_place(self) -> None:
+        created = self.client.post("/cases", json={"text": "istekla mi je lična"}).json()
+        guide = self.client.post(
+            f"/cases/{created['case_id']}/select",
+            json={"slug": "licna-karta-zamena"},
+        ).json()
+        self.assertTrue(guide["office_missing"])
+        self.assertEqual(guide["office_missing_reason"], MISSING_PLACE)
+
+    def test_patch_me_municipality_then_office(self) -> None:
+        email = "faza5-patch@example.com"
+        reg = self.client.post(
+            "/auth/register",
+            json={"email": email, "password": "password1", "name": "Ana"},
+        )
+        headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+        patched = self.client.patch("/me", json={"municipality": "pirot"}, headers=headers)
+        self.assertEqual(patched.status_code, 200, patched.text)
+        self.assertEqual(patched.json()["municipality"], "pirot")
+        created = self.client.post(
+            "/cases", json={"text": "istekla mi je lična"}, headers=headers
+        ).json()
+        guide = self.client.post(
+            f"/cases/{created['case_id']}/select",
+            json={"slug": "licna-karta-zamena"},
+            headers=headers,
+        ).json()
+        self.assertIn("Jevrejska", guide["office"]["address"])
 
 
 if __name__ == "__main__":
