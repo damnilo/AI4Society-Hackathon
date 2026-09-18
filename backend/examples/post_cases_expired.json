@@ -1,0 +1,33 @@
+{
+  "request": { "text": "istekla mi je lična" },
+  "response": {
+    "case_id": "11111111-1111-1111-1111-111111111111",
+    "candidates": [
+      {
+        "slug": "licna-karta-zamena",
+        "title": "Zamena lične karte (istekla, oštećena, promena podataka)",
+        "plain_summary": "Nova LK kad je stara istekla, oštećena, izgubljena ili su se promenili podaci.",
+        "score": 0.92,
+        "rationale": "Pominješ da je lična istekla — to je zamena postojeće LK, ne prvo izdavanje."
+      },
+      {
+        "slug": "pasos-izdavanje",
+        "title": "Izdavanje / zamena pasoša",
+        "plain_summary": "Putna isprava za putovanje van Srbije.",
+        "score": 0.41,
+        "rationale": "Pasoš je drugi dokument; često se meša sa LK."
+      },
+      {
+        "slug": "licna-karta-prvo-izdavanje",
+        "title": "Prvo izdavanje lične karte",
+        "plain_summary": "Prva biometrijska lična karta.",
+        "score": 0.28,
+        "rationale": "Prva LK je ako nikad nisi imao ličnu."
+      }
+    ],
+    "need_clarification": false,
+    "questions": [],
+    "from_place": null,
+    "to_place": null
+  }
+}

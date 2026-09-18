@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: putokaz
+      POSTGRES_PASSWORD: putokaz
+      POSTGRES_DB: putokaz
+    ports:
+      - "5432:5432"
+    volumes:
+      - putokaz_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U putokaz"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://putokaz:putokaz@postgres:5432/putokaz
+      XAI_API_KEY: ${XAI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      JWT_SECRET: ${JWT_SECRET:-dev-compose-secret}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./seed:/app/seed
+      - ./uploads:/app/uploads
+
+volumes:
+  putokaz_pg:
