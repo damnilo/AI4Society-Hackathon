@@ -63,19 +63,30 @@ def normalize(text: str) -> str:
     return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
 
 
+def _folded(text: str) -> str:
+    return " ".join(normalize(text).split())
+
+
+DEMO_EXPIRED_KEYS = frozenset(
+    {
+        _folded("istekla mi je lična"),
+        _folded("истекла ми је лична"),
+    }
+)
+DEMO_MOVE_KEYS = frozenset(
+    {
+        _folded("selim se iz Pirota u Beograd"),
+        _folded("селим се из Пирота у Београд"),
+    }
+)
+
+
 def is_demo_expired(text: str) -> bool:
-    n = normalize(text)
-    expired = "istekl" in n or "истекл" in n
-    licna = "licn" in n or "личн" in n
-    return expired and licna
+    return _folded(text) in DEMO_EXPIRED_KEYS
 
 
 def is_demo_move(text: str) -> bool:
-    n = normalize(text)
-    move = "sel" in n or "сели" in n or "presel" in n or "пресел" in n
-    pirot = "pirot" in n or "пирот" in n
-    beograd = "beograd" in n or "београд" in n
-    return move and pirot and beograd
+    return _folded(text) in DEMO_MOVE_KEYS
 
 
 def load_catalog_procs(session: Session) -> dict[str, CatalogProc]:
@@ -98,7 +109,7 @@ def rank_procedures(
     *,
     use_demo_cache: bool = True,
 ) -> tuple[list[CandidateOut], bool, list[str]]:
-    """Demo keš samo na prvi unos. xAI van DB sesije. Jedan pokušaj ~15s."""
+    """Demo keš samo na tačne demo rečenice i samo kad je use_demo_cache. xAI van DB."""
     if use_demo_cache:
         demo = _demo_match(by_slug, text)
         if demo is not None:

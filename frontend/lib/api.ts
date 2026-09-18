@@ -61,6 +61,7 @@ type BackendGuide = {
     lng: number;
   } | null;
   office_missing: boolean;
+  office_missing_reason?: string | null;
   disclaimer: string;
 };
 
@@ -226,6 +227,7 @@ function toGuide(row: BackendGuide): Guide {
         }
       : null,
     office_missing: row.office_missing || !row.office,
+    office_missing_reason: row.office_missing_reason ?? undefined,
     steps: row.steps.map((step) => ({
       title: step.title,
       description: step.description,

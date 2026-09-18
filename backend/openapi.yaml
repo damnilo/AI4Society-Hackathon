@@ -37,12 +37,17 @@ paths:
   /cases/{case_id}/retry:
     post:
       summary: Dopuni opis, isti prilozi
+      description: Bez demo keša (isto kao /clarify). Keš važi samo za tačnu demo rečenicu na POST /cases.
   /cases/{case_id}/clarify:
     post:
       summary: Odgovori na podpitanja
+      description: Bez demo keša. raw_text se ne prepisuje.
   /cases/{case_id}/select:
     post:
       summary: Izbor procedure → guide + office
+      description: >
+        Bez mesta ne bira nasumičan PU. office_missing + office_missing_reason
+        (npr. „Nedostaje mesto prebivališta“). Ako retry doda mesto, isti resolver.
   /cases/{case_id}/guide:
     get:
       summary: Vodič posle select
@@ -52,6 +57,9 @@ paths:
   /cases/{case_id}/document-status:
     get:
       summary: Checklist vs required_documents
+      description: >
+        Bez extracted_type nije „nije priložen“ ako fajl jeste na case-u —
+        missing + „Provera skena je sledeći korak“. Vision je Faza 3.
   /auth/register:
     post: { summary: Nalog; vraća JWT + user_id/email/name }
   /auth/login:

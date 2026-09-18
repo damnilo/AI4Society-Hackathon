@@ -85,6 +85,7 @@ class GuideOut(BaseModel):
     last_verified_at: str
     office: Optional[OfficeOut] = None
     office_missing: bool = False
+    office_missing_reason: Optional[str] = None
     disclaimer: str = DISCLAIMER
 
 

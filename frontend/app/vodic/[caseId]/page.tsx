@@ -133,6 +133,10 @@ function VodicBody() {
       <div className="panel">
         <h2 style={{ marginTop: 0 }}>Gde da odete</h2>
         {guide.office_missing || !guide.office ? (
+          <p>
+            {guide.office_missing_reason ||
+              "Adresa kancelarije još nije u katalogu za ovaj slučaj."}
+          </p>
           <>
             <p>
               Nismo mogli da odredimo šalter — u tekstu nema mesta. Unesite grad

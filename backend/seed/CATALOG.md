@@ -17,7 +17,7 @@ Primeri:
 - „selim se u Beograd“ → `beograd` → ista kancelarija
 - Dimitrovgrad → `dimitrovgrad` → `pirotski` → `pu-pirot`
 - Medijana → `nis-medijana` → `nis` → `niski` → `pu-nis`
-- Nepoznato mesto → `office_missing`
+- Nepoznato mesto → `office_missing` + `office_missing_reason` „Nedostaje mesto prebivališta“ (nema nasumičnog PU)
 
 Seed nije cela Srbija: 17 beogradskih opština, 5 niških, 4 pirotske + 3 roditelja (`beograd`, `nis`/`niski`, `pirotski`). Ostalo se doda istim JSON-om.
 

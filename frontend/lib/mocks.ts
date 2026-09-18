@@ -148,6 +148,7 @@ export function mockGuide(slug: string): Guide {
         lng: 20.4906,
       },
       office_missing: false,
+      office_missing_reason: undefined,
       steps: [
         {
           title: "Pripremi dokumenta i uplatnicu",
@@ -208,15 +209,9 @@ export function mockGuide(slug: string): Guide {
     institution_label: "MUP",
     channel: "both",
     euprava_url: "https://euprava.gov.rs/usluge/00005",
-    office: {
-      id: "pu-pirot",
-      name: "Policijska uprava u Pirotu",
-      address: "Jevrejska 17, 18300 Pirot",
-      phone: "010/353-077",
-      lat: 43.1555,
-      lng: 22.5858,
-    },
-    office_missing: false,
+    office: null,
+    office_missing: true,
+    office_missing_reason: "Nedostaje mesto prebivališta",
     steps: [
       {
         title: "Proveri datum na ličnoj",
