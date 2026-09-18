@@ -6,6 +6,7 @@ from app.db import get_session
 from app.llm import ping_xai
 from app.models import Office, Place, Procedure
 from app.schemas import HealthOut, LlmHealthOut
+from app.services import storage
 
 router = APIRouter(tags=["health"])
 
@@ -17,6 +18,7 @@ def _count(session: Session, model) -> int:  # type: ignore[no-untyped-def]
 
 @router.get("/health", response_model=HealthOut)
 def health(session: Session = Depends(get_session)) -> HealthOut:
+    storage.purge_expired_documents(session)
     return HealthOut(
         ok=True,
         db="ok",

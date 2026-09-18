@@ -1,14 +1,13 @@
 from datetime import date
-from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config import settings
 from app.db import get_session
-from app.models import Case, Document, Office, Procedure
+from app.deps import get_optional_user
+from app.models import Case, Document, Office, Procedure, User
 from app.schemas import (
     DISCLAIMER,
     CaseCreate,
@@ -26,6 +25,7 @@ from app.schemas import (
 )
 from app.services.catalog import extract_from_to, resolve_office
 from app.services.matching import match_procedures
+from app.services import storage
 
 router = APIRouter(tags=["cases"])
 
@@ -98,18 +98,36 @@ def _guide(session: Session, row: Case, procedure: Procedure) -> GuideOut:
 
 
 @router.post("/cases", response_model=CaseOut)
-def create_case(body: CaseCreate, session: Session = Depends(get_session)) -> CaseOut:
-    ids = [str(item) for item in body.document_ids]
+def create_case(
+    body: CaseCreate,
+    session: Session = Depends(get_session),
+    user: User | None = Depends(get_optional_user),
+) -> CaseOut:
+    storage.purge_expired_documents(session)
+    ids: list[str] = []
+    for item in body.document_ids:
+        doc = session.get(Document, str(item))
+        if not doc or not storage.allowed_document(doc, user_id=user.id if user else None, case_id=None):
+            raise HTTPException(status_code=404, detail="Document not found")
+        ids.append(str(doc.id))
     row = Case(
         raw_text=body.text,
         document_ids=ids,
         extra_answers={},
         candidates=[],
         questions=[],
+        user_id=user.id if user else None,
     )
     session.add(row)
     session.commit()
     session.refresh(row)
+    if user:
+        for doc_id in ids:
+            doc = session.get(Document, doc_id)
+            if doc:
+                doc.case_id = row.id
+                session.add(doc)
+        session.commit()
     return _case_out(_run_match(session, row, body.text))
 
 
@@ -171,26 +189,31 @@ async def attach_document(
     case_id: UUID,
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
+    user: User | None = Depends(get_optional_user),
 ) -> DocumentOut:
     row = session.get(Case, str(case_id))
     if not row:
         raise HTTPException(status_code=404, detail="Case not found")
-    upload_root = Path(settings.upload_dir)
-    upload_root.mkdir(parents=True, exist_ok=True)
+    if row.user_id and (user is None or row.user_id != user.id):
+        raise HTTPException(status_code=403, detail="Not allowed to attach to this case")
+    data = await file.read(storage.MAX_UPLOAD_BYTES + 1)
+    user_id = user.id if user else None
+    try:
+        path = storage.save_upload(data, user_id=user_id, case_id=row.id)
+    except ValueError:
+        raise HTTPException(status_code=413, detail="File too large (max 8 MB)")
     stored = Document(
         case_id=row.id,
+        user_id=user_id,
         original_filename=file.filename or "upload.bin",
-        storage_path="",
+        storage_path=path,
         content_type=file.content_type or "application/octet-stream",
+        purge_at=None if user else storage.guest_purge_at(),
     )
     session.add(stored)
     session.commit()
     session.refresh(stored)
-    dest = upload_root / f"{stored.id}_{stored.original_filename}"
-    dest.write_bytes(await file.read())
-    stored.storage_path = str(dest)
     row.document_ids = [*row.document_ids, str(stored.id)]
-    session.add(stored)
     session.add(row)
     session.commit()
     session.refresh(stored)
@@ -199,9 +222,11 @@ async def attach_document(
         original_filename=stored.original_filename,
         content_type=stored.content_type,
         case_id=stored.case_id,
+        user_id=stored.user_id,
         extracted_type=stored.extracted_type,
         extracted_expiry=stored.extracted_expiry,
         status=stored.status,
+        purge_at=stored.purge_at,
     )
 
 
@@ -216,10 +241,19 @@ def document_status(case_id: UUID, session: Session = Depends(get_session)) -> D
     if not procedure:
         raise HTTPException(status_code=404, detail="Procedure not found")
     attached = session.scalars(select(Document).where(Document.case_id == row.id)).all()
+    wallet: list[Document] = []
+    if row.user_id:
+        wallet = session.scalars(select(Document).where(Document.user_id == row.user_id)).all()
+    pool = list(attached)
+    seen = {doc.id for doc in pool}
+    for doc in wallet:
+        if doc.id not in seen:
+            pool.append(doc)
+            seen.add(doc.id)
     items: list[DocumentStatusItem] = []
     for req in procedure.required_documents:
         doc_type = str(req.get("type"))
-        match = next((doc for doc in attached if doc.extracted_type == doc_type), None)
+        match = next((doc for doc in pool if doc.extracted_type == doc_type), None)
         if match is None:
             items.append(
                 DocumentStatusItem(

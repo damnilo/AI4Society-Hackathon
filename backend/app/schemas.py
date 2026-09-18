@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Optional
 from uuid import UUID
 
@@ -9,6 +9,12 @@ DISCLAIMER = (
     "Putokaz nije eUprava i ne podnosi zahtev. "
     "Provera dokumenata nije pravna overa originala — samo polja sa skena "
     "(kompletnost i rok)."
+)
+
+GDPR_NOTE = (
+    "Nalog je novčanik: dokumenta su šifrovana i vidi ih samo vlasnik. "
+    "Prilog gosta uz zahtev se briše posle 48 sati ako se nalogom ne preuzme. "
+    "Fajlovi se ne šalju u MUP i nisu pravna overa."
 )
 
 
@@ -86,9 +92,11 @@ class DocumentOut(BaseModel):
     original_filename: str
     content_type: str
     case_id: Optional[UUID] = None
+    user_id: Optional[UUID] = None
     extracted_type: Optional[str] = None
     extracted_expiry: Optional[str] = None
     status: Optional[str] = None
+    purge_at: Optional[datetime] = None
 
 
 class DocumentStatusItem(BaseModel):
@@ -123,10 +131,26 @@ class TokenOut(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    user_id: str
+    email: str
+    name: str
 
 
 class RefreshBody(BaseModel):
     refresh_token: str
+
+
+class ClaimBody(BaseModel):
+    case_id: UUID
+
+
+class MeOut(BaseModel):
+    user_id: str
+    email: str
+    name: str
+    municipality: Optional[str] = None
+    retention_hours: int
+    gdpr_note: str
 
 
 class DashboardOut(BaseModel):

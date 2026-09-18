@@ -22,19 +22,25 @@ def _verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
-def _tokens(user_id: str) -> TokenOut:
+def _tokens(user: User) -> TokenOut:
     now = datetime.now(timezone.utc)
     access = jwt.encode(
-        {"sub": str(user_id), "exp": now + timedelta(hours=8), "typ": "access"},
+        {"sub": str(user.id), "exp": now + timedelta(hours=8), "typ": "access"},
         settings.jwt_secret,
         algorithm="HS256",
     )
     refresh = jwt.encode(
-        {"sub": str(user_id), "exp": now + timedelta(days=7), "typ": "refresh"},
+        {"sub": str(user.id), "exp": now + timedelta(days=7), "typ": "refresh"},
         settings.jwt_secret,
         algorithm="HS256",
     )
-    return TokenOut(access_token=access, refresh_token=refresh)
+    return TokenOut(
+        access_token=access,
+        refresh_token=refresh,
+        user_id=str(user.id),
+        email=user.email,
+        name=user.name,
+    )
 
 
 @router.post("/auth/register", response_model=TokenOut)
@@ -51,7 +57,7 @@ def register(body: AuthRegister, session: Session = Depends(get_session)) -> Tok
     session.add(user)
     session.commit()
     session.refresh(user)
-    return _tokens(user.id)
+    return _tokens(user)
 
 
 @router.post("/auth/login", response_model=TokenOut)
@@ -59,15 +65,18 @@ def login(body: AuthLogin, session: Session = Depends(get_session)) -> TokenOut:
     user = session.scalars(select(User).where(User.email == body.email.lower())).first()
     if not user or not _verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return _tokens(user.id)
+    return _tokens(user)
 
 
 @router.post("/auth/refresh", response_model=TokenOut)
-def refresh(body: RefreshBody) -> TokenOut:
+def refresh(body: RefreshBody, session: Session = Depends(get_session)) -> TokenOut:
     try:
         payload = jwt.decode(body.refresh_token, settings.jwt_secret, algorithms=["HS256"])
         if payload.get("typ") != "refresh":
             raise JWTError("wrong type")
-        return _tokens(str(payload["sub"]))
+        user = session.get(User, str(payload["sub"]))
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return _tokens(user)
     except JWTError as exc:
         raise HTTPException(status_code=401, detail="Invalid refresh token") from exc
