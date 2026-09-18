@@ -15,13 +15,15 @@ Analiza (ocena, mentori): Cursor `ocena_plana_putokaz_analiza_prethodna.plan.md`
 4. Izbor ili “Nijedna nije to — dopuni opis”.
 5. Posle izbora: institucija, checklist, nadležna adresa iz `offices` (Pirot→Beograd = Ljermontova 12a). LLM ne piše ulicu.
 6. Status priloga: complete / missing / expired / unreadable / mismatch. Nije pravna overa.
-7. Vodič, related, izvor. Mapa opcioni pin na iste lat/lng.
+7. Vodič, related, izvor. TTS „pročitaj vodič“. Mapa (pin na iste lat/lng) **nije zaključana** — odluka posle 5/6.
+8. Nalog sme da čuva opštinu; ako u tekstu nema mesta, to je fallback za šalter (tekst > nalog > pitanje na vodiču).
 
-Gost sme matching + prilog uz case. Nalog = novčanik.
+Gost sme matching + prilog uz case. Nalog = novčanik + opciono mesto.
 
 **Ne radimo u 48h:** e-potpis, podnošenje, zakazivanje, crawl, nearby MUP, Pirot-only katalog, četbot.
 
-**Must-have:** Faza 2 + Faza 4. Ostalo se seče ako kasni.
+**Must-have:** Faza 2 + Faza 4. Faza 3 (Vision/checklist) je u toku.  
+**Zaključano posle 3 (biće vremena):** TTS, mesto na nalogu, synthetic skenovi. Print checklist i mapa — razmisli, nije obaveza.
 
 ---
 
@@ -64,6 +66,7 @@ Cilj: login čuva dokumente. **Matching i prilog na unosu rade i bez naloga.**
 - Zona dokumenata (lista, upload, brisanje)
 - GDPR + retention tekst
 - Unos namere **otvoren bez logina**, uključujući “priloži uz ovaj zahtev”
+- Polje opštine na registraciji ide u **Fazu 5** (BE već ima `municipality` na User/MeOut)
 
 **Ako kasni:** demo nalog, matching ne čeka šifrovanje.
 
@@ -129,27 +132,59 @@ Cilj: posle izbora — koraci, dokumenta, **tačna adresa**.
 - CTA eUprava ako `channel` ima online
 - Blok “Gde da odeš”: ime, adresa, telefon (tekst obavezan)
 - Related procedure, badge izvora i datuma
-- Mapa još nije obavezna
+- Ako nema mesta u tekstu: polje „U kom mestu ste?“ (ne izmišljati ulicu)
+- Mapa još **nije** obaveza (vidi Fazu 5)
 
 **Izlaz:** scenario 2 radi do adrese u Beogradu.
 
 ---
 
-## Faza 5 — extra (samo ako 2 i 4 rade, ~4h)
+## Faza 5 — extra (samo ako 2, 3 i 4 drže demo)
 
-**Kolega (BE):** `explain_legal`; lat/lng već u guide. Exa/Firecrawl preskočiti. Deploy API samo ako lokalni demo radi.
+Cilj: pristupačnost i šalter bez ponovnog kucanja grada. Nije čet, nije nearby MUP.
 
-**Ti (FE):** mapa (Embed ili link `maps.google.com/?q=lat,lng`) — pin na **istu** kancelariju, ne nearby; print/PDF checklist; TTS “pročitaj vodič”; glas već u Fazi 2.
+### Zaključano
+
+**3. TTS „Pročitaj vodič“ (ti, FE)**  
+- Dugme na vodiču: `speechSynthesis`, `sr-RS` — naslov, koraci, adresa, šta fali. Dugme Stani.  
+- Tekst sa stranice, ne iz LLM-a. Ako nema srpskog glasa: poruka, ne pad (isto kao mikrofon).  
+- Glas na unosu već postoji (Faza 2).
+
+**4. Mesto na nalogu → šalter (oba)**  
+- Ti: na `/prijava` (register) polje Pirot / Beograd / Niš; vrednost ide u `AuthRegister.municipality`; prikaz na `/me` ako treba.  
+- Kolega: `select` / `resolve_office` koristi `user.municipality` **samo** kad `extract_from_to` nije našao mesto.  
+- Prioritet: mesta u tekstu (npr. Pirot→Beograd) **uvek** pobede nalog. Inače nalog. Inače pitanje na vodiču.  
+- Gost bez naloga: i dalje „U kom mestu ste?“. LLM i dalje ne piše ulicu.
+
+### Nije zaključano (razmišljamo)
+
+**1. Mapa** — link `maps.google.com/?q=lat,lng` ili embed, pin na **istu** kancelariju iz `office`, ne nearby. Radi se samo ako ostane vreme posle TTS + municipality + skenova. Ako `office_missing`, nema pin.
+
+Print/PDF checklist: isto, nije obaveza.
+
+**Kolega (ostalo, ako stigne):** `explain_legal` iz kataloga (zašto prebivalište a ne boravište). Exa/Firecrawl preskočiti. Deploy API samo ako lokalni demo radi.
 
 ---
 
-## Faza 6 — demo (zajedno, ~4h)
+## Faza 6 — demo (zajedno)
 
-Oboje: tri scenarija, synthetic skenovi, disclaimer, pitch.
+Oboje: tri scenarija, disclaimer, pitch. **Synthetic skenovi su zaključani** (ideja 5) — bez pravih ličnih.
 
-1. Istekla lična → kartice → expired + vodič  
-2. Selim se iz Pirota u Beograd → Ljermontova 12a  
-3. Nejasan unos → retry  
+Folder npr. `demo/` (lažni podaci, krupan datum, u pitch-u reći da je sintetika):
+
+| Fajl | Namena | Očekivani status na vodiču |
+|------|--------|----------------------------|
+| Istekla LK (datum u prošlosti) | gost + „istekla mi je lična“ | **Isteklo** + „važi do …“ |
+| Mutna / isečena slika ili loš PDF | isti tok | **Nečitko** |
+| Pasoš uz zahtev za LK | mismatch | **Ne odgovara**, ne „Imate ličnu“ |
+
+Kartice izlaze **odmah** (matching samo tekst). Vision upisuje tip/rok posle selecta; FE crta samo `GET /document-status`.
+
+Scenariji pred žirijem:
+
+1. Istekla lična + sken → kartice → Isteklo + vodič (+ TTS ako je 5 gotova). Ako nema grada: mesto sa naloga ili pitanje na vodiču.  
+2. Selim se iz Pirota u Beograd → Ljermontova 12a (tekst pobedi nalog).  
+3. Nejasan unos → pitanja / retry.
 
 Pitch: eUprava kad znaš ime usluge; mi iz namere i papira do nadležnog šaltera, bez eID-a.
 
@@ -166,6 +201,7 @@ Kontrakt se ne lomi bez dogovora. Katalog i adrese samo na BE.
 
 ## Red sečenja
 
-1. Faza 2 + 4  
+1. Faza 2 + 4 (must)  
 2. Faza 3 + 1  
-3. Faza 5, crypto, deploy
+3. Faza 5 zaključano: TTS, municipality fallback, pa Faza 6 skenovi  
+4. Mapa, print, `explain_legal`, deploy — samo ako 1–3 već rade pred žirijem
