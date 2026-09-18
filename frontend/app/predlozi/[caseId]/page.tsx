@@ -100,26 +100,35 @@ export default function PredloziPage() {
         </ul>
       ) : null}
 
-      <div className="cards">
-        {cards.map((c) => (
-          <button
-            key={c.slug}
-            className="card"
-            type="button"
-            onClick={() => router.push(`/vodic/${caseId}?slug=${c.slug}`)}
-          >
-            <h2>{c.title}</h2>
-            <p>{c.plain_summary}</p>
-            <div
-              className="score"
-              aria-label={`Poklapanje ${Math.round(c.score * 100)} posto`}
+      {cards.length === 0 ? (
+        <div className="panel">
+          <p>
+            Nismo sigurni šta treba. Dopunite opis — bez toga ne možemo da
+            predložimo proceduru.
+          </p>
+        </div>
+      ) : (
+        <div className="cards">
+          {cards.map((c) => (
+            <button
+              key={c.slug}
+              className="card"
+              type="button"
+              onClick={() => router.push(`/vodic/${caseId}?slug=${c.slug}`)}
             >
-              <span style={{ width: `${Math.round(c.score * 100)}%` }} />
-            </div>
-            <p className="why">Zašto: {c.rationale}</p>
-          </button>
-        ))}
-      </div>
+              <h2>{c.title}</h2>
+              <p>{c.plain_summary}</p>
+              <div
+                className="score"
+                aria-label={`Poklapanje ${Math.round(c.score * 100)} posto`}
+              >
+                <span style={{ width: `${Math.round(c.score * 100)}%` }} />
+              </div>
+              <p className="why">Zašto: {c.rationale}</p>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="panel" style={{ marginTop: 24 }}>
         <button

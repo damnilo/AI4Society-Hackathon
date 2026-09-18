@@ -44,7 +44,14 @@ def ping_xai() -> dict[str, str | bool]:
         }
 
 
-def complete_xai(system: str, user: str, *, json_object: bool = True) -> str:
+def complete_xai(
+    system: str,
+    user: str,
+    *,
+    json_object: bool = True,
+    timeout: float = 25.0,
+    max_tokens: int = 800,
+) -> str:
     """Chat Completions for matching. Never log `user` — may contain PII."""
     if not settings.xai_api_key:
         raise RuntimeError("XAI_API_KEY nije postavljen")
@@ -55,6 +62,7 @@ def complete_xai(system: str, user: str, *, json_object: bool = True) -> str:
             {"role": "user", "content": user},
         ],
         "temperature": 0.2,
+        "max_tokens": max_tokens,
     }
     if json_object:
         payload["response_format"] = {"type": "json_object"}
@@ -63,7 +71,7 @@ def complete_xai(system: str, user: str, *, json_object: bool = True) -> str:
             f"{XAI_BASE}/chat/completions",
             headers={"Authorization": f"Bearer {settings.xai_api_key}"},
             json=payload,
-            timeout=45.0,
+            timeout=timeout,
         )
         response.raise_for_status()
         data = response.json()

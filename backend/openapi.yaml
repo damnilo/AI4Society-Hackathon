@@ -17,7 +17,9 @@ paths:
   /cases:
     post:
       summary: Matching iz teksta (gost ili Bearer)
-      description: Opcioni Authorization. document_ids samo iz novčanika ulogovanog. Kartice bez institucije.
+      description: >
+        Demo keš za dve rečenice, inače xAI nad katalogom (slug/title/summary/examples).
+        Kartice bez institucije. document_ids samo iz novčanika ulogovanog.
   /cases/{case_id}:
     get:
       summary: Case + kandidati (gost, UUID)
