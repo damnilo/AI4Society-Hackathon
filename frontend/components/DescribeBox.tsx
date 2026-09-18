@@ -109,7 +109,7 @@ export function DescribeBox({
     setPendingPath(null);
     try {
       const walletIds = loggedIn && !caseId ? pickedWallet : [];
-      const result = caseId
+      let result = caseId
         ? await retryCase(caseId, value)
         : await createCase(value, walletIds);
       const names: string[] = [];
@@ -119,6 +119,9 @@ export function DescribeBox({
           const attached = await attachCaseDocument(result.case_id, file);
           if (attached) names.push(file.name);
           else attachFailed = true;
+        }
+        if (names.length > 0) {
+          result = await retryCase(result.case_id, value);
         }
       }
       persist(result, value, names.join(", "));

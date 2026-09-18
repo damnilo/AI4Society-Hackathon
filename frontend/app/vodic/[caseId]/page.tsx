@@ -37,6 +37,7 @@ function DocRow({ doc }: { doc: RequiredDoc }) {
   const expiry = formatScanExpiry(doc.extracted_expiry);
   const showHow = doc.status === "missing" && doc.how_to_obtain;
   const showNote = doc.status !== "complete" && Boolean(doc.note);
+  const showExpiry = Boolean(expiry) && !(doc.note && expiry && doc.note.includes(doc.extracted_expiry ?? ""));
   return (
     <div className="doc">
       <div>
@@ -51,7 +52,7 @@ function DocRow({ doc }: { doc: RequiredDoc }) {
             {doc.how_to_obtain}
           </p>
         ) : null}
-        {expiry ? (
+        {showExpiry ? (
           <p className="note" style={{ margin: "6px 0 0" }}>
             {expiry}
           </p>
@@ -221,27 +222,31 @@ function VodicBody() {
               {guide.office_missing_reason ||
                 "Nismo mogli da odredimo šalter — u tekstu nema mesta. Unesite grad ili opštinu. Ulicu ne izmišljamo."}
             </p>
-            <label className="big" htmlFor="mesto">
-              U kom mestu ste?
-              <input
-                id="mesto"
-                className="describe"
-                value={place}
-                onChange={(e) => setPlace(e.target.value)}
-                placeholder="Npr. Pirot"
-              />
-            </label>
-            <div className="row">
-              <button
-                className="btn btn-primary"
-                type="button"
-                onClick={() => void submitPlace()}
-                disabled={placeBusy}
-              >
-                {placeBusy ? "Tražim šalter…" : "Nađi adresu"}
-              </button>
-            </div>
-            {placeNote ? <p className="alert">{placeNote}</p> : null}
+            {(guide.office_missing_reason || "").includes("Nedostaje mesto") ? (
+              <>
+                <label className="big" htmlFor="mesto">
+                  U kom mestu ste?
+                  <input
+                    id="mesto"
+                    className="describe"
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    placeholder="Npr. Pirot"
+                  />
+                </label>
+                <div className="row">
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => void submitPlace()}
+                    disabled={placeBusy}
+                  >
+                    {placeBusy ? "Tražim šalter…" : "Nađi adresu"}
+                  </button>
+                </div>
+                {placeNote ? <p className="alert">{placeNote}</p> : null}
+              </>
+            ) : null}
           </>
         ) : (
           <p className="office">
