@@ -26,10 +26,13 @@ Matching i prilog uz case rade **bez naloga**. Nalog je novčanik (`/auth/*`, `/
 
 Seed JSON se **upsert-uje** pri startu — izmene u `backend/seed/*.json` ulaze bez brisanja `putokaz.db`.
 
-Matching (Faza 2): demo keš samo za tačne rečenice na POST `/cases` (ne substring, ne `/retry`/`/clarify`). Inače xAI nad katalogom, jedan pokušaj ~15s u threadu, van DB transakcije. Ako Grok padne, keyword fallback. Kartice nemaju instituciju.
+Matching (Faza 2): demo keš samo za tačne rečenice na POST `/cases` (ne substring, ne `/retry`/`/clarify`). Inače xAI nad katalogom, jedan pokušaj ~15s u threadu, van DB transakcije. Ako Grok padne, keyword fallback. Kartice nemaju instituciju. Ako postoje izvučena polja sa skena, matching dobija `[skenovi]` JSON (tip/rok), ne sliku.
+
+Faza 3: OpenAI Vision na jpg/png pri uploadu (case ili novčanik). `GET /cases/{id}/document-status` = complete / missing / expired / unreadable / mismatch. PDF i nečitko → unreadable. Nije pravna overa.
 
 ```bash
 python tests/test_bug_regressions.py
+python tests/test_phase3_documents.py
 python scripts/smoke_phase1.py
 python scripts/smoke_phase2.py
 ```

@@ -155,8 +155,8 @@ def main() -> None:
         messages = [item["message"] for item in status.json()["items"]]
         if any("nije priložen" in msg.lower() for msg in messages):
             fail(f"file on case must not look unattached: {messages}")
-        if not any("provera skena je sledeći korak" in msg.lower() for msg in messages):
-            fail(f"expected scan-next-step message: {messages}")
+        if not any("čitljiv" in msg.lower() or "skena" in msg.lower() for msg in messages):
+            fail(f"expected scan or unreadable message: {messages}")
 
         stored = list((tmpdir / "uploads").glob("*.enc"))
         if not stored:

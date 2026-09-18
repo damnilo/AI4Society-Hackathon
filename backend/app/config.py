@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     xai_api_key: str = ""
     openai_api_key: str = ""
     xai_model: str = "grok-3"
+    openai_vision_model: str = "gpt-4o-mini"
     jwt_secret: str = "change-me-phase-1"
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     upload_dir: str = "./uploads"

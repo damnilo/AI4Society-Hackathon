@@ -3,7 +3,6 @@ from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal, get_session
@@ -16,7 +15,6 @@ from app.schemas import (
     CandidateOut,
     ClarifyBody,
     DocumentOut,
-    DocumentStatusItem,
     DocumentStatusOut,
     GuideOut,
     OfficeOut,
@@ -25,6 +23,13 @@ from app.schemas import (
     SelectBody,
 )
 from app.services.catalog import extract_from_to, missing_office_reason, resolve_office
+from app.services.extraction import (
+    build_checklist,
+    collect_pool,
+    documents_for_case,
+    run_extraction,
+    scan_note_for_docs,
+)
 from app.services.matching import load_catalog_procs, rank_procedures
 from app.services import storage
 
@@ -56,10 +61,14 @@ def _run_match(
             raise HTTPException(status_code=404, detail="Case not found")
         from_place, to_place = extract_from_to(session, text)
         by_slug = load_catalog_procs(session)
+        scan_note = scan_note_for_docs(documents_for_case(session, row))
         session.commit()
 
+    rank_text = f"{text}\n\n{scan_note}".strip() if scan_note else text
     candidates, need, questions = rank_procedures(
-        by_slug, text, use_demo_cache=use_demo_cache
+        by_slug,
+        rank_text,
+        use_demo_cache=use_demo_cache and not scan_note,
     )
 
     with SessionLocal() as session:
@@ -292,6 +301,12 @@ async def attach_document(
     session.add(row)
     session.commit()
     session.refresh(stored)
+    doc_id = str(stored.id)
+    await asyncio.to_thread(run_extraction, doc_id)
+    session.expire_all()
+    stored = session.get(Document, doc_id)
+    if not stored:
+        raise HTTPException(status_code=404, detail="Document not found")
     return DocumentOut(
         id=stored.id,
         original_filename=stored.original_filename,
@@ -315,43 +330,11 @@ def document_status(case_id: UUID, session: Session = Depends(get_session)) -> D
     procedure = session.get(Procedure, row.selected_slug)
     if not procedure:
         raise HTTPException(status_code=404, detail="Procedure not found")
-    attached = session.scalars(select(Document).where(Document.case_id == row.id)).all()
-    wallet: list[Document] = []
-    if row.user_id:
-        wallet = session.scalars(select(Document).where(Document.user_id == row.user_id)).all()
-    pool = list(attached)
-    seen = {doc.id for doc in pool}
-    for doc in wallet:
-        if doc.id not in seen:
-            pool.append(doc)
-            seen.add(doc.id)
-    items: list[DocumentStatusItem] = []
-    for req in procedure.required_documents:
-        doc_type = str(req.get("type"))
-        match = next((doc for doc in pool if doc.extracted_type == doc_type), None)
-        if match is None:
-            has_case_file = len(attached) > 0
-            items.append(
-                DocumentStatusItem(
-                    type=doc_type,
-                    status="missing",
-                    message=(
-                        "Provera skena je sledeći korak"
-                        if has_case_file
-                        else "Nije priložen."
-                    ),
-                    how_to_obtain=str(req.get("how_to_obtain") or ""),
-                )
-            )
-            continue
-        items.append(
-            DocumentStatusItem(
-                type=doc_type,
-                status=match.status or "unreadable",
-                message="Priložen fajl; provera roka dolazi u Fazi 3.",
-                how_to_obtain=str(req.get("how_to_obtain") or ""),
-                document_id=match.id,
-                extracted_expiry=match.extracted_expiry,
-            )
-        )
+    attached, pool = collect_pool(session, row)
+    items = build_checklist(
+        required_documents=procedure.required_documents,
+        pool=pool,
+        attached=attached,
+        as_of=date.today(),
+    )
     return DocumentStatusOut(case_id=row.id, items=items, disclaimer=DISCLAIMER, as_of=date.today())

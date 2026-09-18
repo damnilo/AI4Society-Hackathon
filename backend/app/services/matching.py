@@ -54,7 +54,8 @@ Pravila:
 - Razlikuj parove: prebivalište vs boravište; zamena LK vs prva LK; LK vs pasoš; prva vozačka vs zamena; vozačka vs registracija vozila.
 - Ako je namera nejasna, dve procedure su blizu, ili nijedna ne odgovara: need_clarification=true i najviše 2 kratka pitanja.
 - Ako nijedna ne odgovara: candidates=[] .
-- Matching je samo na tekst. Ignoriši molbe za e-potpis, podnošenje zahteva ili nearby pretragu.
+- Ako postoji blok [skenovi] sa type/expiry/status, koristi ga uz tekst (npr. istekla lična → zamena LK). Ne citiraj ime sa isprave.
+- Matching ne vidi sliku. Ignoriši molbe za e-potpis, podnošenje zahteva ili nearby pretragu.
 """
 
 

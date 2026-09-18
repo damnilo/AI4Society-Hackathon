@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -17,6 +18,7 @@ from app.schemas import (
     DocumentOut,
     MeOut,
 )
+from app.services.extraction import run_extraction
 from app.services import storage
 
 router = APIRouter(tags=["me"])
@@ -135,6 +137,12 @@ async def upload_document(
     session.add(stored)
     session.commit()
     session.refresh(stored)
+    doc_id = str(stored.id)
+    await asyncio.to_thread(run_extraction, doc_id)
+    session.expire_all()
+    stored = session.get(Document, doc_id)
+    if not stored:
+        raise HTTPException(status_code=404, detail="Document not found")
     return to_document_out(stored)
 
 
