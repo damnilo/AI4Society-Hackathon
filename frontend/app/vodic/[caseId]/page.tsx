@@ -3,9 +3,21 @@
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { fetchGuide } from "@/lib/api";
+import { ApiError, fetchCase, fetchGuide, retryCase } from "@/lib/api";
 import { STATUS_LABEL } from "@/lib/labels";
-import type { Guide } from "@/lib/types";
+import type { Guide, StoredCase } from "@/lib/types";
+
+function readStoredText(caseId: string): string {
+  if (typeof window === "undefined") return "";
+  const raw = sessionStorage.getItem("putokaz-case");
+  if (!raw) return "";
+  try {
+    const parsed = JSON.parse(raw) as StoredCase;
+    return parsed.case_id === caseId ? parsed.text : "";
+  } catch {
+    return "";
+  }
+}
 
 function VodicBody() {
   const { caseId } = useParams<{ caseId: string }>();
@@ -13,6 +25,9 @@ function VodicBody() {
   const slug = params.get("slug") ?? "licna-karta-zamena";
   const [guide, setGuide] = useState<Guide | null>(null);
   const [error, setError] = useState("");
+  const [place, setPlace] = useState("");
+  const [placeBusy, setPlaceBusy] = useState(false);
+  const [placeNote, setPlaceNote] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -29,6 +44,42 @@ function VodicBody() {
       cancelled = true;
     };
   }, [caseId, slug]);
+
+  async function submitPlace() {
+    const city = place.trim();
+    if (!city || placeBusy) return;
+    setPlaceBusy(true);
+    setPlaceNote("");
+    try {
+      const stored = readStoredText(caseId);
+      const loaded = stored || (await fetchCase(caseId))?.text || "";
+      const nextText = loaded.includes(city) ? loaded : `${loaded}\n${city}`.trim();
+      if (!nextText) {
+        setPlaceNote("Unesite mesto, npr. Pirot ili Beograd.");
+        return;
+      }
+      const result = await retryCase(caseId, nextText);
+      sessionStorage.setItem(
+        "putokaz-case",
+        JSON.stringify({
+          ...result,
+          text: nextText,
+          source: "typed",
+        }),
+      );
+      const nextGuide = await fetchGuide(caseId, slug);
+      setGuide(nextGuide);
+      if (nextGuide.office_missing || !nextGuide.office) {
+        setPlaceNote("To mesto još nije u katalogu šaltera. Probajte Pirot, Beograd ili Niš.");
+      } else {
+        setPlace("");
+      }
+    } catch (err) {
+      setPlaceNote(err instanceof ApiError ? err.message : "Nismo uspeli da nađemo šalter.");
+    } finally {
+      setPlaceBusy(false);
+    }
+  }
 
   if (error) {
     return <p className="alert">{error}</p>;
@@ -86,6 +137,33 @@ function VodicBody() {
             {guide.office_missing_reason ||
               "Adresa kancelarije još nije u katalogu za ovaj slučaj."}
           </p>
+          <>
+            <p>
+              Nismo mogli da odredimo šalter — u tekstu nema mesta. Unesite grad
+              ili opštinu. Ulicu ne izmišljamo.
+            </p>
+            <label className="big" htmlFor="mesto">
+              U kom mestu ste?
+              <input
+                id="mesto"
+                className="describe"
+                value={place}
+                onChange={(e) => setPlace(e.target.value)}
+                placeholder="Npr. Pirot"
+              />
+            </label>
+            <div className="row">
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={() => void submitPlace()}
+                disabled={placeBusy}
+              >
+                {placeBusy ? "Tražim šalter…" : "Nađi adresu"}
+              </button>
+            </div>
+            {placeNote ? <p className="alert">{placeNote}</p> : null}
+          </>
         ) : (
           <p className="office">
             <strong>{guide.office.name}</strong>
