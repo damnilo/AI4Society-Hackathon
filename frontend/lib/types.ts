@@ -50,4 +50,13 @@ export type MatchResponse = {
   case_id: string;
   candidates: Candidate[];
   need_clarification: boolean;
+  questions?: string[];
+};
+
+export type StoredCase = MatchResponse & {
+  text: string;
+  fileName?: string;
+  source: "typed" | "catalog";
+  pickedTitle?: string;
+  pickedSlug?: string;
 };

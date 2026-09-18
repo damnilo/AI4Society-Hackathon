@@ -1,16 +1,34 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DescribeBox } from "@/components/DescribeBox";
-import type { MatchResponse } from "@/lib/types";
+import { SERVICES } from "@/lib/catalog";
+import type { Candidate, StoredCase } from "@/lib/types";
 
-type Stored = MatchResponse & { text: string; fileName?: string };
+function withPickedFirst(candidates: Candidate[], pickedSlug?: string): Candidate[] {
+  if (!pickedSlug) return candidates;
+  const chosen = candidates.find((c) => c.slug === pickedSlug);
+  const rest = candidates.filter((c) => c.slug !== pickedSlug);
+  if (chosen) return [chosen, ...rest];
+  const fromCatalog = SERVICES.find((s) => s.slug === pickedSlug);
+  if (!fromCatalog) return candidates;
+  return [
+    {
+      slug: fromCatalog.slug,
+      title: fromCatalog.title,
+      plain_summary: fromCatalog.summary,
+      score: 1,
+      rationale: "Ovo ste izabrali sa liste usluga.",
+    },
+    ...candidates,
+  ];
+}
 
 export default function PredloziPage() {
   const { caseId } = useParams<{ caseId: string }>();
   const router = useRouter();
-  const [stored, setStored] = useState<Stored | null>(null);
+  const [stored, setStored] = useState<StoredCase | null>(null);
   const [retryOpen, setRetryOpen] = useState(false);
 
   useEffect(() => {
@@ -19,25 +37,53 @@ export default function PredloziPage() {
       router.replace("/");
       return;
     }
-    const parsed = JSON.parse(raw) as Stored;
+    const parsed = JSON.parse(raw) as StoredCase;
+    if (parsed.case_id !== caseId) {
+      router.replace("/");
+      return;
+    }
     setStored(parsed);
-    setRetryOpen(parsed.need_clarification);
-  }, [router]);
+    setRetryOpen(parsed.need_clarification && parsed.source !== "catalog");
+  }, [caseId, router]);
+
+  const cards = useMemo(
+    () => (stored ? withPickedFirst(stored.candidates, stored.pickedSlug) : []),
+    [stored],
+  );
 
   if (!stored) {
     return <p>Učitavanje…</p>;
   }
 
+  const fromCatalog = stored.source === "catalog" && stored.pickedTitle;
+
   return (
     <>
-      <h1>Da li je nešto od ovoga?</h1>
+      <h1>{fromCatalog ? "Potvrdite proceduru" : "Da li je nešto od ovoga?"}</h1>
       <p className="lede">
-        Pisali ste: „{stored.text}“. Izaberite jednu karticu. Institucija i
-        adresa dolaze posle izbora — ovde samo procedura.
+        {fromCatalog ? (
+          <>
+            Izabrali ste proceduru „{stored.pickedTitle}“. Ako je to to, kliknite
+            tu karticu. Ako je slična druga, izaberite nju. Institucija i adresa
+            dolaze posle izbora.
+          </>
+        ) : (
+          <>
+            Pisali ste: „{stored.text}“. Izaberite jednu karticu. Institucija i
+            adresa dolaze posle izbora — ovde samo procedura.
+          </>
+        )}
       </p>
+      {stored.need_clarification && stored.questions && stored.questions.length > 0 ? (
+        <ul className="note">
+          {stored.questions.map((q) => (
+            <li key={q}>{q}</li>
+          ))}
+        </ul>
+      ) : null}
 
       <div className="cards">
-        {stored.candidates.map((c) => (
+        {cards.map((c) => (
           <button
             key={c.slug}
             className="card"
@@ -68,8 +114,9 @@ export default function PredloziPage() {
         {retryOpen ? (
           <div style={{ marginTop: 18 }}>
             <DescribeBox
-              heading="Dopunite ili promenite opis"
-              preset={stored.text}
+              heading="Opišite svojim rečima šta treba"
+              preset={fromCatalog ? "" : stored.text}
+              caseId={caseId}
             />
           </div>
         ) : null}

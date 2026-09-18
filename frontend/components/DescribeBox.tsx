@@ -2,14 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createCase } from "@/lib/api";
+import { createCase, retryCase } from "@/lib/api";
 
 export function DescribeBox({
   heading = "Šta želite da završite?",
   preset = "",
+  caseId,
 }: {
   heading?: string;
   preset?: string;
+  caseId?: string;
 }) {
   const router = useRouter();
   const [text, setText] = useState(preset);
@@ -21,12 +23,24 @@ export function DescribeBox({
     if (!value || busy) return;
     setBusy(true);
     try {
-      const result = await createCase(value);
+      const result = caseId
+        ? await retryCase(caseId, value)
+        : await createCase(value);
       sessionStorage.setItem(
         "putokaz-case",
-        JSON.stringify({ ...result, text: value, fileName }),
+        JSON.stringify({
+          ...result,
+          text: value,
+          fileName,
+          source: "typed",
+        }),
       );
-      router.push(`/predlozi/${result.case_id}`);
+      const next = `/predlozi/${result.case_id}`;
+      if (caseId && result.case_id === caseId) {
+        window.location.assign(next);
+        return;
+      }
+      router.push(next);
     } finally {
       setBusy(false);
     }
