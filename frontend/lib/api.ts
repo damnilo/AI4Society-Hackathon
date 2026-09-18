@@ -6,8 +6,7 @@ import {
   setTokens,
 } from "./auth";
 import { documentLabel, institutionLabel } from "./labels";
-import { mockGuide, mockMatch } from "./mocks";
-import type { DocumentStatus, Guide, MatchResponse, WalletDocument } from "./types";
+import type { DocumentStatus, Guide, MatchResponse, RequiredDoc, WalletDocument } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const MATCH_TIMEOUT_MS = 60_000;
@@ -63,6 +62,17 @@ type BackendGuide = {
   } | null;
   office_missing: boolean;
   disclaimer: string;
+};
+
+type BackendDocStatusItem = {
+  type: string;
+  status: string;
+  message: string;
+  how_to_obtain?: string;
+};
+
+type BackendDocStatus = {
+  items: BackendDocStatusItem[];
 };
 
 export function isUuid(value: string): boolean {
@@ -224,7 +234,7 @@ function toGuide(row: BackendGuide): Guide {
       type: doc.type,
       label: documentLabel(doc.type),
       how_to_obtain: doc.how_to_obtain ?? "",
-      status: toStatus("missing"),
+      status: toStatus(undefined),
       note: doc.notes || undefined,
     })),
     related: row.related,
@@ -250,20 +260,20 @@ export async function createCase(text: string): Promise<MatchResponse> {
 }
 
 export async function retryCase(caseId: string, text: string): Promise<MatchResponse> {
-  if (isUuid(caseId)) {
-    const row = await requestJson<BackendCase>(
-      `/cases/${caseId}/retry`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      },
-      MATCH_TIMEOUT_MS,
-    );
-    if (row) return toMatch(row);
+  if (!isUuid(caseId)) {
     throw new ApiError(0, "API nije dostupan. Proverite da li backend radi na localhost:8000.");
   }
-  return mockMatch(text);
+  const row = await requestJson<BackendCase>(
+    `/cases/${caseId}/retry`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    },
+    MATCH_TIMEOUT_MS,
+  );
+  if (row) return toMatch(row);
+  throw new ApiError(0, "API nije dostupan. Proverite da li backend radi na localhost:8000.");
 }
 
 export async function clarifyCase(
@@ -293,17 +303,42 @@ export async function fetchCase(caseId: string): Promise<(MatchResponse & { text
   return { ...toMatch(row), text: row.text ?? "" };
 }
 
+function applyDocStatus(guide: Guide, items: BackendDocStatusItem[]): Guide {
+  const byType = new Map(items.map((item) => [item.type, item]));
+  const documents: RequiredDoc[] = guide.documents.map((doc) => {
+    const item = byType.get(doc.type);
+    if (!item) return doc;
+    return {
+      ...doc,
+      status: toStatus(item.status),
+      how_to_obtain: item.how_to_obtain || doc.how_to_obtain,
+      note: item.message || doc.note,
+    };
+  });
+  return { ...guide, documents };
+}
+
+export async function fetchDocumentStatus(caseId: string): Promise<BackendDocStatus | null> {
+  if (!isUuid(caseId)) return null;
+  return requestJson<BackendDocStatus>(`/cases/${caseId}/document-status`, { method: "GET" });
+}
+
 export async function fetchGuide(caseId: string, slug: string): Promise<Guide> {
-  if (isUuid(caseId)) {
-    const row = await requestJson<BackendGuide>(`/cases/${caseId}/select`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug }),
-    });
-    if (row) return toGuide(row);
+  if (!isUuid(caseId)) {
     throw new ApiError(0, "Vodič nije dostupan. Proverite da li API radi.");
   }
-  return mockGuide(slug);
+  const row = await requestJson<BackendGuide>(`/cases/${caseId}/select`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ slug }),
+  });
+  if (!row) {
+    throw new ApiError(0, "Vodič nije dostupan. Proverite da li API radi.");
+  }
+  const guide = toGuide(row);
+  const status = await fetchDocumentStatus(caseId);
+  if (!status?.items) return guide;
+  return applyDocStatus(guide, status.items);
 }
 
 export async function attachCaseDocument(
