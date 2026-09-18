@@ -1,1 +1,1 @@
-AI4Society Hackathon repo
+# AI4Society Hackathon repo
