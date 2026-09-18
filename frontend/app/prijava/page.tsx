@@ -3,11 +3,24 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getSessionUser } from "@/lib/auth";
-import { ApiError, loginAccount, logoutAccount, registerAccount } from "@/lib/api";
+import {
+  ApiError,
+  fetchMe,
+  loginAccount,
+  logoutAccount,
+  registerAccount,
+  updateMunicipality,
+} from "@/lib/api";
+import { AUTH_EVENT, getSessionUser, setSessionUser } from "@/lib/auth";
+import {
+  ACCOUNT_PLACES,
+  isAccountPlaceId,
+  placeLabel,
+  type AccountPlaceId,
+} from "@/lib/places";
 
 const GDPR =
-  "Nalog nije obavezan da biste našli proceduru. Čuvamo email, ime i skenove koje sami otpremite, da ih ne unosite svaki put. Prilog gosta se briše posle 48 sati ako ga nalogom ne preuzmete. Putokaz nije eUprava i ne šalje zahtev umesto vas.";
+  "Nalog nije obavezan da biste našli proceduru. Čuvamo email, ime, mesto i skenove koje sami otpremite, da ih ne unosite svaki put. Prilog gosta se briše posle 48 sati ako ga nalogom ne preuzmete. Putokaz nije eUprava i ne šalje zahtev umesto vas.";
 
 export default function PrijavaPage() {
   const router = useRouter();
@@ -15,12 +28,40 @@ export default function PrijavaPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [municipality, setMunicipality] = useState<AccountPlaceId | "">("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    municipality?: string | null;
+  } | null>(null);
 
   useEffect(() => {
-    setUser(getSessionUser());
+    function sync() {
+      const next = getSessionUser();
+      setUser(next);
+      const place = next?.municipality ?? "";
+      if (isAccountPlaceId(place)) setMunicipality(place);
+    }
+    sync();
+    window.addEventListener(AUTH_EVENT, sync);
+    return () => window.removeEventListener(AUTH_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
+    if (!getSessionUser()) return;
+    void fetchMe()
+      .then((me) => {
+        setSessionUser({
+          name: me.name,
+          email: me.email,
+          municipality: me.municipality ?? null,
+        });
+      })
+      .catch(() => {
+        /* nalog i dalje važi iz sessionStorage */
+      });
   }, []);
 
   async function submit(e: React.FormEvent) {
@@ -29,7 +70,16 @@ export default function PrijavaPage() {
     setBusy(true);
     try {
       if (mode === "register") {
-        await registerAccount({ email, password, name });
+        if (!isAccountPlaceId(municipality)) {
+          setError("Izaberite mesto: Pirot, Beograd ili Niš.");
+          return;
+        }
+        await registerAccount({
+          email,
+          password,
+          name,
+          municipality,
+        });
       } else {
         await loginAccount({ email, password });
       }
@@ -41,21 +91,66 @@ export default function PrijavaPage() {
     }
   }
 
+  async function savePlace() {
+    if (!isAccountPlaceId(municipality) || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await updateMunicipality(municipality);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Mesto nije sačuvano.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (user) {
     return (
       <>
         <h1>Nalog</h1>
         <p className="lede">
           Prijavljeni ste. Matching i dalje radi i bez naloga — nalog je
-          novčanik dokumenata.
+          novčanik dokumenata i mesto za šalter kad u tekstu nema grada.
         </p>
         <div className="panel">
           <p>
             {user.name ? <strong>{user.name}</strong> : "Nalog"}
             <br />
             <span className="note">{user.email}</span>
+            <br />
+            <span className="note">
+              Mesto: {placeLabel(user.municipality) || "nije izabrano"}
+            </span>
           </p>
+          <label className="big" htmlFor="mesto-nalog">
+            Mesto (za šalter kad u opisu nema grada)
+          </label>
+          <select
+            id="mesto-nalog"
+            className="describe"
+            value={municipality}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (isAccountPlaceId(value)) setMunicipality(value);
+            }}
+          >
+            <option value="">Izaberite mesto</option>
+            {ACCOUNT_PLACES.map((place) => (
+              <option key={place.id} value={place.id}>
+                {place.label}
+              </option>
+            ))}
+          </select>
+          {error ? <p className="alert">{error}</p> : null}
           <div className="row">
+            <button
+              className="btn btn-primary"
+              type="button"
+              disabled={busy || !isAccountPlaceId(municipality)}
+              onClick={() => void savePlace()}
+            >
+              {busy ? "Čuvam…" : "Sačuvaj mesto"}
+            </button>
             <button
               className="btn btn-ghost"
               type="button"
@@ -66,7 +161,7 @@ export default function PrijavaPage() {
             >
               Odjavi se
             </button>
-            <Link className="btn btn-primary" href="/dokumenta">
+            <Link className="btn btn-ghost" href="/dokumenta">
               Dokumenta
             </Link>
           </div>
@@ -80,7 +175,7 @@ export default function PrijavaPage() {
     <>
       <h1>{mode === "login" ? "Prijava" : "Napravite nalog"}</h1>
       <p className="lede">
-        Nalog nije obavezan. Služi da sačuvate skenove za sledeći put.
+        Nalog nije obavezan. Služi da sačuvate skenove i mesto za sledeći put.
       </p>
 
       <div className="row" style={{ marginBottom: 16 }}>
@@ -143,7 +238,33 @@ export default function PrijavaPage() {
           required
         />
         {mode === "register" ? (
-          <p className="note">Najmanje 8 karaktera.</p>
+          <>
+            <p className="note">Najmanje 8 karaktera.</p>
+            <label className="big" htmlFor="mesto">
+              Mesto
+            </label>
+            <select
+              id="mesto"
+              className="describe"
+              value={municipality}
+              onChange={(e) => {
+                const value = e.target.value;
+                setMunicipality(isAccountPlaceId(value) ? value : "");
+              }}
+              required
+            >
+              <option value="">Pirot, Beograd ili Niš</option>
+              {ACCOUNT_PLACES.map((place) => (
+                <option key={place.id} value={place.id}>
+                  {place.label}
+                </option>
+              ))}
+            </select>
+            <p className="note">
+              Koristi se za šalter samo ako u opisu namere nema grada. Selidba
+              Pirot→Beograd i dalje ide na Ljermontovu.
+            </p>
+          </>
         ) : null}
 
         {error ? <p className="alert">{error}</p> : null}

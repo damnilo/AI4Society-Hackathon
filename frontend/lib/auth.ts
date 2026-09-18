@@ -1,6 +1,7 @@
 export type SessionUser = {
   name: string;
   email: string;
+  municipality?: string | null;
 };
 
 const ACCESS_KEY = "putokaz-access";

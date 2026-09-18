@@ -2,6 +2,7 @@ import {
   authHeaders,
   clearSession,
   getRefreshToken,
+  getSessionUser,
   setSessionUser,
   setTokens,
 } from "./auth";
@@ -94,6 +95,7 @@ type TokenResponse = {
 type MeProfile = {
   name: string;
   email: string;
+  municipality?: string | null;
   gdpr_note?: string;
 };
 
@@ -492,6 +494,7 @@ async function storeAuth(tokens: TokenResponse, fallbackName: string, fallbackEm
     setSessionUser({
       name: me.name || fromToken.name,
       email: me.email || fromToken.email,
+      municipality: me.municipality ?? null,
     });
   } catch {
     setSessionUser(fromToken);
@@ -503,6 +506,7 @@ export async function registerAccount(input: {
   email: string;
   password: string;
   name: string;
+  municipality: "pirot" | "beograd" | "nis";
 }): Promise<void> {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
@@ -511,6 +515,7 @@ export async function registerAccount(input: {
       email: input.email,
       password: input.password,
       name: input.name,
+      municipality: input.municipality,
     }),
   });
   if (!response.ok) {
@@ -541,6 +546,27 @@ export async function loginAccount(input: {
 
 export function logoutAccount(): void {
   clearSession();
+}
+
+export async function fetchMe(): Promise<MeProfile> {
+  return authRequest<MeProfile>("/me", { method: "GET" });
+}
+
+export async function updateMunicipality(
+  municipality: "pirot" | "beograd" | "nis",
+): Promise<MeProfile> {
+  const me = await authRequest<MeProfile>("/me", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ municipality }),
+  });
+  const current = getSessionUser();
+  setSessionUser({
+    name: me.name || current?.name || "",
+    email: me.email || current?.email || "",
+    municipality: me.municipality ?? municipality,
+  });
+  return me;
 }
 
 export async function listWalletDocuments(): Promise<WalletDocument[]> {

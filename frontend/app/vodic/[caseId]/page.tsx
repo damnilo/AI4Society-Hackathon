@@ -16,6 +16,7 @@ import type { Guide, RequiredDoc, StoredCase } from "@/lib/types";
 
 const SCAN_PENDING = "Provera skena";
 const ACCEPT = ".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf";
+const TTS_DISCLAIMER = "Putokaz nije eUprava i ne overava dokumenta.";
 
 function readStoredText(caseId: string): string {
   if (typeof window === "undefined") return "";
@@ -31,6 +32,50 @@ function readStoredText(caseId: string): string {
 
 function awaitingScan(docs: RequiredDoc[]): boolean {
   return docs.some((doc) => (doc.note ?? "").includes(SCAN_PENDING));
+}
+
+function needsPlaceQuestion(guide: Guide): boolean {
+  return (
+    (guide.office_missing || !guide.office) &&
+    (guide.office_missing_reason || "").includes("Nedostaje mesto")
+  );
+}
+
+function guideSpeechText(guide: Guide): string {
+  const parts: string[] = [guide.title];
+  guide.steps.forEach((step, index) => {
+    parts.push(`Korak ${index + 1}. ${step.title}. ${step.description}`);
+  });
+  if (guide.office) {
+    parts.push(
+      `Šalter: ${guide.office.name}, ${guide.office.address}. Telefon ${guide.office.phone}.`,
+    );
+  }
+  const missing = guide.documents.filter((doc) => doc.status !== "complete");
+  if (missing.length > 0) {
+    parts.push(`Šta fali: ${missing.map((doc) => doc.label).join(", ")}.`);
+  }
+  parts.push(TTS_DISCLAIMER);
+  return parts.join(" ");
+}
+
+function pickSerbianVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  return (
+    voices.find((voice) => voice.lang.toLowerCase().startsWith("sr")) ??
+    voices.find((voice) => voice.lang.toLowerCase().includes("rs")) ??
+    null
+  );
+}
+
+function loadVoices(): Promise<SpeechSynthesisVoice[]> {
+  const synth = window.speechSynthesis;
+  const existing = synth.getVoices();
+  if (existing.length > 0) return Promise.resolve(existing);
+  return new Promise((resolve) => {
+    const finish = () => resolve(synth.getVoices());
+    synth.addEventListener("voiceschanged", finish, { once: true });
+    window.setTimeout(finish, 600);
+  });
 }
 
 function DocRow({ doc }: { doc: RequiredDoc }) {
@@ -74,6 +119,14 @@ function VodicBody() {
   const [placeNote, setPlaceNote] = useState("");
   const [attachNote, setAttachNote] = useState("");
   const [attachBusy, setAttachBusy] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [speechNote, setSpeechNote] = useState("");
+
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -157,6 +210,37 @@ function VodicBody() {
     }
   }
 
+  async function speakGuide() {
+    if (!guide) return;
+    if (!window.speechSynthesis) {
+      setSpeechNote("Glas nije dostupan u ovom pregledaču. Pročitajte vodič na ekranu.");
+      return;
+    }
+    setSpeechNote("");
+    const voices = await loadVoices();
+    const voice = pickSerbianVoice(voices);
+    if (voices.length > 0 && !voice) {
+      setSpeechNote("Srpski glas nije dostupan u ovom pregledaču. Pročitajte vodič na ekranu.");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(guideSpeechText(guide));
+    utterance.lang = "sr-RS";
+    if (voice) utterance.voice = voice;
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => {
+      setSpeaking(false);
+      setSpeechNote("Čitanje nije uspelo.");
+    };
+    setSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function stopSpeech() {
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+  }
+
   if (error) {
     return <p className="alert">{error}</p>;
   }
@@ -172,6 +256,16 @@ function VodicBody() {
         {guide.institution_label}. Ovo je redosled koraka i spisak šta da
         ponesete — nije podnošenje zahteva.
       </p>
+      <div className="row" style={{ marginTop: 0, marginBottom: 24 }}>
+        <button className="btn btn-primary" type="button" onClick={() => void speakGuide()}>
+          Pročitaj vodič
+        </button>
+        <button className="btn btn-ghost" type="button" onClick={stopSpeech}>
+          Stani
+        </button>
+      </div>
+      {speechNote ? <p className="alert">{speechNote}</p> : null}
+      {speaking ? <p className="note">Čitam vodič…</p> : null}
 
       <div className="panel">
         <h2 style={{ marginTop: 0 }}>Koraci</h2>
@@ -222,7 +316,7 @@ function VodicBody() {
               {guide.office_missing_reason ||
                 "Nismo mogli da odredimo šalter — u tekstu nema mesta. Unesite grad ili opštinu. Ulicu ne izmišljamo."}
             </p>
-            {(guide.office_missing_reason || "").includes("Nedostaje mesto") ? (
+            {needsPlaceQuestion(guide) ? (
               <>
                 <label className="big" htmlFor="mesto">
                   U kom mestu ste?
