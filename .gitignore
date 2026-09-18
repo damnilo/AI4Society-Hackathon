@@ -1,6 +1,9 @@
 api_keys.txt
 .env
 PLAN.md
+frontend/node_modules
+frontend/.next
+frontend/out
 __pycache__/
 *.py[cod]
 .venv/
