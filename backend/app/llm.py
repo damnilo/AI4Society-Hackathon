@@ -49,7 +49,7 @@ def complete_xai(
     user: str,
     *,
     json_object: bool = True,
-    timeout: float = 25.0,
+    timeout: float = 15.0,
     max_tokens: int = 800,
 ) -> str:
     """Chat Completions for matching. Never log `user` — may contain PII."""

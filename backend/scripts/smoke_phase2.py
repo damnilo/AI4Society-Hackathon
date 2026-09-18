@@ -1,31 +1,27 @@
-"""Phase 2 matching parser + optional live xAI. Run: python scripts/smoke_phase2.py"""
+"""Phase 2 matching parser + optional live xAI. Run: python scripts/smoke_phase2.py
+
+Parser test imports match_parse only (no SQLAlchemy). Live test needs the venv.
+"""
 
 from __future__ import annotations
 
 import os
 import sys
-import tempfile
 from pathlib import Path
-from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
-os.chdir(ROOT)
 sys.path.insert(0, str(ROOT))
 
-tmpdir = Path(tempfile.mkdtemp(prefix="putokaz-p2-"))
-os.environ["DATABASE_URL"] = f"sqlite:///{(tmpdir / 't.db').as_posix()}"
-os.environ["UPLOAD_DIR"] = str(tmpdir / "uploads")
-
-from app.services.matching import parse_xai_payload  # noqa: E402
+from app.services.match_parse import CatalogProc, parse_xai_payload  # noqa: E402
 
 
 def fail(msg: str) -> None:
     raise SystemExit(f"FAIL: {msg}")
 
 
-def catalog() -> dict[str, SimpleNamespace]:
-    def proc(slug: str, title: str) -> SimpleNamespace:
-        return SimpleNamespace(slug=slug, title=title, plain_summary=f"Opis {title}")
+def catalog() -> dict[str, CatalogProc]:
+    def proc(slug: str, title: str) -> CatalogProc:
+        return CatalogProc(slug=slug, title=title, plain_summary=f"Opis {title}")
 
     return {
         "pasos-izdavanje": proc("pasos-izdavanje", "Izdavanje / zamena pasoša"),
@@ -43,7 +39,7 @@ def test_parser() -> None:
       {"slug":"licna-karta-zamena","score":0.4,"rationale":"Idi u MUP na Ljermontova 12a."}
     ],"need_clarification":false,"questions":[]}
     ```"""
-    parsed = parse_xai_payload(raw, by_slug)  # type: ignore[arg-type]
+    parsed = parse_xai_payload(raw, by_slug)
     if parsed is None:
         fail("parser returned None")
     candidates, need, questions = parsed
@@ -58,12 +54,21 @@ def test_parser() -> None:
     if questions:
         fail("questions should be cleared when confident")
 
-    empty = parse_xai_payload('{"candidates":[],"need_clarification":true,"questions":[]}', by_slug)  # type: ignore[arg-type]
+    empty = parse_xai_payload(
+        '{"candidates":[],"need_clarification":true,"questions":[]}', by_slug
+    )
     if empty is None or empty[1] is not True or not empty[2]:
         fail("empty candidates must clarify")
 
 
 def test_live() -> None:
+    import tempfile
+
+    tmpdir = Path(tempfile.mkdtemp(prefix="putokaz-p2-"))
+    os.chdir(ROOT)
+    os.environ["DATABASE_URL"] = f"sqlite:///{(tmpdir / 't.db').as_posix()}"
+    os.environ["UPLOAD_DIR"] = str(tmpdir / "uploads")
+
     from fastapi.testclient import TestClient
 
     from app.config import settings
@@ -101,6 +106,19 @@ def test_live() -> None:
             fail(f"unclear {unclear.status_code}")
         if not unclear.json().get("need_clarification"):
             fail("nonsense text should need clarification")
+
+        original = demo.json()["text"]
+        clarified = client.post(
+            f"/cases/{demo.json()['case_id']}/clarify",
+            json={"answers": {"sta": "nije zamena, treba mi prva lična za dete"}},
+        )
+        if clarified.status_code != 200:
+            fail(f"clarify {clarified.status_code} {clarified.text}")
+        if clarified.json().get("text") != original:
+            fail("clarify must not overwrite raw_text")
+        cache_scores = [c["score"] for c in clarified.json()["candidates"]][:3]
+        if cache_scores == [0.92, 0.41, 0.28]:
+            fail("demo cache must not run on clarify")
 
 
 def main() -> None:

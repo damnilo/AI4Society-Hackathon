@@ -44,6 +44,17 @@ def main() -> None:
             fail(f"GET case {loaded.status_code} {loaded.text}")
         if any("institution" in c for c in loaded.json()["candidates"]):
             fail("candidate cards must not include institution")
+        original_text = loaded.json()["text"]
+        clarified = client.post(
+            f"/cases/{case_id}/clarify",
+            json={"answers": {"stalnost": "nije stalno, studiram tri meseca"}},
+        )
+        if clarified.status_code != 200:
+            fail(f"clarify {clarified.status_code} {clarified.text}")
+        if clarified.json().get("text") != original_text:
+            fail(f"clarify overwrote raw_text: {clarified.json().get('text')}")
+        if [c["score"] for c in clarified.json()["candidates"]][:3] == [0.94, 0.48, 0.33]:
+            fail("demo cache must not win on clarify")
         picked = client.post(
             f"/cases/{case_id}/select",
             json={"slug": "prijava-prebivalista"},
