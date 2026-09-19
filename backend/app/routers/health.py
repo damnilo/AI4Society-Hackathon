@@ -5,10 +5,20 @@ from sqlalchemy.orm import Session
 from app.db import get_session
 from app.llm import ping_openai, ping_xai
 from app.models import Office, Place, Procedure
-from app.schemas import HealthOut, LlmHealthOut
+from app.schemas import HealthOut, LlmHealthOut, RootOut
 from app.services import storage
 
 router = APIRouter(tags=["health"])
+
+
+@router.get("/", response_model=RootOut, include_in_schema=False)
+def root() -> RootOut:
+    return RootOut(
+        ok=True,
+        service="NaŠalter API",
+        health="/health",
+        docs="/docs",
+    )
 
 
 def _count(session: Session, model) -> int:  # type: ignore[no-untyped-def]

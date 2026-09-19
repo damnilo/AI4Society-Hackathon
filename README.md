@@ -19,8 +19,8 @@ U `backend/.env` ubacite `XAI_API_KEY` (iz `api_keys.txt` / SPACEX), plus `JWT_S
 
 App Router (nije `output: export`) → dva web servisa iz `render.yaml`:
 
-1. **nasalter-api** — `rootDir: backend`, SQLite, `JWT_SECRET`/`MASTER_KEY` se generišu. U dashboard ubaciti `XAI_API_KEY` i `OPENAI_API_KEY`. `FRONTEND_ORIGIN` se veže na host FE servisa.
-2. **nasalter-web** — `npm ci && npm run build`, `npx next start --hostname 0.0.0.0 --port $PORT`. **Build-time:** `NEXT_PUBLIC_API_URL=https://nasalter-api.onrender.com` (ako Render doda sufiks na ime, uskladi URL).
+1. **nasalter-api** — `rootDir: backend`, SQLite, `JWT_SECRET`/`MASTER_KEY` se generišu. U dashboard ubaciti `XAI_API_KEY` i `OPENAI_API_KEY`. Health check: `/health`. Ako API već radi kao Docker (`https://ai4society-hackathon.onrender.com`), ne pravi drugi API.
+2. **nasalter-web** — Node ili `frontend/Dockerfile`. Build-time: `NEXT_PUBLIC_API_URL=https://ai4society-hackathon.onrender.com`. Start sluša `$PORT`. Na API-ju `CORS_ORIGINS` mora da sadrži URL ovog servisa.
 
 SQLite na Renderu se gubi posle restarta. Postgres iz compose-a samo ako treba persistencija.
 
