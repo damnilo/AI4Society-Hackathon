@@ -3,21 +3,25 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AUTH_EVENT, getSessionUser } from "@/lib/auth";
-import { GROUPS } from "@/lib/catalog";
+import { catalogGroupsFor } from "@/lib/catalog";
 import { DescribeBox } from "@/components/DescribeBox";
 
 export default function HomePage() {
   const [name, setName] = useState<string | null>(null);
+  const [municipality, setMunicipality] = useState<string | null>(null);
 
   useEffect(() => {
     const sync = () => {
       const user = getSessionUser();
       setName(user?.name || null);
+      setMunicipality(user?.municipality ?? null);
     };
     sync();
     window.addEventListener(AUTH_EVENT, sync);
     return () => window.removeEventListener(AUTH_EVENT, sync);
   }, []);
+
+  const groups = catalogGroupsFor(municipality);
 
   return (
     <>
@@ -52,7 +56,7 @@ export default function HomePage() {
         Brzi pristup
       </h2>
       <div className="tiles">
-        {GROUPS.map((g) => (
+        {groups.map((g) => (
           <Link key={g.id} className="tile" href={`/usluge?grupa=${g.id}`}>
             <strong>{g.title}</strong>
             <span>{g.hint}</span>

@@ -25,9 +25,11 @@ from app.schemas import (
     SelectBody,
 )
 from app.services.catalog import (
+    active_place_ids,
     apply_account_municipality,
     extract_from_to,
     missing_office_reason,
+    procedure_in_place_scope,
     resolve_office,
 )
 from app.services.extraction import (
@@ -51,6 +53,13 @@ def _rank_text(row: Case) -> str:
     return row.raw_text
 
 
+def _case_municipality(session: Session, row: Case) -> str | None:
+    if not row.user_id:
+        return None
+    owner = session.get(User, row.user_id)
+    return owner.municipality if owner else None
+
+
 def _case_out(row: Case) -> CaseOut:
     return CaseOut(
         case_id=row.id,
@@ -70,13 +79,20 @@ def _run_match(
     *,
     persist_text: bool,
     use_demo_cache: bool,
+    municipality: str | None = None,
 ) -> Case:
     with SessionLocal() as session:
         row = session.get(Case, case_id)
         if not row:
             raise HTTPException(status_code=404, detail="Case not found")
         from_place, to_place = extract_from_to(session, text)
-        by_slug = load_catalog_procs(session)
+        place_ids = active_place_ids(
+            session,
+            from_place=from_place,
+            to_place=to_place,
+            municipality=municipality,
+        )
+        by_slug = load_catalog_procs(session, place_ids=place_ids)
         scan_note = scan_note_for_docs(documents_for_case(session, row))
         session.commit()
 
@@ -185,6 +201,7 @@ async def create_case(
         session.commit()
     case_id = str(row.id)
     text = body.text
+    municipality = user.municipality if user else None
     session.close()
     matched = await asyncio.to_thread(
         _run_match,
@@ -192,6 +209,7 @@ async def create_case(
         text,
         persist_text=True,
         use_demo_cache=True,
+        municipality=municipality,
     )
     return _case_out(matched)
 
@@ -216,6 +234,7 @@ async def retry_case(
     session.commit()
     case_id = str(row.id)
     text = body.text
+    municipality = _case_municipality(session, row)
     session.close()
     matched = await asyncio.to_thread(
         _run_match,
@@ -223,6 +242,7 @@ async def retry_case(
         text,
         persist_text=True,
         use_demo_cache=False,
+        municipality=municipality,
     )
     return _case_out(matched)
 
@@ -240,6 +260,7 @@ async def clarify_case(
     session.add(row)
     session.commit()
     case_id = str(row.id)
+    municipality = _case_municipality(session, row)
     session.close()
     matched = await asyncio.to_thread(
         _run_match,
@@ -247,6 +268,7 @@ async def clarify_case(
         combined,
         persist_text=False,
         use_demo_cache=False,
+        municipality=municipality,
     )
     return _case_out(matched)
 
@@ -271,6 +293,17 @@ def select_procedure(
         to_place=row.to_place,
         municipality=user.municipality if user else None,
     )
+    place_ids = active_place_ids(
+        session,
+        from_place=from_place,
+        to_place=to_place,
+        municipality=user.municipality if user else None,
+    )
+    if not procedure_in_place_scope(procedure.place_scope, place_ids):
+        raise HTTPException(
+            status_code=404,
+            detail="Ova usluga važi samo za Grad Pirot. Navedite Pirot u opisu ili na nalogu.",
+        )
     row.from_place = from_place
     row.to_place = to_place
     office = resolve_office(

@@ -1,6 +1,6 @@
 from collections.abc import Generator
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -26,6 +26,20 @@ def _sqlite_fk(dbapi_connection, connection_record) -> None:  # type: ignore[no-
 
 def init_db() -> None:
     Base.metadata.create_all(engine)
+    _ensure_procedure_place_scope()
+
+
+def _ensure_procedure_place_scope() -> None:
+    """Add place_scope to existing SQLite DBs created before the column existed."""
+    inspector = inspect(engine)
+    if "procedures" not in inspector.get_table_names():
+        return
+    columns = {col["name"] for col in inspector.get_columns("procedures")}
+    if "place_scope" in columns:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE procedures ADD COLUMN place_scope JSON"))
+        conn.execute(text("UPDATE procedures SET place_scope = '[]' WHERE place_scope IS NULL"))
 
 
 def get_session() -> Generator[Session, None, None]:

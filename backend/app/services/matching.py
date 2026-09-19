@@ -10,6 +10,7 @@ from app.config import settings
 from app.llm import complete_xai
 from app.models import Procedure
 from app.schemas import CandidateOut
+from app.services.catalog import procedure_in_place_scope
 from app.services.match_parse import (
     MAX_CANDIDATES,
     SCORE_GAP_MIN,
@@ -37,6 +38,11 @@ CONTRAST = {
     "prijava-preduzetnika": ("registracija-vozila", "ezakazivanje-licna-pasos"),
     "ezakazivanje-licna-pasos": ("licna-karta-zamena", "pasos-izdavanje"),
     "saglasnost-vlasnika-prebivaliste": ("prijava-prebivalista", "prijava-boravista"),
+    "biracki-spisak-pirot": ("prijava-prebivalista", "promena-licnog-imena-pirot"),
+    "promena-licnog-imena-pirot": ("licna-karta-zamena", "zakljucenje-braka-pirot"),
+    "zakljucenje-braka-pirot": ("uverenje-slobodno-bracno-stanje", "izvod-maticne-vencanih"),
+    "porez-na-imovinu-pirot": ("informacija-o-lokaciji-pirot", "prijava-preduzetnika"),
+    "informacija-o-lokaciji-pirot": ("porez-na-imovinu-pirot", "prijava-preduzetnika"),
 }
 
 MATCH_SYSTEM = """Ti si matching sloj Putokaza. Biraj procedure SAMO iz datog kataloga.
@@ -56,6 +62,7 @@ Pravila:
 - Ako nijedna ne odgovara: candidates=[] .
 - Ako postoji blok [skenovi] sa type/expiry/status, koristi ga uz tekst (npr. istekla lična → zamena LK). Ne citiraj ime sa isprave.
 - Matching ne vidi sliku. Ignoriši molbe za e-potpis, podnošenje zahteva ili nearby pretragu.
+- Procedure sa poljem place_scope (npr. samo Grad Pirot) su lokalne usluge gradske uprave: birački spisak, promena imena, venčanje u sali, porez na imovinu, informacija o lokaciji. Predloži ih samo kada namera odgovara toj usluzi, ne kada je Pirot samo pomenut uz selidbu ili ličnu kartu.
 """
 
 
@@ -101,10 +108,16 @@ def _clip_for_xai(text: str) -> str:
     return body[:MAX_TEXT_CHARS]
 
 
-def load_catalog_procs(session: Session) -> dict[str, CatalogProc]:
+def load_catalog_procs(
+    session: Session,
+    *,
+    place_ids: set[str] | None = None,
+) -> dict[str, CatalogProc]:
     rows = session.scalars(select(Procedure)).all()
     loaded: dict[str, CatalogProc] = {}
     for row in rows:
+        if not procedure_in_place_scope(row.place_scope, place_ids):
+            continue
         examples = row.intent_examples if isinstance(row.intent_examples, list) else []
         loaded[row.slug] = CatalogProc(
             slug=row.slug,
@@ -140,8 +153,9 @@ def match_procedures(
     text: str,
     *,
     use_demo_cache: bool = True,
+    place_ids: set[str] | None = None,
 ) -> tuple[list[CandidateOut], bool, list[str]]:
-    by_slug = load_catalog_procs(session)
+    by_slug = load_catalog_procs(session, place_ids=place_ids)
     session.commit()
     return rank_procedures(by_slug, text, use_demo_cache=use_demo_cache)
 

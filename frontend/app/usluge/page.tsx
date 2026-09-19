@@ -2,23 +2,45 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ApiError, createCase } from "@/lib/api";
-import { GROUPS, servicesInGroup, type GroupId } from "@/lib/catalog";
-
-function isGroup(value: string | null): value is GroupId {
-  return GROUPS.some((g) => g.id === value);
-}
+import { AUTH_EVENT, getSessionUser } from "@/lib/auth";
+import {
+  accountIsPirot,
+  catalogGroupsFor,
+  servicesInGroup,
+  type GroupId,
+} from "@/lib/catalog";
 
 function UslugeBody() {
   const params = useSearchParams();
   const router = useRouter();
   const raw = params.get("grupa");
-  const group: GroupId = isGroup(raw) ? raw : "dokumenta";
-  const items = servicesInGroup(group);
+  const [municipality, setMunicipality] = useState<string | null | undefined>(
+    undefined,
+  );
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const current = GROUPS.find((g) => g.id === group);
+
+  useEffect(() => {
+    const sync = () => setMunicipality(getSessionUser()?.municipality ?? null);
+    sync();
+    window.addEventListener(AUTH_EVENT, sync);
+    return () => window.removeEventListener(AUTH_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
+    if (municipality === undefined) return;
+    if (raw === "pirot" && !accountIsPirot(municipality)) {
+      router.replace("/usluge?grupa=dokumenta");
+    }
+  }, [municipality, raw, router]);
+
+  const groups = catalogGroupsFor(municipality ?? null);
+  const group: GroupId =
+    raw && groups.some((g) => g.id === raw) ? (raw as GroupId) : "dokumenta";
+  const items = servicesInGroup(group);
+  const current = groups.find((g) => g.id === group);
 
   async function start(example: string, slug: string, title: string) {
     if (busy) return;
@@ -51,10 +73,15 @@ function UslugeBody() {
       <p className="lede">
         Izaberite grupu, pa stavku. Ako niste sigurni, vratite se na početnu i
         opišite svojim rečima.
+        {group === "pirot"
+          ? " Ove usluge važe za Gradsku upravu Pirot."
+          : accountIsPirot(municipality)
+            ? ""
+            : " Usluge Gradske uprave Pirot nisu na ovoj listi. Ako u opisu na početnoj navedete Pirot, predložićemo ih u rezultatima pretrage."}
       </p>
 
       <div className="row" style={{ marginBottom: 20 }}>
-        {GROUPS.map((g) => (
+        {groups.map((g) => (
           <Link
             key={g.id}
             className={`btn ${g.id === group ? "btn-primary" : "btn-ghost"}`}
@@ -70,8 +97,7 @@ function UslugeBody() {
       {items.length === 0 ? (
         <div className="panel">
           <p>
-            {current?.title ?? "Ova grupa"} još nije u katalogu. Nema praćenja
-            računa ni zakazivanja kod komunalnih preduzeća.
+            {current?.title ?? "Ova grupa"} još nije u katalogu.
           </p>
           <p className="note">
             Opišite na početnoj šta treba — ako postoji slična procedura,

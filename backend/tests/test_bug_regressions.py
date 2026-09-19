@@ -37,6 +37,7 @@ from app.routers import cases as cases_router  # noqa: E402
 from app.services import matching  # noqa: E402
 from app.services.catalog import (  # noqa: E402
     apply_account_municipality,
+    extract_from_to,
     missing_office_reason,
     office_target,
     resolve_office,
@@ -335,15 +336,99 @@ class ApiRegressionTests(unittest.TestCase):
         self.assertIsNone(guide["office"])
         self.assertEqual(guide["office_missing_reason"], MISSING_PLACE)
 
-    def test_catalog_gap_reason_when_place_known(self) -> None:
+    def test_apr_resolves_for_pirot(self) -> None:
         created = self.client.post("/cases", json={"text": "selim se iz Pirota u Beograd"}).json()
         guide = self.client.post(
             f"/cases/{created['case_id']}/select",
             json={"slug": "prijava-preduzetnika"},
         ).json()
-        self.assertIsNone(guide["office"])
-        self.assertTrue(guide["office_missing"])
-        self.assertEqual(guide["office_missing_reason"], CATALOG_GAP)
+        self.assertFalse(guide["office_missing"])
+        self.assertIn("Pirot", guide["office"]["address"])
+
+    def test_nisam_does_not_extract_nis(self) -> None:
+        with SessionLocal() as session:
+            from_place, to_place = extract_from_to(
+                session, "nisam na biračkom spisku u Pirotu"
+            )
+            self.assertIsNone(from_place)
+            self.assertEqual(to_place, "pirot")
+            empty_from, empty_to = extract_from_to(session, "nisam na biračkom spisku")
+            self.assertIsNone(empty_from)
+            self.assertIsNone(empty_to)
+
+    def test_pirot_local_hidden_without_pirot(self) -> None:
+        body = self.client.post("/cases", json={"text": "nisam na biračkom spisku"}).json()
+        slugs = [item["slug"] for item in body["candidates"]]
+        self.assertNotIn("biracki-spisak-pirot", slugs)
+        blocked = self.client.post(
+            f"/cases/{body['case_id']}/select",
+            json={"slug": "biracki-spisak-pirot"},
+        )
+        self.assertEqual(blocked.status_code, 404)
+
+    def test_pirot_local_shown_when_text_mentions_pirot(self) -> None:
+        body = self.client.post(
+            "/cases", json={"text": "nisam na biračkom spisku u Pirotu"}
+        ).json()
+        slugs = [item["slug"] for item in body["candidates"]]
+        self.assertIn("biracki-spisak-pirot", slugs)
+        self.assertEqual(body["candidates"][0]["slug"], "biracki-spisak-pirot")
+        guide = self.client.post(
+            f"/cases/{body['case_id']}/select",
+            json={"slug": "biracki-spisak-pirot"},
+        )
+        self.assertEqual(guide.status_code, 200, guide.text)
+        office = guide.json()["office"]
+        self.assertIn("Srpskih vladara 82", office["address"])
+        self.assertIn("Pirot", office["address"])
+
+    def test_pirot_local_shown_from_account_municipality(self) -> None:
+        email = "pirot-lokal@example.com"
+        reg = self.client.post(
+            "/auth/register",
+            json={
+                "email": email,
+                "password": "password1",
+                "name": "Ana",
+                "municipality": "pirot",
+            },
+        )
+        self.assertEqual(reg.status_code, 200, reg.text)
+        headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+        body = self.client.post(
+            "/cases",
+            json={"text": "nisam na biračkom spisku"},
+            headers=headers,
+        ).json()
+        slugs = [item["slug"] for item in body["candidates"]]
+        self.assertIn("biracki-spisak-pirot", slugs)
+        guide = self.client.post(
+            f"/cases/{body['case_id']}/select",
+            json={"slug": "biracki-spisak-pirot"},
+            headers=headers,
+        ).json()
+        self.assertFalse(guide["office_missing"])
+        self.assertEqual(guide["institution"], "grad-pirot")
+
+    def test_beograd_account_does_not_unlock_pirot_local(self) -> None:
+        email = "bg-ne-pirot@example.com"
+        reg = self.client.post(
+            "/auth/register",
+            json={
+                "email": email,
+                "password": "password1",
+                "name": "Ana",
+                "municipality": "beograd",
+            },
+        )
+        headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+        body = self.client.post(
+            "/cases",
+            json={"text": "nisam na biračkom spisku"},
+            headers=headers,
+        ).json()
+        slugs = [item["slug"] for item in body["candidates"]]
+        self.assertNotIn("biracki-spisak-pirot", slugs)
 
     def test_resolver_walks_municipality_to_city(self) -> None:
         with SessionLocal() as session:

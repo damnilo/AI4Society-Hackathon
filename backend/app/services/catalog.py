@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from sqlalchemy import select
@@ -25,7 +26,11 @@ def seed_catalog(session: Session) -> None:
     session.commit()
 
 
-def catalog_for_matching(session: Session) -> list[dict[str, object]]:
+def catalog_for_matching(
+    session: Session,
+    *,
+    place_ids: set[str] | None = None,
+) -> list[dict[str, object]]:
     """Compact catalog for xAI. No streets, offices, or legal excerpts."""
     rows = session.scalars(select(Procedure)).all()
     return [
@@ -36,7 +41,21 @@ def catalog_for_matching(session: Session) -> list[dict[str, object]]:
             "intent_examples": row.intent_examples,
         }
         for row in rows
+        if procedure_in_place_scope(row.place_scope, place_ids)
     ]
+
+
+def procedure_in_place_scope(
+    place_scope: object,
+    place_ids: set[str] | None,
+) -> bool:
+    """Nationwide procedures always match. Local ones only if a scoped place is active."""
+    scope = [str(item) for item in place_scope] if isinstance(place_scope, list) else []
+    if not scope:
+        return True
+    if not place_ids:
+        return False
+    return bool(set(scope) & place_ids)
 
 
 def _seed_places(session: Session) -> None:
@@ -83,11 +102,29 @@ def _seed_offices(session: Session) -> None:
 def _seed_procedures(session: Session) -> None:
     rows: list[dict] = json.loads((SEED_DIR / "procedures.json").read_text(encoding="utf-8"))
     for row in rows:
+        row = {**row, "place_scope": row.get("place_scope") or []}
         existing = session.get(Procedure, row["slug"])
         if existing:
             _apply(existing, row)
         else:
             session.add(Procedure(**row))
+
+
+_WORD = re.compile(r"[0-9a-z\u0400-\u04ff]")
+
+
+def _token_index(normalized: str, token: str) -> int:
+    """Whole-token match so 'nis' does not hit 'nisam', but aliases like 'pirotu' still work."""
+    start = 0
+    while True:
+        idx = normalized.find(token, start)
+        if idx < 0:
+            return -1
+        before = normalized[idx - 1] if idx > 0 else ""
+        after = normalized[idx + len(token)] if idx + len(token) < len(normalized) else ""
+        if (not before or not _WORD.match(before)) and (not after or not _WORD.match(after)):
+            return idx
+        start = idx + 1
 
 
 def extract_from_to(session: Session, text: str) -> tuple[str | None, str | None]:
@@ -96,14 +133,16 @@ def extract_from_to(session: Session, text: str) -> tuple[str | None, str | None
     normalized = normalize(text)
     hits: list[tuple[int, Place]] = []
     for place in session.scalars(select(Place)).all():
+        best: int | None = None
         for name in [place.id, place.name_lat, place.name_cyr, *place.aliases]:
             token = normalize(name)
             if len(token) < 3:
                 continue
-            idx = normalized.find(token)
-            if idx >= 0:
-                hits.append((idx, place))
-                break
+            idx = _token_index(normalized, token)
+            if idx >= 0 and (best is None or idx < best):
+                best = idx
+        if best is not None:
+            hits.append((best, place))
     hits.sort(key=lambda item: item[0])
     unique: list[Place] = []
     seen: set[str] = set()
@@ -130,6 +169,28 @@ def ancestors(session: Session, place_id: str) -> list[str]:
         current = session.get(Place, current.parent_id)
         safety += 1
     return chain
+
+
+def active_place_ids(
+    session: Session,
+    *,
+    from_place: str | None,
+    to_place: str | None,
+    municipality: str | None,
+) -> set[str]:
+    """Places that unlock local (place_scope) procedures: extracted cities + nalog."""
+    ids: set[str] = set()
+    for raw in (from_place, to_place):
+        if raw:
+            ids.add(raw)
+    if municipality:
+        if session.get(Place, municipality):
+            ids.add(municipality)
+        else:
+            mapped = place_id_from_label(session, municipality)
+            if mapped:
+                ids.add(mapped)
+    return ids
 
 
 def place_id_from_label(session: Session, label: str | None) -> str | None:

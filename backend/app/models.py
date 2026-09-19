@@ -61,6 +61,7 @@ class Procedure(Base):
     source_name = mapped_column(String(256), nullable=False)
     source_url = mapped_column(String(512), nullable=False)
     last_verified_at = mapped_column(String(32), nullable=False)
+    place_scope = mapped_column(JSON, nullable=False, default=list)
 
 
 class User(Base):
