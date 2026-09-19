@@ -38,8 +38,10 @@ TTS: `POST /cases/{id}/speech` → mp3 preko OpenAI `gpt-4o-mini-tts` (srpski). 
 python tests/test_bug_regressions.py
 python tests/test_phase3_documents.py
 python tests/test_tts.py
+python tests/test_demo_scans.py
 python scripts/smoke_phase1.py
 python scripts/smoke_phase2.py
 ```
 
 Demo POST `/cases`: `"istekla mi je lična"` i `"selim se iz Pirota u Beograd"`.
+Sintetski skenovi: `../demo/` (vidi `../demo/README.md`). Regeneracija: `python scripts/make_demo_scans.py` (treba Pillow, nije u requirements).

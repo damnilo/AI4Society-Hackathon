@@ -72,17 +72,17 @@ Gost sme matching + prilog uz case. Nalog = novčanik + opciono mesto.
 
 Redosled je namerno sečenje: prvo što može da sruši demo, pa vizuelni wow, pa extra.
 
-### Korak 1 — sintetski skenovi i cheat-sheet (oboje)
+### Korak 1 — sintetski skenovi i cheat-sheet (oboje) — BE urađen
 
-Folder `demo/` (lažni podaci, krupan datum; u pitchu reći da je sintetika):
+Folder `demo/` (lažni podaci, krupan datum; u pitchu reći da je sintetika). Regeneracija: `backend/scripts/make_demo_scans.py`.
 
 | Fajl | Namena | Očekivani status |
 |------|--------|------------------|
-| Istekla LK (datum u prošlosti) | gost + `istekla mi je lična` | **Isteklo** + „važi do …“ |
-| Mutna / isečena slika ili loš PDF | isti tok | **Nečitko** |
-| Pasoš uz zahtev za LK | mismatch | **Ne odgovara**, ne „Imate ličnu“ |
+| `demo/istekla-licna-karta.png` | gost + `istekla mi je lična` | **Isteklo** + važi do 2024-03-01 |
+| `demo/necitko-sken.pdf` | isti tok, loš prilog | **Nečitko** (PDF, Vision se ne zove) |
+| `demo/pasos.png` | mismatch | **Ne odgovara**, ne „Imate ličnu“ |
 
-Kartice izlaze odmah (matching na tekst). Vision upisuje tip/rok posle uploada; FE crta `GET /document-status`.
+Cheat-sheet: `demo/README.md`. Kartice izlaze odmah (matching na tekst). Vision upisuje tip/rok posle uploada; FE crta `GET /document-status`.
 
 Pre žirija, offline provera: `GET /health/llm` + jedan TTS + jedan Vision upload.
 
