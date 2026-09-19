@@ -95,38 +95,17 @@ h3 {
 
 .brand {
   display: block;
-  padding: 4px 4px 18px;
-  border-bottom: 2px dashed rgba(234, 241, 251, 0.25);
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #f7fafc;
   color: inherit;
   text-decoration: none;
 }
 
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 54px;
-  height: 46px;
-  clip-path: polygon(0 0, 78% 0, 100% 50%, 78% 100%, 0 100%);
-  background: var(--gold);
-  color: #1b1205;
-  font-size: 1.7rem;
-  font-weight: 800;
-  margin-bottom: 12px;
-}
-
-.brand strong {
+.brand-img {
   display: block;
-  font-family: var(--serif);
-  font-size: 1.9rem;
-  letter-spacing: 0.01em;
-}
-
-.brand span {
-  display: block;
-  margin-top: 4px;
-  font-size: 0.95rem;
-  opacity: 0.75;
+  width: 100%;
+  height: auto;
 }
 
 .nav {
@@ -972,11 +951,7 @@ label.big + select.describe {
   }
   .brand {
     flex: 1 1 100%;
-    border-bottom: 0;
-    padding-bottom: 0;
-  }
-  .brand-mark {
-    margin-bottom: 8px;
+    max-width: 420px;
   }
   .nav {
     flex: 1 1 100%;
