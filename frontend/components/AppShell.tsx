@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AUTH_EVENT, getSessionUser } from "@/lib/auth";
+import { FontSizeControl } from "@/components/FontSizeControl";
 
 const links = [
   { href: "/", label: "Početna" },
@@ -34,6 +35,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="shell">
       <aside className="sidebar no-print">
         <div className="brand">
+          <span className="brand-mark" aria-hidden="true">
+            ⇢
+          </span>
           <strong>Putokaz</strong>
           <span>Vodič kroz procedure</span>
         </div>
@@ -48,6 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
+        <FontSizeControl />
         <div className="side-foot">Nije eUprava. Nije overa papira.</div>
       </aside>
       <div className="main">

@@ -389,19 +389,17 @@ function VodicBody() {
 
       {guide.legal_excerpt ? (
         <div className="panel">
-          <h2 style={{ marginTop: 0 }}>Zašto ova procedura</h2>
+          <h2>Zašto ova procedura</h2>
           <p style={{ marginBottom: 0 }}>{guide.legal_excerpt}</p>
         </div>
       ) : null}
 
       <div className="panel">
-        <h2 style={{ marginTop: 0 }}>Koraci</h2>
+        <h2>Koraci</h2>
         <div className="steps">
-          {guide.steps.map((s, i) => (
+          {guide.steps.map((s) => (
             <div key={s.title} className="step">
-              <strong>
-                {i + 1}. {s.title}
-              </strong>
+              <strong>{s.title}</strong>
               <p style={{ margin: "8px 0 0" }}>{s.description}</p>
             </div>
           ))}
@@ -409,7 +407,7 @@ function VodicBody() {
       </div>
 
       <div className="panel">
-        <h2 style={{ marginTop: 0 }}>Šta da ponesete</h2>
+        <h2>Šta da ponesete</h2>
         {guide.documents.map((d) => (
           <DocRow key={d.type} doc={d} />
         ))}
@@ -436,7 +434,7 @@ function VodicBody() {
       </div>
 
       <div className="panel">
-        <h2 style={{ marginTop: 0 }}>Gde da odete</h2>
+        <h2>Gde da odete</h2>
         {guide.office_missing || !guide.office ? (
           <>
             <p>
