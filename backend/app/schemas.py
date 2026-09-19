@@ -175,6 +175,13 @@ class HealthOut(BaseModel):
     catalog: dict[str, int]
 
 
+class RootOut(BaseModel):
+    ok: bool
+    service: str
+    health: str
+    docs: str
+
+
 class LlmHealthOut(BaseModel):
     configured: bool
     ok: bool

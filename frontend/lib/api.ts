@@ -9,7 +9,10 @@ import {
 import { documentLabel, institutionLabel } from "./labels";
 import type { DocumentStatus, Guide, MatchResponse, RequiredDoc, WalletDocument } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(
+  /\/+$/,
+  "",
+);
 const MATCH_TIMEOUT_MS = 60_000;
 const TTS_TIMEOUT_MS = 45_000;
 
