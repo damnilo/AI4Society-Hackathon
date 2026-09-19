@@ -10,12 +10,43 @@ export default function PomocPage() {
       </p>
 
       <div className="panel">
+        <h2 style={{ marginTop: 0 }}>Pitch za žiri</h2>
+        <p>
+          eUprava pomaže kad već znaš ime usluge. Putokaz kreće od namere i
+          papira: predloži proceduru, checklist sa skena i nadležni šalter —
+          bez eID-a, bez podnošenja zahteva.
+        </p>
+        <p className="note" style={{ marginBottom: 0 }}>
+          Demo rečenice: „istekla mi je lična“ · „selim se iz Pirota u Beograd“
+          (Ljermontova 12a).
+        </p>
+      </div>
+
+      <div className="panel">
         <h2 style={{ marginTop: 0 }}>Kako se koristi</h2>
         <ol className="steps" style={{ paddingLeft: 22 }}>
-          <li>Na početnoj opišite šta treba, ili izaberite brzi pristup.</li>
+          <li>
+            Na početnoj opišite šta treba, recite naglas („Reci naglas“ /
+            „Slušam…“), ili izaberite brzi pristup.
+          </li>
+          <li>Po želji priložite sken (JPG, PNG, PDF) uz zahtev.</li>
           <li>Izaberite jednu od 2–3 ponuđene procedure.</li>
-          <li>Pročitajte korake, šta fali / je isteklo i tačnu adresu šaltera.</li>
+          <li>
+            Na vodiču: koraci, šta fali / je isteklo, adresa šaltera, mapa ako
+            ima koordinate, „Pročitaj vodič“ (OpenAI ili glas pregledača) i
+            „Štampaj vodič“.
+          </li>
         </ol>
+      </div>
+
+      <div className="panel">
+        <h2 style={{ marginTop: 0 }}>Nalog i papiri</h2>
+        <p>
+          Prijava je opciona. Traženje procedure radi i kao gost. Nalog čuva
+          skenove i mesto (Pirot / Beograd / Niš) da ih ne unosite svaki put.
+          Prilog gosta se briše posle 48 sati ako ga nalogom ne preuzmete.
+          Možete da obrišete papir ili da se odjavite.
+        </p>
       </div>
 
       <div className="panel">
@@ -28,15 +59,6 @@ export default function PomocPage() {
             pravna overa niti dokaz da je papir originalan.
           </li>
         </ul>
-      </div>
-
-      <div className="panel">
-        <h2 style={{ marginTop: 0 }}>Nalog i papiri</h2>
-        <p>
-          Prijava je opciona. Čuva samo skenove koje vi otpremite, da ih ne
-          unosite svaki put. Možete da obrišete papir ili da se odjavite.
-          Traženje procedure radi i kao gost.
-        </p>
       </div>
 
       <p className="disclaimer">{DISCLAIMER}</p>

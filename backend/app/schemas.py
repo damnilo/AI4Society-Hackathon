@@ -86,6 +86,7 @@ class GuideOut(BaseModel):
     office: Optional[OfficeOut] = None
     office_missing: bool = False
     office_missing_reason: Optional[str] = None
+    legal_excerpt: str = ""
     disclaimer: str = DISCLAIMER
 
 

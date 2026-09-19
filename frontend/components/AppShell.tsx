@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="shell">
-      <aside className="sidebar">
+      <aside className="sidebar no-print">
         <div className="brand">
           <strong>Putokaz</strong>
           <span>Vodič kroz procedure</span>
@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="side-foot">Nije eUprava. Nije overa papira.</div>
       </aside>
       <div className="main">
-        <div className="topbar">
+        <div className="topbar no-print">
           <span className="note">Velika slova, jedan korak u isto vreme.</span>
           <Link className="guest" href="/prijava">
             {label}

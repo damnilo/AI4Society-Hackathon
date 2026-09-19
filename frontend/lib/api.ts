@@ -64,6 +64,7 @@ type BackendGuide = {
   } | null;
   office_missing: boolean;
   office_missing_reason?: string | null;
+  legal_excerpt?: string | null;
   disclaimer: string;
 };
 
@@ -249,6 +250,7 @@ function toGuide(row: BackendGuide): Guide {
       note: doc.notes || undefined,
     })),
     related: row.related,
+    legal_excerpt: row.legal_excerpt || undefined,
     source_name: row.source_name,
     source_url: row.source_url,
     last_verified_at: row.last_verified_at,

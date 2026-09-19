@@ -139,6 +139,7 @@ def _guide(session: Session, row: Case, procedure: Procedure) -> GuideOut:
             to_place=row.to_place,
             office=office_row,
         ),
+        legal_excerpt=procedure.legal_excerpt,
         disclaimer=DISCLAIMER,
     )
 

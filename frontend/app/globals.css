@@ -382,3 +382,46 @@ label.big + select.describe {
     grid-template-columns: 1fr;
   }
 }
+
+.related-link {
+  color: var(--accent);
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+@media print {
+  body {
+    background: #fff;
+    font-size: 12pt;
+  }
+
+  .no-print,
+  .file,
+  .btn {
+    display: none !important;
+  }
+
+  .shell {
+    display: block;
+    min-height: 0;
+  }
+
+  .main {
+    padding: 0;
+  }
+
+  .panel {
+    box-shadow: none;
+    break-inside: avoid;
+    margin-bottom: 16px;
+  }
+
+  .disclaimer,
+  .alert {
+    break-inside: avoid;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+}

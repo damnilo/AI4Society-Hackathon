@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   attachCaseDocument,
   createCase,
@@ -46,6 +46,8 @@ export function DescribeBox({
   const [loggedIn, setLoggedIn] = useState(false);
   const [note, setNote] = useState("");
   const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [listening, setListening] = useState(false);
+  const recRef = useRef<BrowserSpeech | null>(null);
 
   useEffect(() => {
     function sync() {
@@ -65,6 +67,12 @@ export function DescribeBox({
     sync();
     window.addEventListener(AUTH_EVENT, sync);
     return () => window.removeEventListener(AUTH_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      recRef.current?.stop();
+    };
   }, []);
 
   function persist(result: MatchResponse, value: string, fileName: string) {
@@ -144,6 +152,11 @@ export function DescribeBox({
   }
 
   function listen() {
+    if (listening) {
+      recRef.current?.stop();
+      setListening(false);
+      return;
+    }
     const win = window as Window & {
       webkitSpeechRecognition?: new () => BrowserSpeech;
       SpeechRecognition?: new () => BrowserSpeech;
@@ -155,12 +168,29 @@ export function DescribeBox({
     }
     setNote("");
     const rec = new Speech();
+    recRef.current = rec;
     rec.lang = "sr-RS";
     rec.onresult = (ev) => {
       const said = ev.results[0]?.[0]?.transcript ?? "";
       setText((t) => (t ? `${t} ${said}` : said));
     };
-    rec.start();
+    rec.onerror = () => {
+      setListening(false);
+      recRef.current = null;
+      setNote("Glas nije uspeo. Ukucajte šta treba.");
+    };
+    rec.onend = () => {
+      setListening(false);
+      recRef.current = null;
+    };
+    try {
+      rec.start();
+      setListening(true);
+    } catch {
+      setListening(false);
+      recRef.current = null;
+      setNote("Glas nije dostupan u ovom pregledaču. Ukucajte šta treba.");
+    }
   }
 
   return (
@@ -180,7 +210,7 @@ export function DescribeBox({
           {busy ? "Tražim u katalogu…" : "Nađi proceduru"}
         </button>
         <button className="btn btn-ghost" type="button" onClick={listen}>
-          Reci naglas
+          {listening ? "Slušam…" : "Reci naglas"}
         </button>
         <label className="file">
           Priloži papire (nije obavezno)
@@ -264,5 +294,8 @@ function walletLine(doc: WalletDocument): string {
 type BrowserSpeech = {
   lang: string;
   start: () => void;
+  stop: () => void;
   onresult: ((ev: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
 };
