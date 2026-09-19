@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AUTH_EVENT, getSessionUser, migrateLegacyKeys } from "@/lib/auth";
-import { APP_NAME } from "@/lib/copy";
+import { BrandLogo } from "@/components/BrandLogo";
 import { FontSizeControl } from "@/components/FontSizeControl";
 import { clearCaseSession } from "@/lib/session";
 
@@ -38,11 +38,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="shell">
       <aside className="sidebar no-print">
         <Link className="brand" href="/" onClick={clearCaseSession}>
-          <span className="brand-mark" aria-hidden="true">
-            ⇢
-          </span>
-          <strong>{APP_NAME}</strong>
-          <span>Vodič kroz procedure</span>
+          <BrandLogo />
         </Link>
         <nav className="nav">
           {links.map((l) => (
