@@ -6,6 +6,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import {
   ApiError,
   attachCaseDocument,
+  createCase,
   fetchCase,
   fetchGuide,
   fetchGuideSpeech,
@@ -197,9 +198,30 @@ function VodicBody() {
         if (!cancelled) setGuide(next);
       })
       .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Vodič nije dostupan.");
-        }
+        void (async () => {
+          if (cancelled) return;
+          const message = err instanceof Error ? err.message : "Vodič nije dostupan.";
+          const storedText = readStoredText(String(caseId));
+          if (err instanceof ApiError && err.status === 404 && storedText && slug) {
+            try {
+              const result = await createCase(storedText);
+              if (cancelled) return;
+              sessionStorage.setItem(
+                "nasalter-case",
+                JSON.stringify({
+                  ...result,
+                  text: storedText,
+                  source: "typed",
+                }),
+              );
+              router.replace(`/vodic/${result.case_id}?slug=${encodeURIComponent(slug)}`);
+              return;
+            } catch {
+              /* fall through to error */
+            }
+          }
+          if (!cancelled) setError(message);
+        })();
       });
     return () => {
       cancelled = true;
