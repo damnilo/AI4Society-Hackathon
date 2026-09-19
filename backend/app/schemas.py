@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 DISCLAIMER = (
-    "Putokaz nije eUprava i ne podnosi zahtev. "
+    "NaŠalter nije eUprava i ne podnosi zahtev. "
     "Provera dokumenata nije pravna overa originala — samo polja sa skena "
     "(kompletnost i rok)."
 )

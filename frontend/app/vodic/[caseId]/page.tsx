@@ -17,11 +17,11 @@ import type { Guide, RequiredDoc, StoredCase } from "@/lib/types";
 
 const SCAN_PENDING = "Provera skena";
 const ACCEPT = ".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf";
-const TTS_DISCLAIMER = "Putokaz nije eUprava i ne overava dokumenta.";
+const TTS_DISCLAIMER = "NaŠalter nije eUprava i ne overava dokumenta.";
 
 function readStoredText(caseId: string): string {
   if (typeof window === "undefined") return "";
-  const raw = sessionStorage.getItem("putokaz-case");
+  const raw = sessionStorage.getItem("nasalter-case");
   if (!raw) return "";
   try {
     const parsed = JSON.parse(raw) as StoredCase;
@@ -33,6 +33,10 @@ function readStoredText(caseId: string): string {
 
 function awaitingScan(docs: RequiredDoc[]): boolean {
   return docs.some((doc) => (doc.note ?? "").includes(SCAN_PENDING));
+}
+
+function officeMapsQuery(office: { name: string; address: string }): string {
+  return encodeURIComponent(`${office.name}, ${office.address}`);
 }
 
 function needsPlaceQuestion(guide: Guide): boolean {
@@ -217,7 +221,7 @@ function VodicBody() {
       }
       const result = await retryCase(caseId, nextText);
       sessionStorage.setItem(
-        "putokaz-case",
+        "nasalter-case",
         JSON.stringify({
           ...result,
           text: nextText,
@@ -485,7 +489,7 @@ function VodicBody() {
               <p className="no-print" style={{ marginTop: 16, marginBottom: 0 }}>
                 <a
                   className="btn btn-ghost"
-                  href={`https://maps.google.com/?q=${guide.office.lat},${guide.office.lng}`}
+                  href={`https://www.google.com/maps/search/?api=1&query=${officeMapsQuery(guide.office)}`}
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -496,7 +500,7 @@ function VodicBody() {
             <div className="office-map no-print">
               <iframe
                 title={`Mapa lokacije: ${guide.office.name}`}
-                src={`https://maps.google.com/maps?q=${guide.office.lat},${guide.office.lng}&z=16&hl=sr&output=embed`}
+                src={`https://maps.google.com/maps?q=${officeMapsQuery(guide.office)}&z=16&hl=sr&output=embed`}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
@@ -551,7 +555,7 @@ function VodicBody() {
         <Link
           className="btn btn-ghost"
           href="/"
-          onClick={() => sessionStorage.removeItem("putokaz-case")}
+          onClick={() => sessionStorage.removeItem("nasalter-case")}
         >
           Nova pretraga
         </Link>

@@ -514,7 +514,7 @@ function toWalletDoc(row: BackendDocument): WalletDocument {
 
 async function claimOpenCase(): Promise<void> {
   if (typeof window === "undefined") return;
-  const raw = sessionStorage.getItem("putokaz-case");
+  const raw = sessionStorage.getItem("nasalter-case");
   if (!raw) return;
   try {
     const parsed = JSON.parse(raw) as { case_id?: string };

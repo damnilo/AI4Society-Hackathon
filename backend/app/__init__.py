@@ -1,1 +1,1 @@
-"""Putokaz FastAPI backend."""
+"""NaŠalter FastAPI backend."""

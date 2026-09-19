@@ -10,6 +10,7 @@ __pycache__/
 venv/
 backend/.venv/
 backend/putokaz.db
+backend/nasalter.db
 backend/uploads/
 *.egg-info/
 .pytest_cache/

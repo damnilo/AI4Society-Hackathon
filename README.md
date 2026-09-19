@@ -1,4 +1,4 @@
-# Putokaz
+# NaŠalter
 
 Vodič kroz državne procedure iz slobodnog teksta (ili glasa). Nije eUprava: ne podnosimo zahtev, ne zakazujemo i ne overavamo dokumenta.
 
@@ -17,7 +17,7 @@ U `backend/.env` ubacite `XAI_API_KEY` (iz `api_keys.txt` / SPACEX). Docker: `cd
 
 ## Demo rečenice i skenovi
 
-1. `istekla mi je lična` — zamena LK. Prilog: `demo/istekla-licna-karta.png` → **Isteklo**. Isti tok + `demo/necitko-sken.pdf` → **Nečitko**. Isti tok + `demo/pasos.png` → **Ne odgovara**.
+1. `istekla mi je lična` — zamena lične karte. Prilog: `demo/istekla-licna-karta.png` → **Isteklo**. Isti tok + `demo/necitko-sken.pdf` → **Nečitko**. Isti tok + `demo/pasos.png` → **Ne odgovara**.
 2. `selim se iz Pirota u Beograd` — prijava prebivališta, šalter Ljermontova 12a.
 
 Uputstvo za žiri: `demo/README.md`. Matching radi i kao gost. Nalog je samo novčanik skenova.

@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Putokaz API
+  title: NaŠalter API
   version: 0.1.0
   description: |
     Ugovor FE/BE. Živi spec: GET /openapi.json (FastAPI).

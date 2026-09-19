@@ -1,4 +1,4 @@
-# Katalog Putokaz (Faza 0 — zajednička lista)
+# Katalog NaŠalter (Faza 0 — zajednička lista)
 
 Ti = **backend**, kolega = **frontend**. Ovo je ugovor za seed; FE ne hardkodira procedure ni adrese.
 
@@ -35,24 +35,24 @@ Resolver: LLM ne piše ulicu. Pirot → Beograd + `prijava-prebivalista` (`juris
 
 ## Procedure (`procedures.json`) — 15
 
-Namerno bliski parovi za matching: prebivalište vs boravište; LK vs pasoš; prva LK vs zamena; prva vozačka vs zamena.
+Namerno bliski parovi za matching: prebivalište vs boravište; lična karta vs pasoš; prva lična karta vs zamena; prva vozačka vs zamena.
 
 | slug | naslov | institucija | jurisdiction_rule | kanal | žiri / matching |
 |---|---|---|---|---|---|
 | `prijava-prebivalista` | Prijava prebivališta | mup | **new_residence** | both | Scenario 2: „selim se iz Pirota u Beograd“ |
 | `prijava-boravista` | Prijava boravišta | mup | new_residence | both | Kontrast stalno vs privremeno |
 | `uverenje-o-prebivalistu` | Uverenje o prebivalištu | mup | **current_residence** | counter | BG = Ljermontova (MUP tekst) |
-| `licna-karta-prvo-izdavanje` | Prvo izdavanje LK | mup | current_residence | both | Prva LK, ne zamena |
-| `licna-karta-zamena` | Zamena LK | mup | current_residence | both | Scenario 1: „istekla mi je lična“ |
-| `pasos-izdavanje` | Pasoš | mup | current_residence | both | Blizu LK, drugi dokument |
+| `licna-karta-prvo-izdavanje` | Prvo izdavanje lične karte | mup | current_residence | both | Prva lična karta, ne zamena |
+| `licna-karta-zamena` | Zamena lične karte | mup | current_residence | both | Scenario 1: „istekla mi je lična“ |
+| `pasos-izdavanje` | Pasoš | mup | current_residence | both | Blizu lične karte, drugi dokument |
 | `vozacka-dozvola-izdavanje` | Prva vozačka | mup | current_residence | counter | Posle auto-škole |
 | `vozacka-dozvola-zamena` | Zamena vozačke | mup | current_residence | both | Istekla vozačka |
 | `izvod-maticne-rodjenih` | Izvod / rodni list | maticar | applicant_municipality | both | eIzvod `00015`; office često `office_missing` |
-| `uverenje-o-drzavljanstvu` | Uverenje o državljanstvu | maticar | applicant_municipality | both | Uz prvu LK |
+| `uverenje-o-drzavljanstvu` | Uverenje o državljanstvu | maticar | applicant_municipality | both | Uz prvu ličnu kartu |
 | `izbor-izabranog-lekara` | Izabrani lekar | rfzo | new_residence | both | Related posle selidbe; nije MUP office |
 | `registracija-vozila` | Registracija vozila | mup | applicant_municipality | counter | Nije vozačka |
 | `prijava-preduzetnika` | Preduzetnik APR | apr | applicant_municipality | both | `office_missing` + apr.gov.rs |
-| `ezakazivanje-licna-pasos` | eZakazivanje LK/pasoš | mup | current_residence | online | Samo termin, usluga `00005` |
+| `ezakazivanje-licna-pasos` | eZakazivanje lične karte / pasoša | mup | current_residence | online | Samo termin, usluga `00005` |
 | `saglasnost-vlasnika-prebivaliste` | Saglasnost vlasnika | mup | new_residence | online | Related uz prijavu; `01048` |
 
 Kartice na FE: **bez** institucije kao naslova. Institucija i adresa tek u `guide` posle `select`.
@@ -65,6 +65,6 @@ Statusi: `complete` | `missing` | `expired` | `unreadable` | `mismatch`. Nikad �
 
 ## Šta kolega (FE) treba da zna
 
-- Mock `/cases` za „istekla mi je lična“ → kandidati oko `licna-karta-zamena` (+ pasoš / prva LK).
+- Mock `/cases` za „istekla mi je lična“ → kandidati oko `licna-karta-zamena` (+ pasoš / prva lična karta).
 - Mock „selim se iz Pirota u Beograd“ → `prijava-prebivalista` (+ boravište / lekar).
 - Guide za scenario 2: office = Ljermontova 12a, ne Jevrejska 17.

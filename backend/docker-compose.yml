@@ -2,15 +2,15 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: putokaz
-      POSTGRES_PASSWORD: putokaz
-      POSTGRES_DB: putokaz
+      POSTGRES_USER: nasalter
+      POSTGRES_PASSWORD: nasalter
+      POSTGRES_DB: nasalter
     ports:
       - "5432:5432"
     volumes:
-      - putokaz_pg:/var/lib/postgresql/data
+      - nasalter_pg:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U putokaz"]
+      test: ["CMD-SHELL", "pg_isready -U nasalter"]
       interval: 3s
       timeout: 5s
       retries: 10
@@ -20,7 +20,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+psycopg://putokaz:putokaz@postgres:5432/putokaz
+      DATABASE_URL: postgresql+psycopg://nasalter:nasalter@postgres:5432/nasalter
       XAI_API_KEY: ${XAI_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
@@ -33,4 +33,4 @@ services:
       - ./uploads:/app/uploads
 
 volumes:
-  putokaz_pg:
+  nasalter_pg:

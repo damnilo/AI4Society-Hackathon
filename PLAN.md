@@ -1,4 +1,4 @@
-# Putokaz — plan za preostali dan
+# NaŠalter — plan za preostali dan
 
 **Ti = backend (FastAPI).** **Kolega = frontend (Next.js).**
 
@@ -55,7 +55,7 @@ Gost sme matching + prilog uz case. Nalog = novčanik + opciono mesto.
 
 ## Rizici za žiri (nije rupa u MVP-u)
 
-1. **Nema `demo/` sintetskih skenova** — scenario „istekla LK + Isteklo“ ne može pouzdano bez lažnog JPG-a.
+1. **Nema `demo/` sintetskih skenova** — scenario „istekla lična karta + Isteklo“ ne može pouzdano bez lažnog JPG-a.
 2. **RFZO / APR / matičar** uvek imaju `office_missing` (samo 3 MUP šaltera). Ne demoovati te usluge ako pitch obećava adresu.
 3. **Mikrofon** nema „Slušam…“ ni `onerror` — `frontend/components/DescribeBox.tsx`.
 4. **Related** na vodiču nije klikabilan — `frontend/app/vodic/[caseId]/page.tsx`.
@@ -91,7 +91,7 @@ Pre žirija, offline provera: `GET /health/llm` + jedan TTS + jedan Vision uploa
 - try/catch oko `sessionStorage` na predlozima
 - nema default slug-a `licna-karta-zamena`; ako fali `slug`, vratiti na predloge
 - indikator „Slušam…“ + `onerror` na mikrofonu
-- „Nova pretraga“ da očisti `putokaz-case`
+- „Nova pretraga“ da očisti `nasalter-case`
 - link nazad na `/predlozi/{id}` sa vodiča
 - ažurirati `frontend/app/pomoc/page.tsx`
 
@@ -132,7 +132,7 @@ Raditi samo odozgo nadole. Donji redovi su „ako ostane sat“.
 
 ## Scenariji pred žirijem (ne menjati)
 
-1. `istekla mi je lična` + sken istekle LK → kartice → **Isteklo** + vodič + TTS. Ako nema grada: mesto na vodiču ili nalog.
+1. `istekla mi je lična` + sken istekle lične karte → kartice → **Isteklo** + vodič + TTS. Ako nema grada: mesto na vodiču ili nalog.
 2. `selim se iz Pirota u Beograd` → Ljermontova 12a (tekst pobedi nalog) + mapa ako stigne.
 3. Nejasan unos → pitanja / „Nijedna nije to“.
 

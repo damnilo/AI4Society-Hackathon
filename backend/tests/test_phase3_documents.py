@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 sys.path.insert(0, str(ROOT))
 
-tmpdir = Path(tempfile.mkdtemp(prefix="putokaz-p3-"))
+tmpdir = Path(tempfile.mkdtemp(prefix="nasalter-p3-"))
 os.environ["DATABASE_URL"] = f"sqlite:///{(tmpdir / 't.db').as_posix()}"
 os.environ["UPLOAD_DIR"] = str(tmpdir / "uploads")
 os.environ["JWT_SECRET"] = "test-secret-phase3"
@@ -105,7 +105,7 @@ class ExtractionUnitTests(unittest.TestCase):
         )
         item = checklist_item(
             doc_type="licna_karta",
-            how_to_obtain="Ponesi LK.",
+            how_to_obtain="Ponesi ličnu kartu.",
             pool=[expired],
             attached=[expired],
             as_of=as_of,

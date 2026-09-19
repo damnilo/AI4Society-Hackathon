@@ -3,9 +3,9 @@ import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Putokaz — vodič kroz procedure",
+  title: "NaŠalter — vodič kroz procedure",
   description:
-    "Opisite šta želite da završite. Putokaz predlaže proceduru, šta poneti i gde da odete.",
+    "Opišite šta želite da završite. NaŠalter predlaže proceduru, šta poneti i gde da odete.",
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var s=localStorage.getItem('putokaz-font-scale');if(s){document.documentElement.style.setProperty('--font-scale',s);}}catch(e){}})();",
+              "(function(){try{var s=localStorage.getItem('nasalter-font-scale')||localStorage.getItem('putokaz-font-scale');if(s){document.documentElement.style.setProperty('--font-scale',s);}}catch(e){}})();",
           }}
         />
       </head>

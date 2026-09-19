@@ -14,7 +14,7 @@ cd backend
 |------|--------|-----------------|
 | `istekla-licna-karta.png` | gost + `istekla mi je lična` | **Isteklo** (važi do 2024-03-01) |
 | `necitko-sken.pdf` | isti tok, loš prilog | **Nečitko** (PDF, Vision se ne zove) |
-| `pasos.png` | isti tok, pogrešan dokument | **Ne odgovara** (pasoš uz zahtev za LK) |
+| `pasos.png` | isti tok, pogrešan dokument | **Ne odgovara** (pasoš uz zahtev za ličnu kartu) |
 
 Kartice izlaze odmah (matching na tekst). Status se crta posle uploada sa `GET /document-status`. Sačekaj ~2 s ako piše „Provera skena“.
 

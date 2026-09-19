@@ -20,7 +20,7 @@ import {
 } from "@/lib/places";
 
 const GDPR =
-  "Nalog nije obavezan da biste našli proceduru. Čuvamo email, ime, mesto i skenove koje sami otpremite, da ih ne unosite svaki put. Prilog gosta se briše posle 48 sati ako ga nalogom ne preuzmete. Putokaz nije eUprava i ne šalje zahtev umesto vas.";
+  "Nalog nije obavezan da biste našli proceduru. Čuvamo email, ime, mesto i skenove koje sami otpremite, da ih ne unosite svaki put. Prilog gosta se briše posle 48 sati ako ga nalogom ne preuzmete. NaŠalter nije eUprava i ne šalje zahtev umesto vas.";
 
 export default function PrijavaPage() {
   const router = useRouter();

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const KEY = "putokaz-font-scale";
+const KEY = "nasalter-font-scale";
 const MIN = 0.85;
 const MAX = 1.5;
 const STEP = 0.05;
@@ -22,7 +22,8 @@ export function FontSizeControl() {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(KEY);
+      const saved =
+        localStorage.getItem(KEY) || localStorage.getItem("putokaz-font-scale");
       if (saved) setScale(clamp(Number(saved)));
     } catch {
       /* localStorage nedostupan — ostaje podrazumevano */

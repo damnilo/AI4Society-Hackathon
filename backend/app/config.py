@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    database_url: str = "sqlite:///./putokaz.db"
+    database_url: str = "sqlite:///./nasalter.db"
     xai_api_key: str = ""
     openai_api_key: str = ""
     xai_model: str = "grok-3"

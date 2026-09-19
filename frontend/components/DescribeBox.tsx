@@ -77,7 +77,7 @@ export function DescribeBox({
 
   function persist(result: MatchResponse, value: string, fileName: string) {
     sessionStorage.setItem(
-      "putokaz-case",
+      "nasalter-case",
       JSON.stringify({
         ...result,
         text: value,
