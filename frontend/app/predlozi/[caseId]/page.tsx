@@ -36,11 +36,15 @@ export default function PredloziPage() {
   useEffect(() => {
     const raw = sessionStorage.getItem("putokaz-case");
     if (raw) {
-      const parsed = JSON.parse(raw) as StoredCase;
-      if (parsed.case_id === caseId) {
-        setStored(parsed);
-        setRetryOpen(parsed.need_clarification && parsed.source !== "catalog");
-        return;
+      try {
+        const parsed = JSON.parse(raw) as StoredCase;
+        if (parsed.case_id === caseId) {
+          setStored(parsed);
+          setRetryOpen(parsed.need_clarification && parsed.source !== "catalog");
+          return;
+        }
+      } catch {
+        sessionStorage.removeItem("putokaz-case");
       }
     }
     if (!isUuid(caseId)) {

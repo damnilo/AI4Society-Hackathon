@@ -30,11 +30,13 @@ export function ClarifyBox({
         payload[`q${index + 1}`] = `${question} ${filled[index]}`;
       });
       const result = await clarifyCase(caseId, payload);
+      const extra = filled.join(" ");
+      const nextText = [originalText, extra].filter(Boolean).join("\n").trim();
       sessionStorage.setItem(
         "putokaz-case",
         JSON.stringify({
           ...result,
-          text: originalText,
+          text: nextText || originalText,
           source: "typed",
         }),
       );

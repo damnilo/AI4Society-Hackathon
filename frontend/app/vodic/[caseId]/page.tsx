@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import {
   ApiError,
@@ -44,6 +44,9 @@ function needsPlaceQuestion(guide: Guide): boolean {
 
 function guideSpeechText(guide: Guide): string {
   const parts: string[] = [guide.title];
+  if (guide.legal_excerpt) {
+    parts.push(guide.legal_excerpt);
+  }
   guide.steps.forEach((step, index) => {
     parts.push(`Korak ${index + 1}. ${step.title}. ${step.description}`);
   });
@@ -128,8 +131,9 @@ function DocRow({ doc }: { doc: RequiredDoc }) {
 
 function VodicBody() {
   const { caseId } = useParams<{ caseId: string }>();
+  const router = useRouter();
   const params = useSearchParams();
-  const slug = params.get("slug") ?? "licna-karta-zamena";
+  const slug = params.get("slug");
   const [guide, setGuide] = useState<Guide | null>(null);
   const [error, setError] = useState("");
   const [place, setPlace] = useState("");
@@ -170,6 +174,13 @@ function VodicBody() {
   }, []);
 
   useEffect(() => {
+    if (!slug) {
+      router.replace(`/predlozi/${caseId}`);
+    }
+  }, [slug, caseId, router]);
+
+  useEffect(() => {
+    if (!slug) return;
     let cancelled = false;
     fetchGuide(caseId, slug)
       .then(async (g) => {
@@ -193,7 +204,7 @@ function VodicBody() {
 
   async function submitPlace() {
     const city = place.trim();
-    if (!city || placeBusy) return;
+    if (!city || placeBusy || !slug) return;
     setPlaceBusy(true);
     setPlaceNote("");
     try {
@@ -286,7 +297,7 @@ function VodicBody() {
   }
 
   async function speakGuide() {
-    if (!guide) return;
+    if (!guide || !slug) return;
     releaseAudio();
     setSpeechNote("");
     setSpeechLoading(true);
@@ -346,6 +357,10 @@ function VodicBody() {
     return <p className="alert">{error}</p>;
   }
 
+  if (!slug) {
+    return <p>Vraćam na predloge…</p>;
+  }
+
   if (!guide) {
     return <p>Pripremam vodič…</p>;
   }
@@ -357,17 +372,27 @@ function VodicBody() {
         {guide.institution_label}. Ovo je redosled koraka i spisak šta da
         ponesete — nije podnošenje zahteva.
       </p>
-      <div className="row" style={{ marginTop: 0, marginBottom: 24 }}>
+      <div className="row no-print" style={{ marginTop: 0, marginBottom: 24 }}>
         <button className="btn btn-primary" type="button" onClick={() => void speakGuide()}>
           Pročitaj vodič
         </button>
         <button className="btn btn-ghost" type="button" onClick={stopSpeech}>
           Stani
         </button>
+        <button className="btn btn-ghost" type="button" onClick={() => window.print()}>
+          Štampaj vodič
+        </button>
       </div>
-      {speechNote ? <p className="alert">{speechNote}</p> : null}
-      {speechLoading ? <p className="note">Pripremam glas…</p> : null}
-      {speaking && !speechLoading ? <p className="note">Čitam vodič…</p> : null}
+      {speechNote ? <p className="alert no-print">{speechNote}</p> : null}
+      {speechLoading ? <p className="note no-print">Pripremam glas…</p> : null}
+      {speaking && !speechLoading ? <p className="note no-print">Čitam vodič…</p> : null}
+
+      {guide.legal_excerpt ? (
+        <div className="panel">
+          <h2 style={{ marginTop: 0 }}>Zašto ova procedura</h2>
+          <p style={{ marginBottom: 0 }}>{guide.legal_excerpt}</p>
+        </div>
+      ) : null}
 
       <div className="panel">
         <h2 style={{ marginTop: 0 }}>Koraci</h2>
@@ -388,7 +413,7 @@ function VodicBody() {
         {guide.documents.map((d) => (
           <DocRow key={d.type} doc={d} />
         ))}
-        <div className="row">
+        <div className="row no-print">
           <label className="file">
             {attachBusy ? "Šaljem sken…" : "Priloži papir uz ovaj vodič"}
             <input
@@ -430,7 +455,7 @@ function VodicBody() {
                     placeholder="Npr. Pirot"
                   />
                 </label>
-                <div className="row">
+                <div className="row no-print">
                   <button
                     className="btn btn-primary"
                     type="button"
@@ -453,6 +478,18 @@ function VodicBody() {
             Tel: {guide.office.phone}
           </p>
         )}
+        {guide.office && !guide.office_missing ? (
+          <p className="no-print" style={{ marginTop: 16 }}>
+            <a
+              className="btn btn-ghost"
+              href={`https://maps.google.com/?q=${guide.office.lat},${guide.office.lng}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Otvori na mapi
+            </a>
+          </p>
+        ) : null}
         {guide.euprava_url &&
         (guide.channel === "online" || guide.channel === "both") ? (
           <p style={{ marginTop: 16 }}>
@@ -479,13 +516,33 @@ function VodicBody() {
       {guide.related.length > 0 ? (
         <p>
           Posle ovoga često treba:{" "}
-          {guide.related.map((r) => r.title).join(", ")}.
+          {guide.related.map((r, index) => (
+            <span key={r.slug}>
+              {index > 0 ? ", " : ""}
+              <Link
+                className="related-link"
+                href={`/vodic/${caseId}?slug=${encodeURIComponent(r.slug)}`}
+              >
+                {r.title}
+              </Link>
+            </span>
+          ))}
+          .
         </p>
       ) : null}
 
-      <Link className="btn btn-ghost" href="/">
-        Nova pretraga
-      </Link>
+      <div className="row no-print">
+        <Link className="btn btn-ghost" href={`/predlozi/${caseId}`}>
+          Nazad na predloge
+        </Link>
+        <Link
+          className="btn btn-ghost"
+          href="/"
+          onClick={() => sessionStorage.removeItem("putokaz-case")}
+        >
+          Nova pretraga
+        </Link>
+      </div>
     </>
   );
 }

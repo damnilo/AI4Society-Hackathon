@@ -42,6 +42,7 @@ export type Guide = {
   steps: { title: string; description: string }[];
   documents: RequiredDoc[];
   related: { slug: string; title: string }[];
+  legal_excerpt?: string;
   source_name: string;
   source_url: string;
   last_verified_at: string;
