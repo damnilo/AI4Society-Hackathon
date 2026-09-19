@@ -10,6 +10,7 @@ from app.config import settings
 from app.db import get_session
 from app.models import User
 from app.schemas import AuthLogin, AuthRegister, RefreshBody, TokenOut
+from app.services.catalog import normalize_account_municipality
 
 router = APIRouter(tags=["auth"])
 
@@ -48,11 +49,15 @@ def register(body: AuthRegister, session: Session = Depends(get_session)) -> Tok
     existing = session.scalars(select(User).where(User.email == body.email.lower())).first()
     if existing:
         raise HTTPException(status_code=409, detail="Email already registered")
+    try:
+        municipality = normalize_account_municipality(session, body.municipality)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     user = User(
         email=body.email.lower(),
         password_hash=_hash_password(body.password),
         name=body.name,
-        municipality=body.municipality,
+        municipality=municipality,
     )
     session.add(user)
     session.commit()

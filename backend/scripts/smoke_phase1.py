@@ -121,8 +121,11 @@ def main() -> None:
         )
         if clarified.status_code != 200:
             fail(f"clarify {clarified.status_code} {clarified.text}")
-        if clarified.json().get("text") != original_text:
-            fail(f"clarify overwrote raw_text: {clarified.json().get('text')}")
+        clarified_text = clarified.json().get("text") or ""
+        if original_text not in clarified_text:
+            fail(f"clarify dropped original text: {clarified_text}")
+        if "studiram tri meseca" not in clarified_text:
+            fail(f"clarify hid answers from text: {clarified_text}")
         if [c["score"] for c in clarified.json()["candidates"]][:3] == [0.94, 0.48, 0.33]:
             fail("demo cache must not win on clarify")
         picked = client.post(

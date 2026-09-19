@@ -15,8 +15,12 @@ def build_speech_script(
     steps: list[dict[str, object]],
     office: OfficeOut | None,
     items: list[DocumentStatusItem],
+    legal_excerpt: str = "",
 ) -> str:
     parts: list[str] = [title]
+    excerpt = legal_excerpt.strip()
+    if excerpt:
+        parts.append(excerpt)
     for index, step in enumerate(steps, start=1):
         heading = str(step.get("title") or "").strip()
         body = str(step.get("description") or "").strip()
@@ -43,4 +47,5 @@ def script_from_guide(guide: GuideOut, items: list[DocumentStatusItem]) -> str:
         steps=guide.steps,
         office=guide.office,
         items=items,
+        legal_excerpt=guide.legal_excerpt,
     )

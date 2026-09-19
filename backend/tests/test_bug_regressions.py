@@ -280,7 +280,9 @@ class ApiRegressionTests(unittest.TestCase):
         )
         self.assertEqual(clarified.status_code, 200, clarified.text)
         body = clarified.json()
-        self.assertEqual(body["text"], "selim se iz Pirota u Beograd")
+        self.assertIn("selim se iz Pirota u Beograd", body["text"])
+        self.assertIn("studiram tri meseca", body["text"])
+        self.assertEqual(body["extra_answers"]["stalnost"], "nije stalno, studiram tri meseca")
         self.assertNotEqual(_scores(body), CACHE_MOVE)
 
     def test_no_place_does_not_pick_random_pu(self) -> None:
@@ -424,6 +426,46 @@ class ApiRegressionTests(unittest.TestCase):
         self.assertNotIn("requestBody", spec["paths"]["/cases/{case_id}"]["get"])
         self.assertIn("requestBody", spec["paths"]["/cases"]["post"])
         self.assertIn("office_missing_reason", spec["components"]["schemas"]["GuideOut"]["properties"])
+        self.assertIn("legal_excerpt", spec["components"]["schemas"]["GuideOut"]["properties"])
+        self.assertIn("extra_answers", spec["components"]["schemas"]["CaseOut"]["properties"])
+
+    def test_guide_exposes_legal_excerpt_and_related_slugs(self) -> None:
+        created = self.client.post(
+            "/cases", json={"text": "selim se iz Pirota u Beograd"}
+        ).json()
+        guide = self.client.post(
+            f"/cases/{created['case_id']}/select",
+            json={"slug": "prijava-prebivalista"},
+        ).json()
+        self.assertIn("prebivališt", guide["legal_excerpt"].lower())
+        slugs = [item["slug"] for item in guide["related"]]
+        self.assertTrue(slugs)
+        self.assertTrue(all(item.get("title") for item in guide["related"]))
+        bor = self.client.post(
+            f"/cases/{created['case_id']}/select",
+            json={"slug": "prijava-boravista"},
+        ).json()
+        self.assertIn("privremen", bor["legal_excerpt"].lower())
+
+    def test_unknown_municipality_is_rejected(self) -> None:
+        response = self.client.post(
+            "/auth/register",
+            json={
+                "email": "los-mesto@example.com",
+                "password": "password1",
+                "name": "Ana",
+                "municipality": "Atlantida",
+            },
+        )
+        self.assertEqual(response.status_code, 400, response.text)
+        self.assertIn("mesto", response.json()["detail"].lower())
+
+    def test_health_llm_reports_openai(self) -> None:
+        body = self.client.get("/health/llm").json()
+        self.assertIn("openai_configured", body)
+        self.assertFalse(body["openai_configured"])
+        self.assertFalse(body["openai_ok"])
+        self.assertIn("OPENAI", body["openai_detail"])
 
     def test_account_municipality_fills_office_when_text_has_no_place(self) -> None:
         email = "faza5-mesto@example.com"

@@ -140,6 +140,16 @@ def place_id_from_label(session: Session, label: str | None) -> str | None:
     return to_place or from_place
 
 
+def normalize_account_municipality(session: Session, label: str | None) -> str | None:
+    """Sačuvaj places.id ili None. Nepoznata labela → ValueError."""
+    if label is None or not str(label).strip():
+        return None
+    place_id = place_id_from_label(session, label)
+    if not place_id:
+        raise ValueError("Nepoznato mesto. Izaberite Beograd, Pirot ili Niš.")
+    return place_id
+
+
 def apply_account_municipality(
     session: Session,
     *,

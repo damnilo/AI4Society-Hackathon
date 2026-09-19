@@ -67,6 +67,16 @@ class SpeechScriptTests(unittest.TestCase):
         self.assertNotIn("uplatnica", text.lower())
         self.assertIn("nije eUprava", text)
 
+    def test_includes_legal_excerpt(self) -> None:
+        text = build_speech_script(
+            title="Prijava prebivališta",
+            steps=[],
+            office=None,
+            items=[],
+            legal_excerpt="Boravište je privremeno. Ovo je stalna prijava.",
+        )
+        self.assertIn("privremeno", text)
+
 
 class TtsApiTests(unittest.TestCase):
     @classmethod
