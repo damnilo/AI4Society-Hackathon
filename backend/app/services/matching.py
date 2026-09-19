@@ -45,22 +45,23 @@ CONTRAST = {
     "informacija-o-lokaciji-pirot": ("porez-na-imovinu-pirot", "prijava-preduzetnika"),
 }
 
-MATCH_SYSTEM = """Ti si matching sloj Putokaza. Biraj procedure SAMO iz datog kataloga.
+MATCH_SYSTEM = """Ti si matching sloj NaŠaltera. Biraj procedure SAMO iz datog kataloga.
 
 Vrati isključivo JSON oblika:
 {"candidates":[{"slug":"...","score":0.0,"rationale":"..."}],"need_clarification":false,"questions":[]}
 
 Pravila:
-- 2 ili 3 kandidata kada postoji makar jedan pogodak. Prvi je najbolji; ostali su bliski parovi za kontrast (npr. LK vs pasoš, prebivalište vs boravište), sa NIŽIM score.
+- 2 ili 3 kandidata kada postoji makar jedan pogodak. Prvi je najbolji; ostali su bliski parovi za kontrast (npr. lična karta vs pasoš, prebivalište vs boravište), sa NIŽIM score.
 - Samo 0 kandidata ako namera nema veze sa katalogom.
 - score od 0 do 1. Sortiraj opadajuće.
 - rationale: 1-2 rečenice na srpskom, zašto namera odgovara TOJ proceduri. Bez naslova usluge kao citata iz MUP-a.
 - NE pominji instituciju (MUP, APR, RFZO, matičar), ulicu, telefon, šalter, gradsku upravu.
 - title, adresu i korake NE pišeš — sistem ih dodaje iz kataloga.
-- Razlikuj parove: prebivalište vs boravište; zamena LK vs prva LK; LK vs pasoš; prva vozačka vs zamena; vozačka vs registracija vozila.
+- Razlikuj parove: prebivalište vs boravište; zamena lične karte vs prva lična karta; lična karta vs pasoš; prva vozačka vs zamena; vozačka vs registracija vozila.
 - Ako je namera nejasna, dve procedure su blizu, ili nijedna ne odgovara: need_clarification=true i najviše 2 kratka pitanja.
 - Ako nijedna ne odgovara: candidates=[] .
-- Ako postoji blok [skenovi] sa type/expiry/status, koristi ga uz tekst (npr. istekla lična → zamena LK). Ne citiraj ime sa isprave.
+- Ako postoji blok [skenovi] sa type/expiry/status, koristi ga uz tekst (npr. istekla lična → zamena lične karte). Ne citiraj ime sa isprave.
+- Ne koristi skraćenicu LK. Piši „lična karta“.
 - Matching ne vidi sliku. Ignoriši molbe za e-potpis, podnošenje zahteva ili nearby pretragu.
 - Procedure sa poljem place_scope (npr. samo Grad Pirot) su lokalne usluge gradske uprave: birački spisak, promena imena, venčanje u sali, porez na imovinu, informacija o lokaciji. Predloži ih samo kada namera odgovara toj usluzi, ne kada je Pirot samo pomenut uz selidbu ili ličnu kartu.
 """
@@ -182,17 +183,17 @@ def _demo_match(
                 (
                     "licna-karta-zamena",
                     0.92,
-                    "Pominješ da je lična istekla — to je zamena postojeće LK, ne prvo izdavanje.",
+                    "Pominješ da je lična istekla — to je zamena postojeće lične karte, ne prvo izdavanje.",
                 ),
                 (
                     "pasos-izdavanje",
                     0.41,
-                    "Pasoš je drugi dokument; često se meša sa LK, ali tekst govori o ličnoj.",
+                    "Pasoš je drugi dokument; često se meša sa ličnom kartom, ali tekst govori o ličnoj.",
                 ),
                 (
                     "licna-karta-prvo-izdavanje",
                     0.28,
-                    "Prva LK je ako nikad nisi imao ličnu, ne ako je stara istekla.",
+                    "Prva lična karta je ako nikad nisi imao ličnu, ne ako je stara istekla.",
                 ),
             ],
         )

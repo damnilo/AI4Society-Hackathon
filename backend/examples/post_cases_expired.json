@@ -6,23 +6,23 @@
       {
         "slug": "licna-karta-zamena",
         "title": "Zamena lične karte (istekla, oštećena, promena podataka)",
-        "plain_summary": "Nova LK kad je stara istekla, oštećena, izgubljena ili su se promenili podaci.",
+        "plain_summary": "Nova lična karta kad je stara istekla, oštećena, izgubljena ili su se promenili podaci.",
         "score": 0.92,
-        "rationale": "Pominješ da je lična istekla — to je zamena postojeće LK, ne prvo izdavanje."
+        "rationale": "Pominješ da je lična istekla — to je zamena postojeće lične karte, ne prvo izdavanje."
       },
       {
         "slug": "pasos-izdavanje",
         "title": "Izdavanje / zamena pasoša",
         "plain_summary": "Putna isprava za putovanje van Srbije.",
         "score": 0.41,
-        "rationale": "Pasoš je drugi dokument; često se meša sa LK."
+        "rationale": "Pasoš je drugi dokument; često se meša sa ličnom kartom."
       },
       {
         "slug": "licna-karta-prvo-izdavanje",
         "title": "Prvo izdavanje lične karte",
         "plain_summary": "Prva biometrijska lična karta.",
         "score": 0.28,
-        "rationale": "Prva LK je ako nikad nisi imao ličnu."
+        "rationale": "Prva lična karta je ako nikad nisi imao ličnu."
       }
     ],
     "need_clarification": false,

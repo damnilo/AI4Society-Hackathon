@@ -34,7 +34,7 @@ export default function PredloziPage() {
   const [retryOpen, setRetryOpen] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("putokaz-case");
+    const raw = sessionStorage.getItem("nasalter-case");
     if (raw) {
       try {
         const parsed = JSON.parse(raw) as StoredCase;
@@ -44,7 +44,7 @@ export default function PredloziPage() {
           return;
         }
       } catch {
-        sessionStorage.removeItem("putokaz-case");
+        sessionStorage.removeItem("nasalter-case");
       }
     }
     if (!isUuid(caseId)) {
@@ -62,7 +62,7 @@ export default function PredloziPage() {
           text: row.text,
           source: "typed",
         };
-        sessionStorage.setItem("putokaz-case", JSON.stringify(next));
+        sessionStorage.setItem("nasalter-case", JSON.stringify(next));
         setStored(next);
         setRetryOpen(next.need_clarification);
       })

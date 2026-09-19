@@ -12,7 +12,7 @@ CONFIDENCE_MIN = 0.42
 SCORE_GAP_MIN = 0.08
 MAX_CANDIDATES = 3
 UNCERTAIN_QUESTIONS = [
-    "Da li ti treba lični dokument (LK, pasoš, vozačka) ili promena adrese?",
+    "Da li ti treba lični dokument (lična karta, pasoš, vozačka) ili promena adrese?",
     "Da li je selidba stalna ili privremena?",
 ]
 

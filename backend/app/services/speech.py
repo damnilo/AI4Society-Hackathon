@@ -5,7 +5,7 @@ from __future__ import annotations
 from app.schemas import DocumentStatusItem, GuideOut, OfficeOut
 from app.services.extraction import doc_label
 
-SPEECH_DISCLAIMER = "Putokaz nije eUprava i ne overava dokumenta."
+SPEECH_DISCLAIMER = "NaŠalter nije eUprava i ne overava dokumenta."
 MAX_SPEECH_CHARS = 3500
 
 

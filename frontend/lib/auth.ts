@@ -4,12 +4,36 @@ export type SessionUser = {
   municipality?: string | null;
 };
 
-const ACCESS_KEY = "putokaz-access";
-const REFRESH_KEY = "putokaz-refresh";
-const USER_KEY = "putokaz-user";
-const LEGACY_NAME_KEY = "putokaz-name";
+const ACCESS_KEY = "nasalter-access";
+const REFRESH_KEY = "nasalter-refresh";
+const USER_KEY = "nasalter-user";
+const LEGACY_NAME_KEY = "nasalter-name";
+const LEGACY_KEYS: [string, string][] = [
+  [ACCESS_KEY, "putokaz-access"],
+  [REFRESH_KEY, "putokaz-refresh"],
+  [USER_KEY, "putokaz-user"],
+  ["nasalter-font-scale", "putokaz-font-scale"],
+];
 
-export const AUTH_EVENT = "putokaz-auth";
+export const AUTH_EVENT = "nasalter-auth";
+export const CASE_STORAGE_KEY = "nasalter-case";
+
+export function migrateLegacyKeys(): void {
+  if (typeof window === "undefined") return;
+  for (const [next, old] of LEGACY_KEYS) {
+    if (!window.localStorage.getItem(next)) {
+      const value = window.localStorage.getItem(old);
+      if (value) window.localStorage.setItem(next, value);
+    }
+    window.localStorage.removeItem(old);
+  }
+  window.localStorage.removeItem("putokaz-name");
+  if (!window.sessionStorage.getItem(CASE_STORAGE_KEY)) {
+    const oldCase = window.sessionStorage.getItem("putokaz-case");
+    if (oldCase) window.sessionStorage.setItem(CASE_STORAGE_KEY, oldCase);
+  }
+  window.sessionStorage.removeItem("putokaz-case");
+}
 
 function emitAuth(): void {
   if (typeof window === "undefined") return;

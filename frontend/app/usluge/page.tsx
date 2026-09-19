@@ -49,7 +49,7 @@ function UslugeBody() {
     try {
       const result = await createCase(example);
       sessionStorage.setItem(
-        "putokaz-case",
+        "nasalter-case",
         JSON.stringify({
           ...result,
           text: example,

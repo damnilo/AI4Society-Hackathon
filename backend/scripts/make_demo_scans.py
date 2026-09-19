@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "demo"
 
-DISCLAIMER = "SINTETSKI PRIMER — NIJE PRAVA ISPRAVA — PUTOKAZ DEMO"
+DISCLAIMER = "SINTETSKI PRIMER — NIJE PRAVA ISPRAVA — NAŠALTER DEMO"
 FAKE_NAME = "Mila Jovanovic"
 EXPIRED = "01.03.2024"
 PASSPORT_EXPIRY = "15.08.2030"
@@ -88,7 +88,7 @@ def make_unreadable_pdf(path: Path) -> None:
         b"2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n"
         b"3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 90]/Contents 4 0 R>>endobj\n"
         b"4 0 obj<</Length 68>>stream\n"
-        b"BT /F1 10 Tf 8 50 Td (PUTOKAZ DEMO ISECENI SKEN) Tj ET\n"
+        b"BT /F1 10 Tf 8 50 Td (NASALTER DEMO ISECENI SKEN) Tj ET\n"
         b"endstream\nendobj\n"
         b"trailer<</Root 1 0 R>>\n%%EOF\n"
     )

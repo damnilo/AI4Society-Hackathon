@@ -17,12 +17,12 @@
       "selidba u Beograd, gde da odem u MUP"
     ],
     "steps": [
-      {"title": "Pripremi dokumenta i uplatnicu", "description": "Na eUpravi generiši uplatnicu. Pripremi važeću LK, dokaz o stanu (ugovor, list nepokretnosti) i saglasnost vlasnika ako stan nije tvoj.", "channel": "both", "url": "https://euprava.gov.rs/usluge/01048"},
+      {"title": "Pripremi dokumenta i uplatnicu", "description": "Na eUpravi generiši uplatnicu. Pripremi važeću ličnu kartu, dokaz o stanu (ugovor, list nepokretnosti) i saglasnost vlasnika ako stan nije tvoj.", "channel": "both", "url": "https://euprava.gov.rs/usluge/01048"},
       {"title": "Idi na šalter nadležne PU po NOVOJ adresi", "description": "Obrazac za prijavu dobijaš na šalteru. U Beogradu upravni poslovi: Ljermontova 12a. Ne ideš u PU starog grada.", "channel": "counter"},
-      {"title": "Ažuriraj adresu na ličnoj karti", "description": "Ako imaš LK sa čipom, adresa se upisuje u čip. Bez čipa obično ide nova LK.", "channel": "counter"}
+      {"title": "Ažuriraj adresu na ličnoj karti", "description": "Ako imaš ličnu kartu sa čipom, adresa se upisuje u čip. Bez čipa obično ide nova lična karta.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Zamena ili prvo izdavanje LK u PU po prebivalištu.", "notes": "Mora biti važeća."},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Zamena ili prvo izdavanje lične karte u PU po prebivalištu.", "notes": "Mora biti važeća."},
       {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "Generiši na portalu eUprava pre odlaska.", "notes": ""},
       {"type": "dokaz_pravnog_osnova", "must_be_valid": false, "how_to_obtain": "Ugovor, list nepokretnosti, rešenje o kućnom broju itd.", "notes": "Dokaz da smeš da živiš na toj adresi."},
       {"type": "saglasnost_vlasnika", "must_be_valid": false, "how_to_obtain": "Na šalteru, overa, ili eUsluga saglasnosti vlasnika (EGN broj).", "notes": "Samo ako nisi vlasnik/suvlasnik."}
@@ -55,10 +55,10 @@
     ],
     "steps": [
       {"title": "Utvrdi da ti treba boravište, ne prebivalište", "description": "Ako se seliš stalno — to je prijava prebivališta. Ako ostaješ prijavljen u starom mestu — boravište.", "channel": "online", "url": "https://www.mup.gov.rs/wps/portal/sr/gradjani/dokumenta/prebivaliste"},
-      {"title": "Šalter MUP-a po mestu boravka", "description": "Lično sa važećom LK. Na eUpravi postoji eZakazivanje za prijavu boravišta gde je dostupno.", "channel": "counter"}
+      {"title": "Šalter MUP-a po mestu boravka", "description": "Lično sa važećom ličnom kartom. Na eUpravi postoji eZakazivanje za prijavu boravišta gde je dostupno.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "eUprava uplatnica.", "notes": ""}
     ],
     "institution": "mup",
@@ -88,11 +88,11 @@
       "папир за пребивалиште за конкурс"
     ],
     "steps": [
-      {"title": "Uplatnica i LK", "description": "Generiši uplatnicu na eUpravi. Ponesi važeću ličnu kartu.", "channel": "online", "url": "https://euprava.gov.rs/"},
+      {"title": "Uplatnica i lična karta", "description": "Generiši uplatnicu na eUpravi. Ponesi važeću ličnu kartu.", "channel": "online", "url": "https://euprava.gov.rs/"},
       {"title": "Šalter po mestu prebivališta", "description": "Obrazac se dobija na šalteru. Beograd: Ljermontova 12a.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK podnosioca.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta podnosioca.", "notes": ""},
       {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "eUprava.", "notes": ""}
     ],
     "institution": "mup",
@@ -112,7 +112,7 @@
     "intent_examples": [
       "prvi put vadim ličnu kartu",
       "први пут вадим личну карту",
-      "dete napunilo godine treba LK",
+      "dete napunilo godine treba lična karta",
       "немам личну карту никад нисам имао",
       "biometrijska lična prvi put",
       "izvaditi ličnu za maloletno dete",
@@ -122,8 +122,8 @@
       "zakazivanje za prvu ličnu kartu"
     ],
     "steps": [
-      {"title": "Zakaži termin (ako je dostupno)", "description": "eZakazivanje za LK/pasoš na eUpravi.", "channel": "online", "url": "https://euprava.gov.rs/usluge/00005"},
-      {"title": "Uplatnica i identitet", "description": "Uplatnica sa eUprave. Ako nemaš staru LK, ponesi pasoš ili drugu ispravu. Fotografija 50x50 opciono.", "channel": "both", "url": "https://euprava.gov.rs/"},
+      {"title": "Zakaži termin (ako je dostupno)", "description": "eZakazivanje za ličnu kartu / pasoš na eUpravi.", "channel": "online", "url": "https://euprava.gov.rs/usluge/00005"},
+      {"title": "Uplatnica i identitet", "description": "Uplatnica sa eUprave. Ako nemaš staru ličnu kartu, ponesi pasoš ili drugu ispravu. Fotografija 50x50 opciono.", "channel": "both", "url": "https://euprava.gov.rs/"},
       {"title": "Šalter po prebivalištu", "description": "Lično pojavljivanje. Organ može da pribavi izvod i državljanstvo po službenoj dužnosti.", "channel": "counter"}
     ],
     "required_documents": [
@@ -143,8 +143,8 @@
   {
     "slug": "licna-karta-zamena",
     "title": "Zamena lične karte (istekla, oštećena, promena podataka)",
-    "plain_summary": "Nova LK kad je stara istekla, oštećena, izgubljena ili su se promenili podaci/adresa (posebno bez čipa). Najčešći slučaj: „istekla mi je lična“.",
-    "legal_excerpt": "Zahtev se podnosi lično u PU/stanici po prebivalištu. Ponesi prethodnu LK ili, ako je nestala, drugu važeću ispravu (pasoš, vozačka) i uplatnicu sa eUprave.",
+    "plain_summary": "Nova lična karta kad je stara istekla, oštećena, izgubljena ili su se promenili podaci/adresa (posebno bez čipa). Najčešći slučaj: „istekla mi je lična“.",
+    "legal_excerpt": "Zahtev se podnosi lično u PU/stanici po prebivalištu. Ponesi prethodnu ličnu kartu ili, ako je nestala, drugu važeću ispravu (pasoš, vozačka) i uplatnicu sa eUprave.",
     "intent_examples": [
       "istekla mi je lična",
       "истекла ми је лична",
@@ -153,25 +153,25 @@
       "izgubio sam ličnu kartu",
       "изгубио сам личну",
       "lična je oštećena",
-      "promenio sam prezime treba nova LK",
+      "promenio sam prezime treba nova lična karta",
       "zamena lične karte",
       "замена личне карте",
       "rok važenja lične prošao"
     ],
     "steps": [
-      {"title": "Proveri datum na LK", "description": "Ako je rok prošao, treba zamena. Nestanak prijavi po uputstvu MUP-a.", "channel": "counter"},
+      {"title": "Proveri datum na ličnoj karti", "description": "Ako je rok prošao, treba zamena. Nestanak prijavi po uputstvu MUP-a.", "channel": "counter"},
       {"title": "Zakaži i plati", "description": "eZakazivanje + uplatnica na eUpravi.", "channel": "online", "url": "https://euprava.gov.rs/usluge/00005"},
-      {"title": "Šalter po prebivalištu", "description": "Lično. Stara LK ili druga isprava. Foto opciono.", "channel": "counter"}
+      {"title": "Šalter po prebivalištu", "description": "Lično. Stara lična karta ili druga isprava. Foto opciono.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": false, "how_to_obtain": "Stara LK čak i ako je istekla, ako je imaš. Ako nemaš: pasoš ili vozačka.", "notes": "Istekla LK je razlog zahteva, nije prepreka da je poneseš."},
+      {"type": "licna_karta", "must_be_valid": false, "how_to_obtain": "Stara lična karta čak i ako je istekla, ako je imaš. Ako nemaš: pasoš ili vozačka.", "notes": "Istekla lična karta je razlog zahteva, nije prepreka da je poneseš."},
       {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "eUprava.", "notes": ""}
     ],
     "institution": "mup",
     "jurisdiction_rule": "current_residence",
     "channel": "both",
     "related_slugs": ["licna-karta-prvo-izdavanje", "pasos-izdavanje", "prijava-prebivalista"],
-    "fees_note": "Taksa preko eUprave. Istovremeno LK+pasoš ima posebno uputstvo MUP-a.",
+    "fees_note": "Taksa preko eUprave. Istovremeno lična karta i pasoš ima posebno uputstvo MUP-a.",
     "source_name": "MUP — Lična karta",
     "source_url": "https://www.mup.gov.rs/wps/portal/sr/gradjani/dokumenta/licna%20karta",
     "last_verified_at": "2026-09-18"
@@ -194,12 +194,12 @@
       "lična mi važi ali nemam pasoš"
     ],
     "steps": [
-      {"title": "Zakaži termin LK/pasoš", "description": "eUprava eZakazivanje.", "channel": "online", "url": "https://euprava.gov.rs/usluge/00005"},
-      {"title": "Uplatnica i identitet", "description": "Važeća LK ili druga isprava + uplatnica.", "channel": "both", "url": "https://euprava.gov.rs/"},
+      {"title": "Zakaži termin za ličnu kartu / pasoš", "description": "eUprava eZakazivanje.", "channel": "online", "url": "https://euprava.gov.rs/usluge/00005"},
+      {"title": "Uplatnica i identitet", "description": "Važeća lična karta ili druga isprava + uplatnica.", "channel": "both", "url": "https://euprava.gov.rs/"},
       {"title": "Šalter MUP po prebivalištu", "description": "Lično. Maloletni: saglasnost drugog roditelja.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK ili druga isprava identiteta.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta ili druga isprava identiteta.", "notes": ""},
       {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "eUprava.", "notes": ""},
       {"type": "saglasnost_roditelja", "must_be_valid": false, "how_to_obtain": "eUsluga saglasnosti za pasoš maloletnog deteta, ili na šalteru.", "notes": "Samo za dete."}
     ],
@@ -229,10 +229,10 @@
     ],
     "steps": [
       {"title": "Lekarsko i uplatnica", "description": "Važeće lekarsko uverenje za vozače + eUprava uplatnica.", "channel": "both", "url": "https://euprava.gov.rs/"},
-      {"title": "Šalter saobraćaja / PU", "description": "Lično sa LK i dokazom o ispitu.", "channel": "counter"}
+      {"title": "Šalter saobraćaja / PU", "description": "Lično sa ličnom kartom i dokazom o ispitu.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "lekarsko_vozac", "must_be_valid": true, "how_to_obtain": "Ovlašćena zdravstvena ustanova za vozače.", "notes": "Mora biti u roku."},
       {"type": "dokaz_ispit_voznje", "must_be_valid": false, "how_to_obtain": "Auto-škola / potvrda o položenom ispitu.", "notes": ""},
       {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "eUprava.", "notes": ""}
@@ -267,7 +267,7 @@
     ],
     "required_documents": [
       {"type": "vozacka_dozvola", "must_be_valid": false, "how_to_obtain": "Stara dozvola, i ako je istekla.", "notes": ""},
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "lekarsko_vozac", "must_be_valid": true, "how_to_obtain": "Po potrebi, ovlašćena ustanova.", "notes": "Zavisi od slučaja / kategorije."},
       {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "eUprava.", "notes": ""}
     ],
@@ -316,8 +316,8 @@
   {
     "slug": "uverenje-o-drzavljanstvu",
     "title": "Uverenje o državljanstvu",
-    "plain_summary": "Potvrda da si državljanin RS. Često treba uz prvu LK ili pasoš, ili za konkurs. MUP ponekad pribavlja po službenoj dužnosti.",
-    "legal_excerpt": "Uverenje o državljanstvu izdaje nadležni organ (matičar / opština prema evidenciji). Za prvo izdavanje LK organ može da pribavi podatke po službenoj dužnosti ako su u evidencijama RS.",
+    "plain_summary": "Potvrda da si državljanin RS. Često treba uz prvu ličnu kartu ili pasoš, ili za konkurs. MUP ponekad pribavlja po službenoj dužnosti.",
+    "legal_excerpt": "Uverenje o državljanstvu izdaje nadležni organ (matičar / opština prema evidenciji). Za prvo izdavanje lične karte organ može da pribavi podatke po službenoj dužnosti ako su u evidencijama RS.",
     "intent_examples": [
       "treba mi uverenje o državljanstvu",
       "уверење о држављанству",
@@ -328,7 +328,7 @@
       "извод држављанство"
     ],
     "steps": [
-      {"title": "Proveri da li MUP pribavlja sam", "description": "Za prvu LK/pasoš često po službenoj dužnosti. Ako ti treba papir za treće lice — matičar.", "channel": "counter"},
+      {"title": "Proveri da li MUP pribavlja sam", "description": "Za prvu ličnu kartu / pasoš često po službenoj dužnosti. Ako ti treba papir za treće lice — matičar.", "channel": "counter"},
       {"title": "Zahtev kod matičara / eUprava", "description": "Gde usluga postoji elektronski, koristi portal; inače opštinska uprava.", "channel": "both", "url": "https://euprava.gov.rs/"}
     ],
     "required_documents": [
@@ -362,10 +362,10 @@
     ],
     "steps": [
       {"title": "Nađi dom zdravlja na novoj adresi", "description": "Nije šalter MUP-a. Idi u nadležni DZ ili koristi eUslugu ako je otvorena.", "channel": "both", "url": "https://www.rfzo.rs/"},
-      {"title": "Obrazac izbora", "description": "Popuni izbor/promenu izabranog lekara. Ponesi LK i zdravstvenu ispravu.", "channel": "counter"}
+      {"title": "Obrazac izbora", "description": "Popuni izbor/promenu izabranog lekara. Ponesi ličnu kartu i zdravstvenu ispravu.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "zdravstvena_isprava", "must_be_valid": false, "how_to_obtain": "Kartica / potvrda osiguranja.", "notes": ""}
     ],
     "institution": "rfzo",
@@ -394,10 +394,10 @@
     ],
     "steps": [
       {"title": "Tehnički pregled i osiguranje", "description": "Prvo tehnički i obavezno osiguranje, pa šalter registracije.", "channel": "counter"},
-      {"title": "MUP / ovlašćeno mesto", "description": "Saobraćajna, LK, uplatnice. Adresa zavisi od PU — nije uvek Ljermontova (tu je i saobraćajna uprava BG).", "channel": "counter"}
+      {"title": "MUP / ovlašćeno mesto", "description": "Saobraćajna, lična karta, uplatnice. Adresa zavisi od PU — nije uvek Ljermontova (tu je i saobraćajna uprava BG).", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "saobracajna_dozvola", "must_be_valid": false, "how_to_obtain": "Postojeća saobraćajna.", "notes": ""},
       {"type": "polisa_osiguranja", "must_be_valid": true, "how_to_obtain": "Osiguravajuće društvo.", "notes": ""},
       {"type": "tehnicki_pregled", "must_be_valid": true, "how_to_obtain": "Stanica tehničkog pregleda.", "notes": ""}
@@ -430,7 +430,7 @@
       {"title": "Podnesi APR", "description": "Elektronski ili šalter APR. Plati naknadu.", "channel": "both", "url": "https://www.apr.gov.rs/"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "apr_obrazac", "must_be_valid": false, "how_to_obtain": "APR portal / šalter.", "notes": ""}
     ],
     "institution": "apr",
@@ -445,8 +445,8 @@
   {
     "slug": "ezakazivanje-licna-pasos",
     "title": "eZakazivanje termina za ličnu kartu i/ili pasoš",
-    "plain_summary": "Online zakazivanje šaltera za LK i pasoš. Nije samo izdavanje dokumenta — samo termin. Treba eID nalog.",
-    "legal_excerpt": "Usluga omogućava zakazivanje termina u nadležnoj PU za zahtev za LK, pasoš ili oba. Dostupna punoletnim korisnicima sa eID. Kalendar do 60 dana, termini po 15 minuta.",
+    "plain_summary": "Online zakazivanje šaltera za ličnu kartu i pasoš. Nije samo izdavanje dokumenta — samo termin. Treba eID nalog.",
+    "legal_excerpt": "Usluga omogućava zakazivanje termina u nadležnoj PU za zahtev za ličnu kartu, pasoš ili oba. Dostupna punoletnim korisnicima sa eID. Kalendar do 60 dana, termini po 15 minuta.",
     "intent_examples": [
       "zakazati termin za ličnu",
       "заказати термин МУП",
@@ -468,7 +468,7 @@
     "channel": "online",
     "related_slugs": ["licna-karta-zamena", "pasos-izdavanje", "licna-karta-prvo-izdavanje"],
     "fees_note": "Zakazivanje je usluga termina; takse za dokument plaćaš kroz Plaćanje na eUpravi.",
-    "source_name": "eUprava — eZakazivanje LK/pasoš",
+    "source_name": "eUprava — eZakazivanje lične karte / pasoša",
     "source_url": "https://euprava.gov.rs/usluge/00005",
     "last_verified_at": "2026-09-18"
   },
@@ -476,7 +476,7 @@
     "slug": "saglasnost-vlasnika-prebivaliste",
     "title": "Saglasnost vlasnika za prijavu prebivališta",
     "plain_summary": "Vlasnik stana daje saglasnost da se ti prijaviš na njegovu adresu. Može eUprava (EGN broj) da ti ne mora vlasnik ići na šalter sa tobom.",
-    "legal_excerpt": "eUsluga: vlasnik/suvlasnik elektronski daje saglasnost za prijavu prebivališta punoletne osobe. Dobija EGN. Podnosilac prijave na šalteru mora da zna EGN. Treba važeća LK i prijava na eUpravu ConsentID ili sertifikat.",
+    "legal_excerpt": "eUsluga: vlasnik/suvlasnik elektronski daje saglasnost za prijavu prebivališta punoletne osobe. Dobija EGN. Podnosilac prijave na šalteru mora da zna EGN. Treba važeća lična karta i prijava na eUpravu ConsentID ili sertifikat.",
     "intent_examples": [
       "gazda treba da da saglasnost za prijavu",
       "сагласност власника стана",
@@ -488,11 +488,11 @@
       "подстанар пријава"
     ],
     "steps": [
-      {"title": "Vlasnik pokreće eUslugu", "description": "ConsentID ili sertifikat, važeća LK. Potpiše saglasnost. Javi ti EGN.", "channel": "online", "url": "https://euprava.gov.rs/usluge/01048"},
+      {"title": "Vlasnik pokreće eUslugu", "description": "ConsentID ili sertifikat, važeća lična karta. Potpiše saglasnost. Javi ti EGN.", "channel": "online", "url": "https://euprava.gov.rs/usluge/01048"},
       {"title": "Ti ideš na šalter sa EGN", "description": "Prijava prebivališta u PU po novoj adresi. Službenik traži EGN.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK vlasnika (za eUslugu) i podnosioca (za šalter).", "notes": ""}
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta vlasnika (za eUslugu) i podnosioca (za šalter).", "notes": ""}
     ],
     "institution": "mup",
     "jurisdiction_rule": "new_residence",
@@ -582,7 +582,7 @@
       {"title": "Legalizacija ako ide u inostranstvo", "description": "Za upotrebu van Srbije proveri da li treba Apostille pečat (osnovni sud).", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK podnosioca.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta podnosioca.", "notes": ""},
       {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "Ako se naplaćuje taksa.", "notes": ""}
     ],
     "institution": "maticar",
@@ -610,10 +610,10 @@
     ],
     "steps": [
       {"title": "Proveri osnov osiguranja", "description": "Zaposleni — poslodavac; penzioner — po službenoj dužnosti; nezaposlen — prijava na NSZ. Osnov određuje rok overe.", "channel": "counter"},
-      {"title": "Filijala RFZO / dom zdravlja", "description": "Ponesi zdravstvenu ispravu i LK. Gde je uvedeno, overa je elektronska/automatska.", "channel": "counter"}
+      {"title": "Filijala RFZO / dom zdravlja", "description": "Ponesi zdravstvenu ispravu i ličnu kartu. Gde je uvedeno, overa je elektronska/automatska.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "zdravstvena_isprava", "must_be_valid": false, "how_to_obtain": "Zdravstvena kartica / knjižica.", "notes": ""}
     ],
     "institution": "rfzo",
@@ -642,8 +642,8 @@
     ],
     "steps": [
       {"title": "Uzmi obrazac na šalteru informacija ili u kancelariji 20", "description": "Jedinstveno upravno mesto, Gradska uprava Pirot, Srpskih vladara 82. Radnim danom 07:00–15:00. Telefon 010/305-568.", "channel": "counter"},
-      {"title": "Ponesi ličnu kartu", "description": "Potrebna je važeća LK ili isprava o činjenici koju dokazuješ (npr. nova adresa). Takse nema.", "channel": "counter"},
-      {"title": "Preuzmi rešenje ili potvrdu", "description": "Rešenje o upisu/brisanju/ispravci stiže u roku od 24 časa. Potvrda o biračkom pravu se izdaje odmah. Proveru možeš i elektronski na sajtu MDULS unošenjem JMBG i broja LK.", "channel": "both", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/biracki-spisak"}
+      {"title": "Ponesi ličnu kartu", "description": "Potrebna je važeća lična karta ili isprava o činjenici koju dokazuješ (npr. nova adresa). Takse nema.", "channel": "counter"},
+      {"title": "Preuzmi rešenje ili potvrdu", "description": "Rešenje o upisu/brisanju/ispravci stiže u roku od 24 časa. Potvrda o biračkom pravu se izdaje odmah. Proveru možeš i elektronski na sajtu MDULS unošenjem JMBG i broja lične karte.", "channel": "both", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/biracki-spisak"}
     ],
     "required_documents": [
       {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": "Ili druga isprava o činjenici koja se dokazuje."}
@@ -673,11 +673,11 @@
     ],
     "steps": [
       {"title": "Preuzmi obrazac sa sajta grada", "description": "Zahtev „Promena ličnog imena“ je u e-servisima Gradske uprave Pirot, odeljak Građanska stanja.", "channel": "online", "url": "https://www.pirot.rs/downloads/opstauprava/GradjanskaStanja/PromenaLicnogImena.pdf"},
-      {"title": "Podnesi u Gradskoj upravi Pirot", "description": "Jedinstveno upravno mesto, Srpskih vladara 82. Ponesi važeću LK i dokaz o razlogu (npr. presuda o razvodu). Žiro-računi za takse su na sajtu grada.", "channel": "counter", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/gradanska-stanja"},
-      {"title": "Zameni ličnu kartu", "description": "Kad rešenje postane pravosnažno, idi u PU Pirot na zamenu LK sa novim imenom.", "channel": "counter"}
+      {"title": "Podnesi u Gradskoj upravi Pirot", "description": "Jedinstveno upravno mesto, Srpskih vladara 82. Ponesi važeću ličnu kartu i dokaz o razlogu (npr. presuda o razvodu). Žiro-računi za takse su na sajtu grada.", "channel": "counter", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/gradanska-stanja"},
+      {"title": "Zameni ličnu kartu", "description": "Kad rešenje postane pravosnažno, idi u PU Pirot na zamenu lične karte sa novim imenom.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "zahtev_obrazac", "must_be_valid": false, "how_to_obtain": "Obrazac sa pirot.rs (Građanska stanja).", "notes": ""}
     ],
     "institution": "grad-pirot",
@@ -705,11 +705,11 @@
     ],
     "steps": [
       {"title": "Izaberi termin i mesto", "description": "Sala Gradske uprave: radnim danom, van radnog vremena ili vikendom. Van zgrade — poseban zahtev. Obrasci su u e-servisima Matični poslovi.", "channel": "online", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/maticni-poslovi"},
-      {"title": "Podnesi zahtev i plati taksu", "description": "Ponesi važeće LK oba buduća supružnika. Ako je neko stranac ili treba uverenje o slobodnom bračnom stanju — reši to pre termina.", "channel": "counter"},
+      {"title": "Podnesi zahtev i plati taksu", "description": "Ponesi važeće lične karte oba buduća supružnika. Ako je neko stranac ili treba uverenje o slobodnom bračnom stanju — reši to pre termina.", "channel": "counter"},
       {"title": "Dan venčanja u sali", "description": "Matičar vodi zapisnik. Posle toga možeš da izvadiš izvod iz matične knjige venčanih (eIzvod ili šalter).", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeće LK oba lica.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeće lične karte oba lica.", "notes": ""},
       {"type": "zahtev_obrazac", "must_be_valid": false, "how_to_obtain": "Obrazac sa pirot.rs prema terminu (radno vreme / vikend / van prostorija).", "notes": ""}
     ],
     "institution": "grad-pirot",
@@ -738,10 +738,10 @@
     ],
     "steps": [
       {"title": "Odaberi obrazac", "description": "Građani koji ne vode knjige: PPI-2. Pravna lica / preduzetnici: PPI-1. Obrasci su na sajtu grada, Lokalna poreska administracija.", "channel": "online", "url": "https://www.pirot.rs/index.php/sr/lokalna-samouprava/opstinska-uprava/lokalna-poreska-administracija/obrasci"},
-      {"title": "Podnesi LPA u Gradskoj upravi Pirot", "description": "Ponesi LK i dokaz o pravu na nepokretnost (list nepokretnosti, ugovor). Za uverenje o izmirenim obavezama postoji poseban zahtev.", "channel": "counter"}
+      {"title": "Podnesi LPA u Gradskoj upravi Pirot", "description": "Ponesi ličnu kartu i dokaz o pravu na nepokretnost (list nepokretnosti, ugovor). Za uverenje o izmirenim obavezama postoji poseban zahtev.", "channel": "counter"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": ""},
       {"type": "poreska_prijava", "must_be_valid": false, "how_to_obtain": "PPI-1 ili PPI-2 sa pirot.rs.", "notes": ""},
       {"type": "dokaz_imovine", "must_be_valid": false, "how_to_obtain": "List nepokretnosti ili ugovor.", "notes": ""}
     ],
@@ -774,7 +774,7 @@
       {"title": "Ovo nije građevinska dozvola", "description": "Informacija o lokaciji je prvi korak. Za samu dozvolu ide objedinjena procedura (češće preko CEOP / eUprava), ne ovaj šalter.", "channel": "online"}
     ],
     "required_documents": [
-      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK podnosioca.", "notes": ""},
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta podnosioca.", "notes": ""},
       {"type": "zahtev_obrazac", "must_be_valid": false, "how_to_obtain": "Zahtev sa pirot.rs (Izgradnja objekata).", "notes": ""},
       {"type": "dokaz_imovine", "must_be_valid": false, "how_to_obtain": "List nepokretnosti / dokaz o pravu na parceli.", "notes": ""}
     ],

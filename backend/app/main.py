@@ -20,7 +20,7 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(
-    title="Putokaz API",
+    title="NaŠalter API",
     version="0.1.0",
     description="Matching namere građana na procedure. Adresa šaltera samo iz tabele offices.",
     lifespan=lifespan,

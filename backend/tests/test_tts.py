@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 sys.path.insert(0, str(ROOT))
 
-tmpdir = Path(tempfile.mkdtemp(prefix="putokaz-tts-"))
+tmpdir = Path(tempfile.mkdtemp(prefix="nasalter-tts-"))
 os.environ["DATABASE_URL"] = f"sqlite:///{(tmpdir / 't.db').as_posix()}"
 os.environ["UPLOAD_DIR"] = str(tmpdir / "uploads")
 os.environ["JWT_SECRET"] = "test-secret-tts"

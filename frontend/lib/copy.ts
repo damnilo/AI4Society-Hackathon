@@ -1,5 +1,7 @@
 /** Isti tekst kao BE `DISCLAIMER` — nije pravna overa. */
+export const APP_NAME = "NaŠalter";
+
 export const DISCLAIMER =
-  "Putokaz nije eUprava i ne podnosi zahtev. " +
+  `${APP_NAME} nije eUprava i ne podnosi zahtev. ` +
   "Provera dokumenata nije pravna overa originala — samo polja sa skena " +
   "(kompletnost i rok).";

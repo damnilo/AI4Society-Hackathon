@@ -4,6 +4,7 @@ __pycache__
 .pytest_cache
 *.egg-info
 putokaz.db
+nasalter.db
 uploads
 .env
 .git

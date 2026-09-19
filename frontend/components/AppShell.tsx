@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AUTH_EVENT, getSessionUser } from "@/lib/auth";
+import { AUTH_EVENT, getSessionUser, migrateLegacyKeys } from "@/lib/auth";
+import { APP_NAME } from "@/lib/copy";
 import { FontSizeControl } from "@/components/FontSizeControl";
 
 const links = [
@@ -18,6 +19,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [label, setLabel] = useState("Prijava");
 
   useEffect(() => {
+    migrateLegacyKeys();
     const sync = () => {
       const user = getSessionUser();
       setLabel(user?.name || user?.email || "Prijava");
@@ -38,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="brand-mark" aria-hidden="true">
             ⇢
           </span>
-          <strong>Putokaz</strong>
+          <strong>{APP_NAME}</strong>
           <span>Vodič kroz procedure</span>
         </div>
         <nav className="nav">

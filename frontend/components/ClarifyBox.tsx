@@ -33,7 +33,7 @@ export function ClarifyBox({
       const extra = filled.join(" ");
       const nextText = [originalText, extra].filter(Boolean).join("\n").trim();
       sessionStorage.setItem(
-        "putokaz-case",
+        "nasalter-case",
         JSON.stringify({
           ...result,
           text: nextText || originalText,

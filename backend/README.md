@@ -1,4 +1,4 @@
-# Putokaz backend (Faza 0–1)
+# NaŠalter backend (Faza 0–1)
 
 ```bash
 cd backend
@@ -10,7 +10,7 @@ copy .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-SQLite podrazumevano (`putokaz.db`). Seed ulazi pri startu.
+SQLite podrazumevano (`nasalter.db`). Seed ulazi pri startu.
 
 ```bash
 docker compose up --build
@@ -24,7 +24,7 @@ docker compose up --build
 
 Matching i prilog uz case rade **bez naloga**. Nalog je novčanik (`/auth/*`, `/documents`, `GET /me`, `POST /me/claim`). Gostovi fajlovi imaju `user_id=null` i `purge_at` (~48h). Fajlovi su AES-GCM na disku; ne logujemo email ni ime fajla.
 
-Seed JSON se **upsert-uje** pri startu — izmene u `backend/seed/*.json` ulaze bez brisanja `putokaz.db`.
+Seed JSON se **upsert-uje** pri startu — izmene u `backend/seed/*.json` ulaze bez brisanja `nasalter.db`.
 
 Matching (Faza 2): demo keš samo za tačne rečenice na POST `/cases` (ne substring, ne `/retry`/`/clarify`). Inače xAI nad katalogom, jedan pokušaj ~15s u threadu, van DB transakcije. Ako Grok padne, keyword fallback. Kartice nemaju instituciju. Ako postoje izvučena polja sa skena, matching dobija `[skenovi]` JSON (tip/rok), ne sliku.
 

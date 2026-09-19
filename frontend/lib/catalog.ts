@@ -141,7 +141,7 @@ export const SERVICES: {
     slug: "uverenje-o-drzavljanstvu",
     title: "Uverenje o državljanstvu",
     summary:
-      "Potvrda da ste državljanin Srbije — često uz prvu ličnu kartu ili pasoš, i za konkurse. Izdaje matičar; za prvu LK MUP često pribavi podatke po službenoj dužnosti.",
+      "Potvrda da ste državljanin Srbije — često uz prvu ličnu kartu ili pasoš, i za konkurse. Izdaje matičar; za prvu ličnu kartu MUP često pribavi podatke po službenoj dužnosti.",
     group: "gradjanske",
     example: "treba mi uverenje o državljanstvu",
   },

@@ -1,30 +1,30 @@
-import { DISCLAIMER } from "@/lib/copy";
+import { APP_NAME, DISCLAIMER } from "@/lib/copy";
 
 export default function PomocPage() {
   return (
     <>
       <h1>Pomoć</h1>
       <p className="lede">
-        Putokaz je vodič, nije četbot i nije eUprava. Jedan ekran, velika slova,
+        {APP_NAME} je vodič, nije četbot i nije eUprava. Jedan ekran, velika slova,
         jedan korak.
       </p>
 
       <div className="panel">
-        <h2>Šta je Putokaz</h2>
+        <h2>Šta je {APP_NAME}</h2>
         <p>
-          Putokaz je vodič kroz administrativne procedure u Srbiji. Opišete
-          svojim rečima šta želite da završite, a Putokaz vam kaže koja je
+          {APP_NAME} je vodič kroz administrativne procedure u Srbiji. Opišete
+          svojim rečima šta želite da završite, a {APP_NAME} vam kaže koja je
           procedura, šta treba da ponesete i na koji šalter da odete.
         </p>
         <p>
           Za razliku od eUprave, ne morate unapred da znate naziv usluge.
           Krećete od namere — na primer „istekla mi je lična“ ili „selim se iz
-          Pirota u Beograd“ — a Putokaz prepozna proceduru, napravi listu
+          Pirota u Beograd“ — a {APP_NAME} prepozna proceduru, napravi listu
           potrebnih dokumenata i proveri skenove koje priložite: šta imate, šta
           fali i da li je nešto isteklo.
         </p>
         <p className="note" style={{ marginBottom: 0 }}>
-          Putokaz vas usmerava i priprema. Ne podnosi zahtev umesto vas i nije
+          {APP_NAME} vas usmerava i priprema. Ne podnosi zahtev umesto vas i nije
           zvanična eUprava.
         </p>
       </div>

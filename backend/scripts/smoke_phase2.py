@@ -64,7 +64,7 @@ def test_parser() -> None:
 def test_live() -> None:
     import tempfile
 
-    tmpdir = Path(tempfile.mkdtemp(prefix="putokaz-p2-"))
+    tmpdir = Path(tempfile.mkdtemp(prefix="nasalter-p2-"))
     os.chdir(ROOT)
     os.environ["DATABASE_URL"] = f"sqlite:///{(tmpdir / 't.db').as_posix()}"
     os.environ["UPLOAD_DIR"] = str(tmpdir / "uploads")
