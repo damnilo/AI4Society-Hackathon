@@ -10,5 +10,9 @@
   },
   "office_missing": false,
   "office_missing_reason": null,
+  "legal_excerpt": "Prijava prebivališta podnosi se lično na propisanom obrascu koji se dobija na šalteru. Potrebna je uplatnica sa eUprave, važeća lična karta, dokaz o pravnom osnovu korišćenja stana i, ako stan nije vaš, saglasnost vlasnika.",
+  "related": [
+    {"slug": "prijava-boravista", "title": "Prijava boravišta"}
+  ],
   "note": "Ne PU Pirot. LLM ne sme da izmisli ovu adresu."
 }

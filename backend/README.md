@@ -17,7 +17,7 @@ docker compose up --build
 ```
 
 - `GET http://localhost:8000/health`
-- `GET http://localhost:8000/health/llm`
+- `GET http://localhost:8000/health/llm` (xAI matching + OpenAI Vision/TTS)
 - `GET http://localhost:8000/docs`
 - Mock JSON: `examples/`
 - FE: `NEXT_PUBLIC_API_URL=http://localhost:8000`

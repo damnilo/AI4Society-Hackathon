@@ -57,6 +57,43 @@ def ping_xai() -> dict[str, str | bool]:
         }
 
 
+def ping_openai() -> dict[str, str | bool]:
+    """Cheap OpenAI check for Vision/TTS. Does not send user content."""
+    if not settings.openai_api_key:
+        return {
+            "configured": False,
+            "ok": False,
+            "detail": "OPENAI_API_KEY nije postavljen",
+            "model": settings.openai_vision_model,
+        }
+    try:
+        response = httpx.get(
+            f"{OPENAI_BASE}/models",
+            headers={"Authorization": f"Bearer {settings.openai_api_key}"},
+            timeout=15.0,
+        )
+        if response.status_code >= 400:
+            return {
+                "configured": True,
+                "ok": False,
+                "detail": f"OpenAI HTTP {response.status_code}",
+                "model": settings.openai_vision_model,
+            }
+        return {
+            "configured": True,
+            "ok": True,
+            "detail": "OpenAI models OK",
+            "model": settings.openai_vision_model,
+        }
+    except httpx.HTTPError:
+        return {
+            "configured": True,
+            "ok": False,
+            "detail": "OpenAI unreachable",
+            "model": settings.openai_vision_model,
+        }
+
+
 def complete_xai(
     system: str,
     user: str,

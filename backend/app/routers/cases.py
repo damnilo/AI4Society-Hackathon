@@ -44,6 +44,13 @@ from app.services import storage
 router = APIRouter(tags=["cases"])
 
 
+def _rank_text(row: Case) -> str:
+    extra = " ".join(str(value) for value in (row.extra_answers or {}).values() if str(value).strip())
+    if extra:
+        return f"{row.raw_text}\n{extra}".strip()
+    return row.raw_text
+
+
 def _case_out(row: Case) -> CaseOut:
     return CaseOut(
         case_id=row.id,
@@ -52,7 +59,8 @@ def _case_out(row: Case) -> CaseOut:
         questions=row.questions,
         from_place=row.from_place,
         to_place=row.to_place,
-        text=row.raw_text,
+        text=_rank_text(row),
+        extra_answers=dict(row.extra_answers or {}),
     )
 
 
@@ -370,13 +378,18 @@ async def speak_guide(
     session: Session = Depends(get_session),
     user: User | None = Depends(get_optional_user),
 ) -> Response:
-    guide = select_procedure(case_id, body, session, user)
     row = session.get(Case, str(case_id))
-    if not row or not row.selected_slug:
-        raise HTTPException(status_code=404, detail="Case or selection not found")
-    procedure = session.get(Procedure, row.selected_slug)
-    if not procedure:
-        raise HTTPException(status_code=404, detail="Procedure not found")
+    if row and row.selected_slug == body.slug:
+        procedure = session.get(Procedure, body.slug)
+        if not procedure:
+            raise HTTPException(status_code=404, detail="Procedure not found")
+        guide = _guide(session, row, procedure)
+    else:
+        guide = select_procedure(case_id, body, session, user)
+        row = session.get(Case, str(case_id))
+        procedure = session.get(Procedure, guide.selected_slug) if row else None
+        if not row or not procedure:
+            raise HTTPException(status_code=404, detail="Case or selection not found")
     attached, pool = collect_pool(session, row)
     items = build_checklist(
         required_documents=procedure.required_documents,

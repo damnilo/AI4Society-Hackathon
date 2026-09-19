@@ -9,16 +9,17 @@ from app.config import settings
 from app.db import get_session
 from app.deps import get_current_user
 from app.models import Case, Document, User
+from app.routers.cases import _case_out
 from app.schemas import (
     GDPR_NOTE,
     CaseOut,
-    CandidateOut,
     ClaimBody,
     DashboardOut,
     DocumentOut,
     MeOut,
     MePatch,
 )
+from app.services.catalog import normalize_account_municipality
 from app.services.extraction import run_extraction
 from app.services import storage
 
@@ -57,7 +58,10 @@ def patch_me(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> MeOut:
-    user.municipality = body.municipality
+    try:
+        user.municipality = normalize_account_municipality(session, body.municipality)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -81,18 +85,7 @@ def dashboard(user: User = Depends(get_current_user), session: Session = Depends
         email=user.email,
         name=user.name,
         documents=[to_document_out(doc) for doc in docs],
-        cases=[
-            CaseOut(
-                case_id=row.id,
-                candidates=[CandidateOut.model_validate(item) for item in row.candidates],
-                need_clarification=row.need_clarification,
-                questions=row.questions,
-                from_place=row.from_place,
-                to_place=row.to_place,
-                text=row.raw_text,
-            )
-            for row in cases
-        ],
+        cases=[_case_out(row) for row in cases],
     )
 
 
@@ -117,15 +110,7 @@ def claim_case(
     session.add(row)
     session.commit()
     session.refresh(row)
-    return CaseOut(
-        case_id=row.id,
-        candidates=[CandidateOut.model_validate(item) for item in row.candidates],
-        need_clarification=row.need_clarification,
-        questions=row.questions,
-        from_place=row.from_place,
-        to_place=row.to_place,
-        text=row.raw_text,
-    )
+    return _case_out(row)
 
 
 @router.get("/documents", response_model=list[DocumentOut])

@@ -95,11 +95,14 @@ Pre žirija, offline provera: `GET /health/llm` + jedan TTS + jedan Vision uploa
 - link nazad na `/predlozi/{id}` sa vodiča
 - ažurirati `frontend/app/pomoc/page.tsx`
 
-### Korak 3 — mali BE/FE kontrakt (ti + kolega)
+### Korak 3 — mali BE/FE kontrakt — BE urađen
 
-- `legal_excerpt` (2–3 rečenice) u `GuideOut` i na vodiču — **nije novi LLM**, samo seed
-- related: linkovi `/vodic/{caseId}?slug=…` umesto plain text
-- ne širiti katalog kancelarija osim ako želite treći MUP scenario; ne dirati RFZO adrese
+- `legal_excerpt` je u `GuideOut` (seed, nije LLM) i ulazi u TTS skriptu
+- `related` ima `slug` + `title` (FE crta linkove `/vodic/{caseId}?slug=…`)
+- Clarify: `CaseOut.text` uključuje odgovore; `raw_text` u bazi ostaje
+- `municipality` na nalogu se normalizuje na `places.id` (nepoznato → 400)
+- `GET /health/llm` javlja i OpenAI (Vision/TTS)
+- ne širiti katalog kancelarija; ne dirati RFZO adrese
 
 ### Korak 4 — vizuelni plus (kolega, ako 1–3 drže)
 

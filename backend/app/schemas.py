@@ -39,6 +39,7 @@ class CaseOut(BaseModel):
     from_place: Optional[str] = None
     to_place: Optional[str] = None
     text: str = ""
+    extra_answers: dict[str, Any] = Field(default_factory=dict)
 
 
 class RetryBody(BaseModel):
@@ -179,3 +180,7 @@ class LlmHealthOut(BaseModel):
     ok: bool
     detail: str
     model: str
+    openai_configured: bool = False
+    openai_ok: bool = False
+    openai_detail: str = ""
+    openai_model: str = ""

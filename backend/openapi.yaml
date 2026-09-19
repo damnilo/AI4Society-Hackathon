@@ -13,7 +13,7 @@ paths:
       summary: DB + broj seed zapisa
   /health/llm:
     get:
-      summary: Ping xAI (models)
+      summary: Ping xAI (matching) i OpenAI (Vision/TTS)
   /cases:
     post:
       summary: Matching iz teksta (gost ili Bearer)
@@ -41,13 +41,14 @@ paths:
   /cases/{case_id}/clarify:
     post:
       summary: Odgovori na podpitanja
-      description: Bez demo keša. raw_text se ne prepisuje.
+      description: Bez demo keša. raw_text u bazi ostaje; CaseOut.text uključuje extra_answers.
   /cases/{case_id}/select:
     post:
       summary: Izbor procedure → guide + office
       description: >
         Bez mesta ne bira nasumičan PU. office_missing + office_missing_reason
         (npr. „Nedostaje mesto prebivališta“). Ako retry doda mesto, isti resolver.
+        legal_excerpt iz kataloga (nije LLM). related ima slug+title za FE linkove.
   /cases/{case_id}/guide:
     get:
       summary: Vodič posle select

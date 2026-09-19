@@ -3,7 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.llm import ping_xai
+from app.llm import ping_openai, ping_xai
 from app.models import Office, Place, Procedure
 from app.schemas import HealthOut, LlmHealthOut
 from app.services import storage
@@ -32,10 +32,15 @@ def health(session: Session = Depends(get_session)) -> HealthOut:
 
 @router.get("/health/llm", response_model=LlmHealthOut)
 def health_llm() -> LlmHealthOut:
-    result = ping_xai()
+    xai = ping_xai()
+    openai = ping_openai()
     return LlmHealthOut(
-        configured=bool(result["configured"]),
-        ok=bool(result["ok"]),
-        detail=str(result["detail"]),
-        model=str(result["model"]),
+        configured=bool(xai["configured"]),
+        ok=bool(xai["ok"]),
+        detail=str(xai["detail"]),
+        model=str(xai["model"]),
+        openai_configured=bool(openai["configured"]),
+        openai_ok=bool(openai["ok"]),
+        openai_detail=str(openai["detail"]),
+        openai_model=str(openai["model"]),
     )
