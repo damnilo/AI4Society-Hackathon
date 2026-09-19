@@ -1,207 +1,160 @@
-# Putokaz — FINALNI radni plan
+# Putokaz — plan za preostali dan
 
-**Ti = frontend (Next.js).** **Kolega = backend (FastAPI + Postgres).**  
-Repo: `frontend/` (ti) + `backend/` (kolega). Ugovor: OpenAPI + mock JSON.
+**Ti = backend (FastAPI).** **Kolega = frontend (Next.js).**
 
-Analiza (ocena, mentori): Cursor `ocena_plana_putokaz_analiza_prethodna.plan.md`.
+**Ocena:** napredak je dovoljan za demo. Must-have tok (matching → kartice → vodič → adresa → checklist → TTS → nalog) već radi. Još jedan dan treba da **učvrsti scenu pred žirijem**, ne da otvara novu arhitekturu.
+
+**Ugovor ostaje:** nije eUprava. Ne radimo e-potpis, podnošenje zahteva, zakazivanje, crawl, nearby MUP, četbot, Pirot-only katalog.
+
+LLM ne piše ulicu. Adresa šaltera samo iz tabele `offices`. Checklist nije pravna overa originala.
 
 ---
 
-## Tok (oba gradite isti)
+## Šta je gotovo (Faze 0–5)
 
-1. Prvi ekran: tekst ili glas, plus opciono dokumenta (nije obavezno).
-2. Ako ima fajlova: Vision → JSON; u Grok samo JSON + tekst.
-3. 2–3 kartice procedure: opis, score, zašto. **Bez institucije na kartici.**
-4. Izbor ili “Nijedna nije to — dopuni opis”.
-5. Posle izbora: institucija, checklist, nadležna adresa iz `offices` (Pirot→Beograd = Ljermontova 12a). LLM ne piše ulicu.
-6. Status priloga: complete / missing / expired / unreadable / mismatch. Nije pravna overa.
-7. Vodič, related, izvor. TTS „pročitaj vodič“. Mapa (pin na iste lat/lng) **nije zaključana** — odluka posle 5/6.
-8. Nalog sme da čuva opštinu; ako u tekstu nema mesta, to je fallback za šalter (tekst > nalog > pitanje na vodiču).
+| Faza | Status |
+|------|--------|
+| 0 Temelj (repo, OpenAPI, seed, ekrani) | Gotovo |
+| 1 Nalog i novčanik (gost sme matching + prilog) | Gotovo |
+| 2 Matching (MUST) — kartice, retry, clarify, demo keš | Gotovo |
+| 3 Vision + document-status | Gotovo |
+| 4 Vodič i kancelarija (MUST) — Pirot→Beograd = Ljermontova 12a | Gotovo |
+| 5 TTS OpenAI `gpt-4o-mini-tts` + `speechSynthesis` fallback; municipality na nalogu | Gotovo |
+| 6 Demo skenovi, mapa, print | **Ostalo** |
+
+TTS: `POST /cases/{id}/speech` → mp3. Tekst vodiča sa stranice/kataloga, ne iz LLM-a. Ako 503, FE čita glas pregledača.
+
+Prioritet mesta za šalter: tekst (npr. Pirot→Beograd) **uvek** pobedi nalog. Inače `user.municipality`. Inače pitanje „U kom mestu ste?“ na vodiču.
+
+---
+
+## Pipeline
+
+```mermaid
+flowchart TD
+  unos["Tekst ili glas plus opciono sken"] --> match["POST /cases"]
+  match --> kartice["2-3 kartice bez institucije"]
+  kartice --> dopuna["Retry ili clarify"]
+  dopuna --> match
+  kartice --> vodic["Select plus guide"]
+  vodic --> status["Checklist complete missing expired unreadable mismatch"]
+  vodic --> office["Adresa iz offices ili pitanje za mesto"]
+  vodic --> tts["OpenAI mp3 ili speechSynthesis"]
+  nalog["Nalog opciono"] --> wallet["Novcanik plus municipality"]
+  wallet --> match
+```
+
+Demo rečenice koje **moraju** da rade tačno (prvi `POST /cases`, ne substring):
+
+1. `istekla mi je lična`
+2. `selim se iz Pirota u Beograd`
 
 Gost sme matching + prilog uz case. Nalog = novčanik + opciono mesto.
 
-**Ne radimo u 48h:** e-potpis, podnošenje, zakazivanje, crawl, nearby MUP, Pirot-only katalog, četbot.
+---
 
-**Must-have:** Faza 2 + Faza 4. Faza 3 (Vision/checklist) je u toku.  
-**Zaključano posle 3 (biće vremena):** TTS, mesto na nalogu, synthetic skenovi. Print checklist i mapa — razmisli, nije obaveza.
+## Rizici za žiri (nije rupa u MVP-u)
+
+1. **Nema `demo/` sintetskih skenova** — scenario „istekla LK + Isteklo“ ne može pouzdano bez lažnog JPG-a.
+2. **RFZO / APR / matičar** uvek imaju `office_missing` (samo 3 MUP šaltera). Ne demoovati te usluge ako pitch obećava adresu.
+3. **Mikrofon** nema „Slušam…“ ni `onerror` — `frontend/components/DescribeBox.tsx`.
+4. **Related** na vodiču nije klikabilan — `frontend/app/vodic/[caseId]/page.tsx`.
+5. **`/vodic/{id}` bez `?slug=`** pada na `licna-karta-zamena`.
+6. **`JSON.parse` sessionStorage** na predlozima može da sruši stranicu — `frontend/app/predlozi/[caseId]/page.tsx`.
+7. **Clarify čuva stari tekst** — mesto na vodiču posle pitanja može da izgubi odgovore.
+8. **Pomoć** ne spominje glas, TTS, upload, nalog — `frontend/app/pomoc/page.tsx`.
+9. **`legal_excerpt`** stoji u katalogu, ali se ne prikazuje — propuštena prilika za „zašto prebivalište a ne boravište“.
+10. Koordinate `lat`/`lng` postoje, mapa ne. Print ne postoji.
 
 ---
 
-## Faza 0 — temelj (~3–4h)
+## Step-by-step: preostali dan
 
-Cilj: repo, ugovor, mock, prazni ekrani. FE ne čeka pravi LLM.
+Redosled je namerno sečenje: prvo što može da sruši demo, pa vizuelni wow, pa extra.
 
-**Zajedno (30–45 min):** spisak 12–18 procedura (gusti intent_examples, oba pisma) + 3 kancelarije (PU Pirot, PU Beograd Ljermontova 12a, PU Niš) sa adresom, telefonom, lat/lng, source_url.
+### Korak 1 — sintetski skenovi i cheat-sheet (oboje)
 
-**Kolega (BE):**
-- `backend/`: FastAPI, Postgres, docker-compose, Alembic, CORS, `GET /health`
-- `openapi.yaml` + `examples/` mock za sve rute ispod
-- `.env.example` (`XAI_API_KEY`, `OPENAI_API_KEY`)
-- `llm.py`: ping na xAI
-- seed skripta (može prazan JSON dok ne završite listu)
+Folder `demo/` (lažni podaci, krupan datum; u pitchu reći da je sintetika):
 
-**Ti (FE):**
-- `frontend/`: Next.js App Router, srpski layout
-- API klijent koji čita mock / OpenAPI
-- Prazni ekrani: unos, kartice, retry, vodič, login, dashboard dokumenata
-- Env: `NEXT_PUBLIC_API_URL`
-
-**Izlaz:** `docker-compose up` diže API+DB; ti lokalno vidiš mock tok.
-
----
-
-## Faza 1 — nalog i novčanik (~5–7h)
-
-Cilj: login čuva dokumente. **Matching i prilog na unosu rade i bez naloga.**
-
-**Kolega (BE):**
-- `POST /auth/register`, `login`, `refresh`
-- `GET/POST/DELETE /documents` (samo vlasnik)
-- Gost: prilog vezan za `case_id`, `user_id` null
-- Retention/purge ako stigne; AES-GCM samo ako ne blokira Fazu 2
-- Ne logovati PII
-
-**Ti (FE):**
-- Register / login / logout
-- Zona dokumenata (lista, upload, brisanje)
-- GDPR + retention tekst
-- Unos namere **otvoren bez logina**, uključujući “priloži uz ovaj zahtev”
-- Polje opštine na registraciji ide u **Fazu 5** (BE već ima `municipality` na User/MeOut)
-
-**Ako kasni:** demo nalog, matching ne čeka šifrovanje.
-
----
-
-## Faza 2 — matching (MUST, ~6–8h)
-
-Cilj: rečenica → 2–3 kartice → izbor ili dopuna.
-
-**Kolega (BE):**
-- `POST /cases` `{ text, document_ids? }` → candidates (slug, title, plain_summary, score, rationale), need_clarification, questions
-- `POST /cases/{id}/retry` (novi tekst, isti prilozi)
-- `POST /cases/{id}/clarify`
-- `POST /cases/{id}/select`
-- Prag poverenja; xAI nad katalogom
-- Keš JSON za: `istekla mi je lična` i `selim se iz Pirota u Beograd`
-- Ako Vision nije spreman: matching samo na tekst
-
-**Ti (FE):**
-- Textarea + mikrofon (Web Speech) → isti POST /cases
-- “Priloži dokument (opciono)”
-- Kartice: score bar, zašto, kratak opis; **nema** MUP kao naslov
-- Dugme “Nijedna nije to — dopuni opis”
-- Klik na karticu = select
-
-**Izlaz:** demo rečenica daje 2–3 predloga i izbor radi.
-
----
-
-## Faza 3 — dokumenta i validacija (~5–7h)
-
-Cilj: ekstrakcija + provera roka/kompletnosti, nije overa.
-
-**Kolega (BE):**
-- Vision na priloge (prvi korak ili kasnije)
-- `GET /cases/{id}/document-status`
-- Statusi: complete, missing, expired (datum isteka u prošlosti), unreadable, mismatch
-- Poređenje sa `required_documents` posle select
-- Novčanik: isti tip dokumenta se vuče za novi case
-- Poruke bez “dokument je originalan”
-
-**Ti (FE):**
-- Lista priloga na unosu
-- Posle izbora: panel ima / fali / isteklo / nečitko / mismatch
-- Disclaimer: “nije pravna overa”
-- Radi i bez ijednog fajla (samo checklist “šta poneti”)
-
----
-
-## Faza 4 — vodič i kancelarija (MUST, ~5–6h)
-
-Cilj: posle izbora — koraci, dokumenta, **tačna adresa**.
-
-**Kolega (BE):**
-- `GET /cases/{id}/guide`: steps, checklist, institution, channel, related, source, last_verified_at
-- Office resolver: from_place/to_place + jurisdiction_rule → red u `offices` (name, address, phone, lat, lng) ili `office_missing`
-- Pirot→Beograd + `new_residence` → Ljermontova 12a, ne PU Pirot
-- LLM ne vraća ulicu
-
-**Ti (FE):**
-- Step-by-step vodič
-- Checklist + “kako pribaviti” što fali
-- CTA eUprava ako `channel` ima online
-- Blok “Gde da odeš”: ime, adresa, telefon (tekst obavezan)
-- Related procedure, badge izvora i datuma
-- Ako nema mesta u tekstu: polje „U kom mestu ste?“ (ne izmišljati ulicu)
-- Mapa još **nije** obaveza (vidi Fazu 5)
-
-**Izlaz:** scenario 2 radi do adrese u Beogradu.
-
----
-
-## Faza 5 — extra (samo ako 2, 3 i 4 drže demo)
-
-Cilj: pristupačnost i šalter bez ponovnog kucanja grada. Nije čet, nije nearby MUP.
-
-### Zaključano
-
-**3. TTS „Pročitaj vodič“ (ti, FE)**  
-- Dugme na vodiču: `speechSynthesis`, `sr-RS` — naslov, koraci, adresa, šta fali. Dugme Stani.  
-- Tekst sa stranice, ne iz LLM-a. Ako nema srpskog glasa: poruka, ne pad (isto kao mikrofon).  
-- Glas na unosu već postoji (Faza 2).
-
-**4. Mesto na nalogu → šalter (oba)**  
-- Ti: na `/prijava` (register) polje Pirot / Beograd / Niš; vrednost ide u `AuthRegister.municipality`; prikaz na `/me` ako treba.  
-- Kolega: `select` / `resolve_office` koristi `user.municipality` **samo** kad `extract_from_to` nije našao mesto.  
-- Prioritet: mesta u tekstu (npr. Pirot→Beograd) **uvek** pobede nalog. Inače nalog. Inače pitanje na vodiču.  
-- Gost bez naloga: i dalje „U kom mestu ste?“. LLM i dalje ne piše ulicu.
-
-### Nije zaključano (razmišljamo)
-
-**1. Mapa** — link `maps.google.com/?q=lat,lng` ili embed, pin na **istu** kancelariju iz `office`, ne nearby. Radi se samo ako ostane vreme posle TTS + municipality + skenova. Ako `office_missing`, nema pin.
-
-Print/PDF checklist: isto, nije obaveza.
-
-**Kolega (ostalo, ako stigne):** `explain_legal` iz kataloga (zašto prebivalište a ne boravište). Exa/Firecrawl preskočiti. Deploy API samo ako lokalni demo radi.
-
----
-
-## Faza 6 — demo (zajedno)
-
-Oboje: tri scenarija, disclaimer, pitch. **Synthetic skenovi su zaključani** (ideja 5) — bez pravih ličnih.
-
-Folder npr. `demo/` (lažni podaci, krupan datum, u pitch-u reći da je sintetika):
-
-| Fajl | Namena | Očekivani status na vodiču |
-|------|--------|----------------------------|
-| Istekla LK (datum u prošlosti) | gost + „istekla mi je lična“ | **Isteklo** + „važi do …“ |
+| Fajl | Namena | Očekivani status |
+|------|--------|------------------|
+| Istekla LK (datum u prošlosti) | gost + `istekla mi je lična` | **Isteklo** + „važi do …“ |
 | Mutna / isečena slika ili loš PDF | isti tok | **Nečitko** |
 | Pasoš uz zahtev za LK | mismatch | **Ne odgovara**, ne „Imate ličnu“ |
 
-Kartice izlaze **odmah** (matching samo tekst). Vision upisuje tip/rok posle selecta; FE crta samo `GET /document-status`.
+Kartice izlaze odmah (matching na tekst). Vision upisuje tip/rok posle uploada; FE crta `GET /document-status`.
 
-Scenariji pred žirijem:
+Pre žirija, offline provera: `GET /health/llm` + jedan TTS + jedan Vision upload.
 
-1. Istekla lična + sken → kartice → Isteklo + vodič (+ TTS ako je 5 gotova). Ako nema grada: mesto sa naloga ili pitanje na vodiču.  
-2. Selim se iz Pirota u Beograd → Ljermontova 12a (tekst pobedi nalog).  
-3. Nejasan unos → pitanja / retry.
+### Korak 2 — FE bagovi koji ruše tok (kolega)
 
-Pitch: eUprava kad znaš ime usluge; mi iz namere i papira do nadležnog šaltera, bez eID-a.
+- try/catch oko `sessionStorage` na predlozima
+- nema default slug-a `licna-karta-zamena`; ako fali `slug`, vratiti na predloge
+- indikator „Slušam…“ + `onerror` na mikrofonu
+- „Nova pretraga“ da očisti `putokaz-case`
+- link nazad na `/predlozi/{id}` sa vodiča
+- ažurirati `frontend/app/pomoc/page.tsx`
+
+### Korak 3 — mali BE/FE kontrakt (ti + kolega)
+
+- `legal_excerpt` (2–3 rečenice) u `GuideOut` i na vodiču — **nije novi LLM**, samo seed
+- related: linkovi `/vodic/{caseId}?slug=…` umesto plain text
+- ne širiti katalog kancelarija osim ako želite treći MUP scenario; ne dirati RFZO adrese
+
+### Korak 4 — vizuelni plus (kolega, ako 1–3 drže)
+
+- **Mapa:** `https://maps.google.com/?q={lat},{lng}` samo kad postoji `office`; pin na **istu** kancelariju, ne nearby. Ako `office_missing`, nema pin.
+- **Štampa:** `window.print` + CSS `@media print` za korake + checklist + adresu (bez nav bara)
+
+### Korak 5 — generalna proba (oboje)
+
+Tri scene pred žirijem, pauza, disclaimer, TTS Stani, upload skena, Pirot→Beograd = Ljermontova 12a.
 
 ---
 
-## API ugovor (Faza 0)
+## Feature-i koji demo čine boljim
 
-Gost: POST /cases, POST /cases/{id}/documents, retry, clarify, select, GET guide.  
-Nalog: auth, /documents, document-status, dashboard.
+Raditi samo odozgo nadole. Donji redovi su „ako ostane sat“.
 
-Kontrakt se ne lomi bez dogovora. Katalog i adrese samo na BE.
+1. **Sintetski skenovi** — jedini način da Vision izgleda kao proizvod, ne kao mock.
+2. **Maps link** — žiri vidi „gde da odem“ bez objašnjavanja adrese.
+3. **Štampaj vodič** — papir na šalter, jak civic UX.
+4. **Zašto ova procedura** (`legal_excerpt`) — odgovor na „kako znate da nije boravište“.
+5. **Mikrofon feedback** — glas na unosu već postoji, ali izgleda pokvareno bez indikatora.
+6. **Klikabilni related** — drugi hop u istom case-u.
+7. **Pomoć + pitch kartica** na `/pomoc` — žiri često otvori to.
+8. **Ne raditi:** deploy u oblak ako lokal radi; više opština; chatbot; eID; nearby; crawl; PDF generator umesto print.
 
 ---
 
-## Red sečenja
+## Scenariji pred žirijem (ne menjati)
 
-1. Faza 2 + 4 (must)  
-2. Faza 3 + 1  
-3. Faza 5 zaključano: TTS, municipality fallback, pa Faza 6 skenovi  
-4. Mapa, print, `explain_legal`, deploy — samo ako 1–3 već rade pred žirijem
+1. `istekla mi je lična` + sken istekle LK → kartice → **Isteklo** + vodič + TTS. Ako nema grada: mesto na vodiču ili nalog.
+2. `selim se iz Pirota u Beograd` → Ljermontova 12a (tekst pobedi nalog) + mapa ako stigne.
+3. Nejasan unos → pitanja / „Nijedna nije to“.
+
+**Pitch:** eUprava kad znaš ime usluge; mi iz namere i papira do nadležnog šaltera, bez eID-a.
+
+---
+
+## Šta ne dirati
+
+- Demo keš u `backend/app/services/matching.py` (samo tačne rečenice, ne substring, ne retry/clarify)
+- Office resolver (LLM ne vraća ulicu)
+- Vision honesty (PDF/nečitko → `unreadable`, nije complete)
+- AES-GCM, CORS, retention gosta (~48h)
+- Postgres/deploy samo ako lokalni demo padne
+
+---
+
+## Pokretanje (lokalni demo)
+
+Dva terminala:
+
+```bash
+cd backend && .venv\Scripts\activate && python -m uvicorn app.main:app --reload --port 8000
+cd frontend && npm run dev
+```
+
+API: `http://localhost:8000` · UI: `http://localhost:3000`  
+U `backend/.env`: `XAI_API_KEY`, `OPENAI_API_KEY`.
