@@ -12,6 +12,7 @@ from app.services import storage
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    settings.ensure_deploy_secrets()
     init_db()
     with SessionLocal() as session:
         seed_catalog(session)

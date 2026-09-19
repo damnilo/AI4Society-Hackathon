@@ -145,8 +145,8 @@ Raditi samo odozgo nadole. Donji redovi su „ako ostane sat“.
 - Demo keš u `backend/app/services/matching.py` (samo tačne rečenice, ne substring, ne retry/clarify)
 - Office resolver (LLM ne vraća ulicu)
 - Vision honesty (PDF/nečitko → `unreadable`, nije complete)
-- AES-GCM, CORS, retention gosta (~48h)
-- Postgres/deploy samo ako lokalni demo padne
+- AES-GCM, retention gosta (~48h)
+- SQLite za demo; Postgres samo ako treba persistencija posle restarta na Renderu
 
 ---
 

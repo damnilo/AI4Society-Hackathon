@@ -22,6 +22,12 @@ docker compose up --build
 - Mock JSON: `examples/`
 - FE: `NEXT_PUBLIC_API_URL=http://localhost:8000`
 
+JWT_SECRET i MASTER_KEY: lokalno u `.env` (ne `change-me` / `dev-only`). Na Renderu `generateValue` u `render.yaml`; slabi defaulti ruše start ako je `RENDER=true` ili `ENVIRONMENT=production`.
+
+CORS: localhost je uvek dozvoljen. Budući FE URL ide u `FRONTEND_ORIGIN` (npr. `https://nasalter-web.onrender.com`) ili u `CORS_ORIGINS` (zarezima). Host bez šeme dobija `https://`.
+
+SQLite podrazumevano. Postgres iz `docker-compose.yml` samo ako treba persistencija posle restarta.
+
 Matching i prilog uz case rade **bez naloga**. Nalog je novčanik (`/auth/*`, `/documents`, `GET /me`, `POST /me/claim`). Gostovi fajlovi imaju `user_id=null` i `purge_at` (~48h). Fajlovi su AES-GCM na disku; ne logujemo email ni ime fajla.
 
 Seed JSON se **upsert-uje** pri startu — izmene u `backend/seed/*.json` ulaze bez brisanja `nasalter.db`.
@@ -36,6 +42,7 @@ TTS: `POST /cases/{id}/speech` → mp3 preko OpenAI `gpt-4o-mini-tts` (srpski). 
 
 ```bash
 python tests/test_bug_regressions.py
+python tests/test_config.py
 python tests/test_phase3_documents.py
 python tests/test_tts.py
 python tests/test_demo_scans.py

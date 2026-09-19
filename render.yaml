@@ -1,0 +1,49 @@
+# NaŠalter on Render.
+# SQLite is the demo default (ephemeral on free/starter dynos).
+# Add a Render Postgres instance and set DATABASE_URL only if you need
+# data to survive restarts. Compose Postgres stays optional for local.
+
+services:
+  - type: web
+    name: nasalter-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: DATABASE_URL
+        value: sqlite:///./nasalter.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MASTER_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: http://localhost:3000,http://127.0.0.1:3000
+      - key: FRONTEND_ORIGIN
+        fromService:
+          name: nasalter-web
+          type: web
+          property: host
+      - key: XAI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: nasalter-web
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npx next start --hostname 0.0.0.0 --port $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: "22.12.0"
+      - key: NEXT_PUBLIC_API_URL
+        value: https://nasalter-api.onrender.com
