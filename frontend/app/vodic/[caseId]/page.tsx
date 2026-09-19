@@ -286,14 +286,18 @@ function VodicBody() {
       setSpeechLoading(false);
       setSpeaking(false);
     };
-    utterance.onerror = () => {
+    utterance.onerror = (event) => {
       setSpeechLoading(false);
       setSpeaking(false);
+      const reason = "error" in event ? String(event.error) : "";
+      if (reason === "interrupted" || reason === "canceled") return;
       setSpeechNote("Čitanje nije uspelo. Pročitajte vodič na ekranu.");
     };
     setSpeechLoading(false);
     setSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+    window.setTimeout(() => {
+      window.speechSynthesis.speak(utterance);
+    }, 0);
   }
 
   async function speakGuide() {
@@ -351,6 +355,7 @@ function VodicBody() {
     releaseAudio();
     setSpeechLoading(false);
     setSpeaking(false);
+    setSpeechNote("");
   }
 
   if (error) {
