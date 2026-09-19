@@ -37,7 +37,7 @@ function UslugeBody() {
           pickedSlug: slug,
         }),
       );
-      router.push(`/predlozi/${result.case_id}`);
+      router.push(`/vodic/${result.case_id}?slug=${encodeURIComponent(slug)}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Matching nije uspeo.");
     } finally {
@@ -93,7 +93,7 @@ function UslugeBody() {
                 disabled={busy === s.slug}
                 onClick={() => start(s.example, s.slug, s.title)}
               >
-                {busy === s.slug ? "Tražim u katalogu…" : "Ovo mi treba"}
+                {busy === s.slug ? "Otvaram vodič…" : "Ovo mi treba"}
               </button>
             </article>
           ))}
