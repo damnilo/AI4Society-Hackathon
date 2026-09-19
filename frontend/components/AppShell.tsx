@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { AUTH_EVENT, getSessionUser, migrateLegacyKeys } from "@/lib/auth";
 import { APP_NAME } from "@/lib/copy";
 import { FontSizeControl } from "@/components/FontSizeControl";
+import { clearCaseSession } from "@/lib/session";
 
 const links = [
   { href: "/", label: "Početna" },
@@ -36,19 +37,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="shell">
       <aside className="sidebar no-print">
-        <div className="brand">
+        <Link className="brand" href="/" onClick={clearCaseSession}>
           <span className="brand-mark" aria-hidden="true">
             ⇢
           </span>
           <strong>{APP_NAME}</strong>
           <span>Vodič kroz procedure</span>
-        </div>
+        </Link>
         <nav className="nav">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={path === l.href ? "active" : ""}
+              onClick={l.href === "/" ? clearCaseSession : undefined}
             >
               {l.label}
             </Link>
@@ -59,7 +61,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
       <div className="main">
         <div className="topbar no-print">
-          <span className="note">Velika slova, jedan korak u isto vreme.</span>
           <Link className="guest" href="/prijava">
             {label}
             <span aria-hidden="true"> ◯</span>

@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 import { AUTH_EVENT, getSessionUser } from "@/lib/auth";
 import { catalogGroupsFor } from "@/lib/catalog";
 import { DescribeBox } from "@/components/DescribeBox";
+import { clearCaseSession } from "@/lib/session";
 
 export default function HomePage() {
   const [name, setName] = useState<string | null>(null);
   const [municipality, setMunicipality] = useState<string | null>(null);
 
   useEffect(() => {
+    clearCaseSession();
     const sync = () => {
       const user = getSessionUser();
       setName(user?.name || null);
