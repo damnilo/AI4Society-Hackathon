@@ -23,8 +23,10 @@ services:
       DATABASE_URL: postgresql+psycopg://nasalter:nasalter@postgres:5432/nasalter
       XAI_API_KEY: ${XAI_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
-      JWT_SECRET: ${JWT_SECRET:-dev-compose-secret}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-}
+      JWT_SECRET: ${JWT_SECRET}
+      MASTER_KEY: ${MASTER_KEY}
     depends_on:
       postgres:
         condition: service_healthy

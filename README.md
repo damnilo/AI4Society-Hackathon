@@ -13,7 +13,16 @@ cd frontend && npm install && npm run dev
 
 API: `http://localhost:8000` · UI: `http://localhost:3000`  
 `frontend` čita `NEXT_PUBLIC_API_URL` (podrazumevano `http://localhost:8000`).  
-U `backend/.env` ubacite `XAI_API_KEY` (iz `api_keys.txt` / SPACEX). Docker: `cd backend && docker compose up --build` (Postgres + API).
+U `backend/.env` ubacite `XAI_API_KEY` (iz `api_keys.txt` / SPACEX), plus `JWT_SECRET` i `MASTER_KEY` (ne `change-me`). Docker: `cd backend && docker compose up --build` (opciono Postgres + API).
+
+## Render
+
+App Router (nije `output: export`) → dva web servisa iz `render.yaml`:
+
+1. **nasalter-api** — `rootDir: backend`, SQLite, `JWT_SECRET`/`MASTER_KEY` se generišu. U dashboard ubaciti `XAI_API_KEY` i `OPENAI_API_KEY`. `FRONTEND_ORIGIN` se veže na host FE servisa.
+2. **nasalter-web** — `npm ci && npm run build`, `npx next start --hostname 0.0.0.0 --port $PORT`. **Build-time:** `NEXT_PUBLIC_API_URL=https://nasalter-api.onrender.com` (ako Render doda sufiks na ime, uskladi URL).
+
+SQLite na Renderu se gubi posle restarta. Postgres iz compose-a samo ako treba persistencija.
 
 ## Demo rečenice i skenovi
 
