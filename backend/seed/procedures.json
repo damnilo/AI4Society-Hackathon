@@ -502,5 +502,290 @@
     "source_name": "eUprava — saglasnost vlasnika",
     "source_url": "https://euprava.gov.rs/usluge/01048",
     "last_verified_at": "2026-09-18"
+  },
+  {
+    "slug": "izvod-maticne-vencanih",
+    "title": "Izvod iz matične knjige venčanih",
+    "plain_summary": "Izvod (venčani list) kojim se dokazuje zaključenje braka. Može elektronski preko eUprave (eIzvod u eSanduče) ili papirno kod matičara po mestu upisa braka. Traži se za banku, sud, promenu prezimena, penziju i sl.",
+    "legal_excerpt": "Izvod iz matične knjige venčanih izdaje matičar prema mestu upisa braka. eIzvod na eUpravi: biraš knjigu (venčani), obrazac i oblik — e-oblik bez takse, papir sa taksom. Za tuđ izvod potrebno je srodstvo ili punomoćje.",
+    "intent_examples": [
+      "treba mi izvod iz matične knjige venčanih",
+      "треба ми извод венчаних",
+      "venčani list",
+      "венчани лист",
+      "izvod o braku za banku",
+      "papir da sam u braku",
+      "potvrda o venčanju",
+      "eIzvod venčani"
+    ],
+    "steps": [
+      {"title": "eUprava eIzvod ili matičar", "description": "Uloguj se na eUpravu (ConsentID/sertifikat), izaberi izvod venčanih, jezik obrasca i oblik. Ili idi kod matičara po mestu upisa braka.", "channel": "both", "url": "https://euprava.gov.rs/usluge/00015"},
+      {"title": "Preuzmi izvod", "description": "e-oblik stiže u eSanduče; papir preporučenom poštom ili na šalteru.", "channel": "both"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Za identifikaciju na šalteru; online: nalog eUprava.", "notes": "Za tuđ izvod: srodstvo ili punomoćje."}
+    ],
+    "institution": "maticar",
+    "jurisdiction_rule": "applicant_municipality",
+    "channel": "both",
+    "related_slugs": ["izvod-maticne-rodjenih", "uverenje-slobodno-bracno-stanje"],
+    "fees_note": "e-oblik bez takse. Papirni oblik: taksa. Proveri na eUpravi.",
+    "source_name": "eUprava — eIzvod iz matičnih knjiga",
+    "source_url": "https://euprava.gov.rs/usluge/00015",
+    "last_verified_at": "2026-09-18"
+  },
+  {
+    "slug": "izvod-maticne-umrlih",
+    "title": "Izvod iz matične knjige umrlih",
+    "plain_summary": "Izvod (umrli list) kojim se dokazuje činjenica smrti. Potreban za ostavinski postupak, penziju, prebijanje računa i sl. Izdaje matičar po mestu upisa, ili eIzvod na eUpravi.",
+    "legal_excerpt": "Izvod iz matične knjige umrlih izdaje matičar prema mestu upisa činjenice smrti. Zahtev mogu podneti članovi porodice ili lica sa pravnim interesom. eIzvod na eUpravi nudi e-oblik (bez takse) ili papir (sa taksom).",
+    "intent_examples": [
+      "treba mi izvod iz matične knjige umrlih",
+      "треба ми извод умрлих",
+      "umrli list za ostavinu",
+      "извод умрлих за оставину",
+      "papir o smrti za penziju",
+      "izvod o smrti roditelja",
+      "potvrda o smrti"
+    ],
+    "steps": [
+      {"title": "eUprava eIzvod ili matičar", "description": "Izaberi izvod umrlih na eUpravi ili idi kod matičara po mestu upisa. Ponesi dokaz o srodstvu ili pravnom interesu.", "channel": "both", "url": "https://euprava.gov.rs/usluge/00015"},
+      {"title": "Preuzmi izvod", "description": "e-oblik u eSanduče ili papir na šalteru/poštom.", "channel": "both"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Za identifikaciju podnosioca.", "notes": "Dokaz o srodstvu ili pravnom interesu."}
+    ],
+    "institution": "maticar",
+    "jurisdiction_rule": "applicant_municipality",
+    "channel": "both",
+    "related_slugs": ["izvod-maticne-rodjenih", "izvod-maticne-vencanih"],
+    "fees_note": "e-oblik bez takse. Papirni oblik: taksa. Proveri na eUpravi.",
+    "source_name": "eUprava — eIzvod iz matičnih knjiga",
+    "source_url": "https://euprava.gov.rs/usluge/00015",
+    "last_verified_at": "2026-09-18"
+  },
+  {
+    "slug": "uverenje-slobodno-bracno-stanje",
+    "title": "Uverenje o slobodnom bračnom stanju",
+    "plain_summary": "Potvrda da osoba nije u braku — najčešće za sklapanje braka u inostranstvu ili sa strancem. Izdaje matičar po mestu upisa rođenja. Često treba i međunarodni izvod rođenih.",
+    "legal_excerpt": "Uverenje o slobodnom bračnom stanju izdaje nadležni matičar na osnovu podataka iz matične knjige rođenih i evidencija. Za upotrebu u inostranstvu može biti potrebna legalizacija (Apostille) kod suda.",
+    "intent_examples": [
+      "treba mi uverenje da nisam u braku",
+      "уверење о слободном брачном стању",
+      "papir za venčanje u inostranstvu",
+      "potvrda da sam slobodan za brak",
+      "uverenje o slobodnom bračnom stanju za stranca",
+      "samac potvrda za brak"
+    ],
+    "steps": [
+      {"title": "Zahtev kod matičara", "description": "Podnosi se matičaru po mestu upisa rođenja. Ponesi važeću ličnu kartu.", "channel": "counter"},
+      {"title": "Legalizacija ako ide u inostranstvo", "description": "Za upotrebu van Srbije proveri da li treba Apostille pečat (osnovni sud).", "channel": "counter"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK podnosioca.", "notes": ""},
+      {"type": "uplatnica_euprava", "must_be_valid": false, "how_to_obtain": "Ako se naplaćuje taksa.", "notes": ""}
+    ],
+    "institution": "maticar",
+    "jurisdiction_rule": "applicant_municipality",
+    "channel": "counter",
+    "related_slugs": ["izvod-maticne-rodjenih", "izvod-maticne-vencanih"],
+    "fees_note": "Taksa po tarifi. Za inostranstvo eventualno Apostille (sud).",
+    "source_name": "Matičar — uverenje o slobodnom bračnom stanju",
+    "source_url": "https://euprava.gov.rs/",
+    "last_verified_at": "2026-09-18"
+  },
+  {
+    "slug": "overa-zdravstvene-knjizice",
+    "title": "Overa zdravstvene knjižice / kartice",
+    "plain_summary": "Produženje overe (validnosti) zdravstvenog osiguranja u filijali RFZO ili domu zdravlja. Bez važeće overe usluge se ne priznaju na teret osiguranja. Za mnoge kategorije overa ide automatski.",
+    "legal_excerpt": "Overu zdravstvene isprave vrši RFZO na osnovu osnova osiguranja (zaposlenje, penzija, prijava na evidenciju NSZ i sl.). Rok overe zavisi od osnova osiguranja.",
+    "intent_examples": [
+      "treba da overim zdravstvenu knjižicu",
+      "оверити здравствену књижицу",
+      "istekla overa zdravstvene",
+      "overa zdravstvene kartice",
+      "zdravstvena nije overena",
+      "RFZO overa osiguranja",
+      "produženje zdravstvenog osiguranja"
+    ],
+    "steps": [
+      {"title": "Proveri osnov osiguranja", "description": "Zaposleni — poslodavac; penzioner — po službenoj dužnosti; nezaposlen — prijava na NSZ. Osnov određuje rok overe.", "channel": "counter"},
+      {"title": "Filijala RFZO / dom zdravlja", "description": "Ponesi zdravstvenu ispravu i LK. Gde je uvedeno, overa je elektronska/automatska.", "channel": "counter"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "zdravstvena_isprava", "must_be_valid": false, "how_to_obtain": "Zdravstvena kartica / knjižica.", "notes": ""}
+    ],
+    "institution": "rfzo",
+    "jurisdiction_rule": "applicant_municipality",
+    "channel": "counter",
+    "related_slugs": ["izbor-izabranog-lekara"],
+    "fees_note": "Obično bez posebne takse. Prati obaveštenja RFZO.",
+    "source_name": "RFZO — overa zdravstvene isprave",
+    "source_url": "https://www.rfzo.rs/",
+    "last_verified_at": "2026-09-18"
+  },
+  {
+    "slug": "biracki-spisak-pirot",
+    "title": "Upis / ispravka biračkog spiska (Grad Pirot)",
+    "plain_summary": "U Gradskoj upravi Pirot možete da se upišete u birački spisak, da ispravite podatke ili da izvadite potvrdu o biračkom pravu. Radi se u kancelariji 20, Jedinstveno upravno mesto, Srpskih vladara 82. Važi samo za birače sa prebivalištem u Pirotu.",
+    "legal_excerpt": "Odeljenje za opštu upravu, u skladu sa Zakonom o jedinstvenom biračkom spisku, do zaključenja spiska obavlja upis, brisanje, izmenu, dopunu i ispravku podataka i izdaje potvrdu o izbornom pravu. Rešenje se donosi u roku od 24 časa; potvrda odmah. Takse se ne naplaćuju.",
+    "intent_examples": [
+      "nisam na biračkom spisku u Pirotu",
+      "нисам на бирачком списку у Пироту",
+      "provera biračkog spiska Pirot",
+      "исправка бирачког списка Пирот",
+      "treba mi potvrda da mogu da glasam u Pirotu",
+      "upis u birački spisak Pirot",
+      "упис у бирачки списак Пирот",
+      "obrisali su me sa biračkog u Pirotu"
+    ],
+    "steps": [
+      {"title": "Uzmi obrazac na šalteru informacija ili u kancelariji 20", "description": "Jedinstveno upravno mesto, Gradska uprava Pirot, Srpskih vladara 82. Radnim danom 07:00–15:00. Telefon 010/305-568.", "channel": "counter"},
+      {"title": "Ponesi ličnu kartu", "description": "Potrebna je važeća LK ili isprava o činjenici koju dokazuješ (npr. nova adresa). Takse nema.", "channel": "counter"},
+      {"title": "Preuzmi rešenje ili potvrdu", "description": "Rešenje o upisu/brisanju/ispravci stiže u roku od 24 časa. Potvrda o biračkom pravu se izdaje odmah. Proveru možeš i elektronski na sajtu MDULS unošenjem JMBG i broja LK.", "channel": "both", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/biracki-spisak"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća lična karta.", "notes": "Ili druga isprava o činjenici koja se dokazuje."}
+    ],
+    "institution": "grad-pirot",
+    "jurisdiction_rule": "current_residence",
+    "channel": "counter",
+    "related_slugs": ["prijava-prebivalista", "promena-licnog-imena-pirot"],
+    "fees_note": "Takse za upis, brisanje, izmenu i potvrdu o biračkom pravu se ne naplaćuju.",
+    "source_name": "Grad Pirot — Birački spisak",
+    "source_url": "https://www.pirot.rs/index.php/sr/servisi-gradana/biracki-spisak",
+    "last_verified_at": "2026-09-19",
+    "place_scope": ["pirot"]
+  },
+  {
+    "slug": "promena-licnog-imena-pirot",
+    "title": "Promena ličnog imena (Grad Pirot)",
+    "plain_summary": "Zahtev za promenu imena i/ili prezimena podnosi se Gradskoj upravi Pirot (građanska stanja / matičar). Posle rešenja obično sledi zamena lične karte u MUP-u. Obrazac je na sajtu grada Pirota.",
+    "legal_excerpt": "Promena ličnog imena rešava se pred matičarem / Odeljenjem za građanska stanja Gradske uprave Pirot. Obrazac zahteva objavljen je u e-servisima grada. Posle pravosnažnog rešenja menja se lična karta.",
+    "intent_examples": [
+      "hoću da promenim prezime u Pirotu",
+      "промена личног имена Пирот",
+      "promena imena posle razvoda Pirot",
+      "вратити презиме после развода Пирот",
+      "promena imena deteta Pirot",
+      "матичар промена имена Пирот"
+    ],
+    "steps": [
+      {"title": "Preuzmi obrazac sa sajta grada", "description": "Zahtev „Promena ličnog imena“ je u e-servisima Gradske uprave Pirot, odeljak Građanska stanja.", "channel": "online", "url": "https://www.pirot.rs/downloads/opstauprava/GradjanskaStanja/PromenaLicnogImena.pdf"},
+      {"title": "Podnesi u Gradskoj upravi Pirot", "description": "Jedinstveno upravno mesto, Srpskih vladara 82. Ponesi važeću LK i dokaz o razlogu (npr. presuda o razvodu). Žiro-računi za takse su na sajtu grada.", "channel": "counter", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/gradanska-stanja"},
+      {"title": "Zameni ličnu kartu", "description": "Kad rešenje postane pravosnažno, idi u PU Pirot na zamenu LK sa novim imenom.", "channel": "counter"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "zahtev_obrazac", "must_be_valid": false, "how_to_obtain": "Obrazac sa pirot.rs (Građanska stanja).", "notes": ""}
+    ],
+    "institution": "grad-pirot",
+    "jurisdiction_rule": "current_residence",
+    "channel": "both",
+    "related_slugs": ["licna-karta-zamena", "zakljucenje-braka-pirot"],
+    "fees_note": "Administrativna taksa po žiro-računima Gradske uprave Pirot. Iznos proveri na obrascu taksi.",
+    "source_name": "Grad Pirot — Građanska stanja",
+    "source_url": "https://www.pirot.rs/index.php/sr/servisi-gradana/gradanska-stanja",
+    "last_verified_at": "2026-09-19",
+    "place_scope": ["pirot"]
+  },
+  {
+    "slug": "zakljucenje-braka-pirot",
+    "title": "Zaključenje braka u sali Gradske uprave Pirot",
+    "plain_summary": "Venčanje pred matičarem u sali Gradske uprave Pirot — radnim danom, van radnog vremena ili vikendom. Poseban obrazac postoji i za venčanje van službenih prostorija. Nije isto što i izvod venčanih.",
+    "legal_excerpt": "Grad Pirot objavljuje posebne zahteve: zaključenje braka u sali u radno vreme, van radnog vremena, vikendom, i van službenih prostorija. Takse se uplaćuju na žiro-račune Gradske uprave.",
+    "intent_examples": [
+      "hoćemo da se venčamo u Pirotu",
+      "венчање у сали градске управе Пирот",
+      "zakazati venčanje kod matičara Pirot",
+      "венчање викендом Пирот",
+      "sala za venčanja Pirot",
+      "matičar venčanje Pirot"
+    ],
+    "steps": [
+      {"title": "Izaberi termin i mesto", "description": "Sala Gradske uprave: radnim danom, van radnog vremena ili vikendom. Van zgrade — poseban zahtev. Obrasci su u e-servisima Matični poslovi.", "channel": "online", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/maticni-poslovi"},
+      {"title": "Podnesi zahtev i plati taksu", "description": "Ponesi važeće LK oba buduća supružnika. Ako je neko stranac ili treba uverenje o slobodnom bračnom stanju — reši to pre termina.", "channel": "counter"},
+      {"title": "Dan venčanja u sali", "description": "Matičar vodi zapisnik. Posle toga možeš da izvadiš izvod iz matične knjige venčanih (eIzvod ili šalter).", "channel": "counter"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeće LK oba lica.", "notes": ""},
+      {"type": "zahtev_obrazac", "must_be_valid": false, "how_to_obtain": "Obrazac sa pirot.rs prema terminu (radno vreme / vikend / van prostorija).", "notes": ""}
+    ],
+    "institution": "grad-pirot",
+    "jurisdiction_rule": "current_residence",
+    "channel": "counter",
+    "related_slugs": ["uverenje-slobodno-bracno-stanje", "izvod-maticne-vencanih"],
+    "fees_note": "Taksa zavisi od termina (radno vreme, van radnog vremena, vikend). Žiro-računi: pirot.rs.",
+    "source_name": "Grad Pirot — Matični poslovi",
+    "source_url": "https://www.pirot.rs/index.php/sr/servisi-gradana/maticni-poslovi",
+    "last_verified_at": "2026-09-19",
+    "place_scope": ["pirot"]
+  },
+  {
+    "slug": "porez-na-imovinu-pirot",
+    "title": "Prijava poreza na imovinu (LPA Pirot)",
+    "plain_summary": "Lokalna poreska administracija Grada Pirota prima prijavu poreza na imovinu (obrasci PPI-1 / PPI-2), uverenja o izmirenim porezima, odlaganje duga i kopiju poreskog rešenja. Nije poreska uprava Republike — ovo je gradski porez na imovinu.",
+    "legal_excerpt": "Porez na imovinu utvrđuje i naplaćuje jedinica lokalne samouprave. Grad Pirot objavljuje obrasce LPA: PPI-1 (obveznici koji vode knjige), PPI-2 (građani), zahtev za uverenje, odlaganje plaćanja i kopiju rešenja.",
+    "intent_examples": [
+      "treba da prijavim porez na kuću u Pirotu",
+      "порез на имовину Пирот",
+      "poresko rešenje Pirot nisam dobio",
+      "уверење да сам платио порез Пирот",
+      "LPA Pirot prijava imovine",
+      "локална пореска Пирот",
+      "odlaganje poreza Pirot"
+    ],
+    "steps": [
+      {"title": "Odaberi obrazac", "description": "Građani koji ne vode knjige: PPI-2. Pravna lica / preduzetnici: PPI-1. Obrasci su na sajtu grada, Lokalna poreska administracija.", "channel": "online", "url": "https://www.pirot.rs/index.php/sr/lokalna-samouprava/opstinska-uprava/lokalna-poreska-administracija/obrasci"},
+      {"title": "Podnesi LPA u Gradskoj upravi Pirot", "description": "Ponesi LK i dokaz o pravu na nepokretnost (list nepokretnosti, ugovor). Za uverenje o izmirenim obavezama postoji poseban zahtev.", "channel": "counter"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK.", "notes": ""},
+      {"type": "poreska_prijava", "must_be_valid": false, "how_to_obtain": "PPI-1 ili PPI-2 sa pirot.rs.", "notes": ""},
+      {"type": "dokaz_imovine", "must_be_valid": false, "how_to_obtain": "List nepokretnosti ili ugovor.", "notes": ""}
+    ],
+    "institution": "grad-pirot",
+    "jurisdiction_rule": "current_residence",
+    "channel": "both",
+    "related_slugs": ["informacija-o-lokaciji-pirot"],
+    "fees_note": "Porez se plaća po rešenju LPA. Uverenja i kopije rešenja imaju taksu — proveri na sajtu grada.",
+    "source_name": "Grad Pirot — Lokalna poreska administracija",
+    "source_url": "https://www.pirot.rs/index.php/sr/lokalna-samouprava/opstinska-uprava/lokalna-poreska-administracija/obrasci",
+    "last_verified_at": "2026-09-19",
+    "place_scope": ["pirot"]
+  },
+  {
+    "slug": "informacija-o-lokaciji-pirot",
+    "title": "Informacija o lokaciji (gradnja u Pirotu)",
+    "plain_summary": "Pre gradnje ili dogradnje u Pirotu, Gradska uprava izdaje informaciju o lokaciji — šta smeš da gradiš na parceli prema planu. Obrazac je na sajtu grada, odeljak Izgradnja objekata. Nije građevinska dozvola.",
+    "legal_excerpt": "Informacija o lokaciji je akt kojim nadležni organ obaveštava o mogućnostima i ograničenjima građenja na katastarskoj parceli, prema važećem planskom dokumentu. Grad Pirot objavljuje zahtev na pirot.rs.",
+    "intent_examples": [
+      "šta smem da gradim na parceli u Pirotu",
+      "информација о локацији Пирот",
+      "hoću da zidam kuću u Pirotu gde da pitam",
+      "локацијски услови Пирот",
+      "informacija o lokaciji parcela Pirot",
+      "градска управа градња Пирот"
+    ],
+    "steps": [
+      {"title": "Preuzmi zahtev", "description": "Obrazac „Zahtev za izdavanje informacije o lokaciji“ je u e-servisima Izgradnja objekata na pirot.rs.", "channel": "online", "url": "https://www.pirot.rs/downloads/Izgradnja/Zahtev_za_izdavanje_informacije_o_lokaciji.pdf"},
+      {"title": "Podnesi sa podacima o parceli", "description": "Treba katastarska parcela i dokaz o pravu na zemljištu. Predaja u Gradskoj upravi Pirot, odeljenje za urbanizam / izgradnju.", "channel": "counter", "url": "https://www.pirot.rs/index.php/sr/servisi-gradana/izgradnja-objekata"},
+      {"title": "Ovo nije građevinska dozvola", "description": "Informacija o lokaciji je prvi korak. Za samu dozvolu ide objedinjena procedura (češće preko CEOP / eUprava), ne ovaj šalter.", "channel": "online"}
+    ],
+    "required_documents": [
+      {"type": "licna_karta", "must_be_valid": true, "how_to_obtain": "Važeća LK podnosioca.", "notes": ""},
+      {"type": "zahtev_obrazac", "must_be_valid": false, "how_to_obtain": "Zahtev sa pirot.rs (Izgradnja objekata).", "notes": ""},
+      {"type": "dokaz_imovine", "must_be_valid": false, "how_to_obtain": "List nepokretnosti / dokaz o pravu na parceli.", "notes": ""}
+    ],
+    "institution": "grad-pirot",
+    "jurisdiction_rule": "current_residence",
+    "channel": "both",
+    "related_slugs": ["porez-na-imovinu-pirot"],
+    "fees_note": "Administrativna taksa po odluci Grada Pirota o taksama za izgradnju. Proveri na sajtu uz zahtev.",
+    "source_name": "Grad Pirot — Izgradnja objekata",
+    "source_url": "https://www.pirot.rs/index.php/sr/servisi-gradana/izgradnja-objekata",
+    "last_verified_at": "2026-09-19",
+    "place_scope": ["pirot"]
   }
 ]

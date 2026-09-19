@@ -473,26 +473,36 @@ function VodicBody() {
             ) : null}
           </>
         ) : (
-          <p className="office">
-            <strong>{guide.office.name}</strong>
-            <br />
-            {guide.office.address}
-            <br />
-            Tel: {guide.office.phone}
-          </p>
+          <div className="office-block">
+            <div className="office-info">
+              <p className="office">
+                <strong>{guide.office.name}</strong>
+                <br />
+                {guide.office.address}
+                <br />
+                Tel: {guide.office.phone}
+              </p>
+              <p className="no-print" style={{ marginTop: 16, marginBottom: 0 }}>
+                <a
+                  className="btn btn-ghost"
+                  href={`https://maps.google.com/?q=${guide.office.lat},${guide.office.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Otvori u velikoj mapi
+                </a>
+              </p>
+            </div>
+            <div className="office-map no-print">
+              <iframe
+                title={`Mapa lokacije: ${guide.office.name}`}
+                src={`https://maps.google.com/maps?q=${guide.office.lat},${guide.office.lng}&z=16&hl=sr&output=embed`}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </div>
         )}
-        {guide.office && !guide.office_missing ? (
-          <p className="no-print" style={{ marginTop: 16 }}>
-            <a
-              className="btn btn-ghost"
-              href={`https://maps.google.com/?q=${guide.office.lat},${guide.office.lng}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Otvori na mapi
-            </a>
-          </p>
-        ) : null}
         {guide.euprava_url &&
         (guide.channel === "online" || guide.channel === "both") ? (
           <p style={{ marginTop: 16 }}>

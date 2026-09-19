@@ -13,6 +13,7 @@ export const INSTITUTION_LABEL: Record<string, string> = {
   maticar: "Matičar",
   rfzo: "RFZO",
   apr: "APR",
+  "grad-pirot": "Gradska uprava Pirot",
 };
 
 export const DOC_LABEL: Record<string, string> = {
@@ -32,6 +33,9 @@ export const DOC_LABEL: Record<string, string> = {
   polisa_osiguranja: "Polisa osiguranja",
   tehnicki_pregled: "Tehnički pregled",
   apr_obrazac: "APR obrazac",
+  zahtev_obrazac: "Obrazac zahteva",
+  poreska_prijava: "Poreska prijava",
+  dokaz_imovine: "Dokaz o nepokretnosti",
 };
 
 export function institutionLabel(code: string): string {
