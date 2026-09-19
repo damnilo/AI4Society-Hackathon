@@ -11,6 +11,7 @@ import {
   servicesInGroup,
   type GroupId,
 } from "@/lib/catalog";
+import { clearCaseSession } from "@/lib/session";
 
 function UslugeBody() {
   const params = useSearchParams();
@@ -103,7 +104,7 @@ function UslugeBody() {
             Opišite na početnoj šta treba — ako postoji slična procedura,
             predložićemo je.
           </p>
-          <Link className="btn btn-primary" href="/">
+          <Link className="btn btn-primary" href="/" onClick={clearCaseSession}>
             Nazad na početnu
           </Link>
         </div>

@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { DISCLAIMER } from "@/lib/copy";
 import { documentLabel, STATUS_LABEL } from "@/lib/labels";
+import { clearCaseSession } from "@/lib/session";
 import type { DocumentStatus, WalletDocument } from "@/lib/types";
 
 function walletCaption(doc: WalletDocument): { title: string; detail: string } {
@@ -106,7 +107,7 @@ export default function DokumentaPage() {
             <Link className="btn btn-primary" href="/prijava">
               Prijava
             </Link>
-            <Link className="btn btn-ghost" href="/">
+            <Link className="btn btn-ghost" href="/" onClick={clearCaseSession}>
               Nastavi kao gost
             </Link>
           </div>

@@ -14,6 +14,7 @@ import {
   retryCase,
 } from "@/lib/api";
 import { formatScanExpiry, STATUS_LABEL } from "@/lib/labels";
+import { clearCaseSession } from "@/lib/session";
 import type { Guide, RequiredDoc, StoredCase } from "@/lib/types";
 
 const SCAN_PENDING = "Provera skena";
@@ -34,6 +35,25 @@ function readStoredText(caseId: string): string {
 
 function awaitingScan(docs: RequiredDoc[]): boolean {
   return docs.some((doc) => (doc.note ?? "").includes(SCAN_PENDING));
+}
+
+function scanNote(note: string | undefined): string {
+  if (!note) return "";
+  if (note.includes(SCAN_PENDING)) {
+    return "Čitam sken… status će se pojaviti za koji trenutak.";
+  }
+  return note;
+}
+
+async function waitForScanStatus(guide: Guide, caseId: string): Promise<Guide> {
+  const delays = [1500, 2000, 2500];
+  let next = guide;
+  for (const ms of delays) {
+    if (!awaitingScan(next.documents)) return next;
+    await new Promise((resolve) => window.setTimeout(resolve, ms));
+    next = await refreshGuideDocuments(next, caseId);
+  }
+  return next;
 }
 
 function officeMapsQuery(office: { name: string; address: string }): string {
@@ -115,7 +135,7 @@ function DocRow({ doc }: { doc: RequiredDoc }) {
         <strong>{doc.label}</strong>
         {showNote ? (
           <p className="note" style={{ margin: "6px 0 0" }}>
-            {doc.note}
+            {scanNote(doc.note)}
           </p>
         ) : null}
         {showHow ? (
@@ -192,9 +212,7 @@ function VodicBody() {
         if (cancelled) return;
         setGuide(g);
         if (!awaitingScan(g.documents)) return;
-        await new Promise((resolve) => window.setTimeout(resolve, 2000));
-        if (cancelled) return;
-        const next = await refreshGuideDocuments(g, caseId);
+        const next = await waitForScanStatus(g, caseId);
         if (!cancelled) setGuide(next);
       })
       .catch((err: unknown) => {
@@ -277,9 +295,16 @@ function VodicBody() {
       let next = await refreshGuideDocuments(guide, caseId);
       setGuide(next);
       if (awaitingScan(next.documents)) {
-        await new Promise((resolve) => window.setTimeout(resolve, 2000));
-        next = await refreshGuideDocuments(next, caseId);
+        setAttachNote("Čitam sken… sačekajte trenutak.");
+        next = await waitForScanStatus(next, caseId);
         setGuide(next);
+      }
+      if (awaitingScan(next.documents)) {
+        setAttachNote(
+          "Sken je primljen. Provera još traje — status će se pojaviti za koji trenutak.",
+        );
+      } else {
+        setAttachNote("");
       }
     } catch (err) {
       setAttachNote(err instanceof Error ? err.message : "Prilog nije primljen.");
@@ -577,7 +602,7 @@ function VodicBody() {
         <Link
           className="btn btn-ghost"
           href="/"
-          onClick={() => sessionStorage.removeItem("nasalter-case")}
+          onClick={clearCaseSession}
         >
           Nova pretraga
         </Link>
