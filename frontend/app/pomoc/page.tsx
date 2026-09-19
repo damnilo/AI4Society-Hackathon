@@ -10,21 +10,28 @@ export default function PomocPage() {
       </p>
 
       <div className="panel">
-        <h2 style={{ marginTop: 0 }}>Pitch za žiri</h2>
+        <h2>Šta je Putokaz</h2>
         <p>
-          eUprava pomaže kad već znaš ime usluge. Putokaz kreće od namere i
-          papira: predloži proceduru, checklist sa skena i nadležni šalter —
-          bez eID-a, bez podnošenja zahteva.
+          Putokaz je vodič kroz administrativne procedure u Srbiji. Opišete
+          svojim rečima šta želite da završite, a Putokaz vam kaže koja je
+          procedura, šta treba da ponesete i na koji šalter da odete.
+        </p>
+        <p>
+          Za razliku od eUprave, ne morate unapred da znate naziv usluge.
+          Krećete od namere — na primer „istekla mi je lična“ ili „selim se iz
+          Pirota u Beograd“ — a Putokaz prepozna proceduru, napravi listu
+          potrebnih dokumenata i proveri skenove koje priložite: šta imate, šta
+          fali i da li je nešto isteklo.
         </p>
         <p className="note" style={{ marginBottom: 0 }}>
-          Demo rečenice: „istekla mi je lična“ · „selim se iz Pirota u Beograd“
-          (Ljermontova 12a).
+          Putokaz vas usmerava i priprema. Ne podnosi zahtev umesto vas i nije
+          zvanična eUprava.
         </p>
       </div>
 
       <div className="panel">
-        <h2 style={{ marginTop: 0 }}>Kako se koristi</h2>
-        <ol className="steps" style={{ paddingLeft: 22 }}>
+        <h2>Kako se koristi</h2>
+        <ol className="howto">
           <li>
             Na početnoj opišite šta treba, recite naglas („Reci naglas“ /
             „Slušam…“), ili izaberite brzi pristup.
@@ -40,7 +47,7 @@ export default function PomocPage() {
       </div>
 
       <div className="panel">
-        <h2 style={{ marginTop: 0 }}>Nalog i papiri</h2>
+        <h2>Nalog i papiri</h2>
         <p>
           Prijava je opciona. Traženje procedure radi i kao gost. Nalog čuva
           skenove i mesto (Pirot / Beograd / Niš) da ih ne unosite svaki put.
@@ -50,7 +57,7 @@ export default function PomocPage() {
       </div>
 
       <div className="panel">
-        <h2 style={{ marginTop: 0 }}>Šta ovo nije</h2>
+        <h2>Šta ovo nije</h2>
         <ul>
           <li>Ne šaljemo zahtev umesto vas.</li>
           <li>Ne zakazujemo termin i ne pratimo „moji postupci“.</li>

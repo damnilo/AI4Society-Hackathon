@@ -15,6 +15,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="sr" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var s=localStorage.getItem('putokaz-font-scale');if(s){document.documentElement.style.setProperty('--font-scale',s);}}catch(e){}})();",
+          }}
+        />
+      </head>
       <body suppressHydrationWarning>
         <AppShell>{children}</AppShell>
       </body>

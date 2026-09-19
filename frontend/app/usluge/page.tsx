@@ -85,7 +85,7 @@ function UslugeBody() {
         <div className="cards">
           {items.map((s) => (
             <article key={s.slug} className="panel" style={{ margin: 0 }}>
-              <h2 style={{ marginTop: 0, fontSize: "1.35rem" }}>{s.title}</h2>
+              <h2>{s.title}</h2>
               <p className="note">{s.summary}</p>
               <button
                 className="btn btn-primary"

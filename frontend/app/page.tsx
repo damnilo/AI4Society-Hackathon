@@ -21,12 +21,30 @@ export default function HomePage() {
 
   return (
     <>
-      <h1>Dobrodošli{name ? `, ${name}` : ""}</h1>
-      <p className="lede">
-        Opišite šta želite da završite. Predložićemo proceduru, šta da ponesete
-        i gde da odete. Ne podnosimo zahtev umesto vas. Nalog je opciono — samo
-        ako želite da sačuvate skenove.
-      </p>
+      <section className="hero">
+        <h1>Dobrodošli{name ? `, ${name}` : ""}</h1>
+        <p className="lede">
+          Opišite svojim rečima šta želite da završite. Predložićemo proceduru,
+          šta da ponesete i gde da odete. Ne podnosimo zahtev umesto vas.
+        </p>
+        <div className="hero-steps">
+          <span className="hero-step">
+            <b>1</b> Opišite nameru
+          </span>
+          <span className="hero-arrow" aria-hidden="true">
+            →
+          </span>
+          <span className="hero-step">
+            <b>2</b> Predložimo proceduru
+          </span>
+          <span className="hero-arrow" aria-hidden="true">
+            →
+          </span>
+          <span className="hero-step">
+            <b>3</b> Idete na šalter
+          </span>
+        </div>
+      </section>
 
       <DescribeBox />
 

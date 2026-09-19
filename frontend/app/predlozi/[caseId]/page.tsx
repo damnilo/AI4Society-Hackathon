@@ -130,6 +130,14 @@ export default function PredloziPage() {
                 <span style={{ width: `${Math.round(c.score * 100)}%` }} />
               </div>
               <p className="why">Zašto: {c.rationale}</p>
+              <div className="card-foot">
+                <span className="match-pct">
+                  Poklapanje {Math.round(c.score * 100)}%
+                </span>
+                <span className="card-go" aria-hidden="true">
+                  Izaberi →
+                </span>
+              </div>
             </button>
           ))}
         </div>
