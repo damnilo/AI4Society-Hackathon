@@ -15,9 +15,9 @@ API: `http://localhost:8000` · UI: `http://localhost:3000`
 `frontend` čita `NEXT_PUBLIC_API_URL` (podrazumevano `http://localhost:8000`).  
 U `backend/.env` ubacite `XAI_API_KEY` (iz `api_keys.txt` / SPACEX). Docker: `cd backend && docker compose up --build` (Postgres + API).
 
-## Demo rečenice
+## Demo rečenice i skenovi
 
-1. `istekla mi je lična` — zamena LK; ako nema grada, na vodiču unesite mesto.
+1. `istekla mi je lična` — zamena LK. Prilog: `demo/istekla-licna-karta.png` → **Isteklo**. Isti tok + `demo/necitko-sken.pdf` → **Nečitko**. Isti tok + `demo/pasos.png` → **Ne odgovara**.
 2. `selim se iz Pirota u Beograd` — prijava prebivališta, šalter Ljermontova 12a.
 
-Matching radi i kao gost. Nalog je samo novčanik skenova.
+Uputstvo za žiri: `demo/README.md`. Matching radi i kao gost. Nalog je samo novčanik skenova.
