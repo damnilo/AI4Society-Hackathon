@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ClarifyBox } from "@/components/ClarifyBox";
 import { DescribeBox } from "@/components/DescribeBox";
-import { fetchCase, isUuid } from "@/lib/api";
+import { ApiError, createCase, fetchCase, isUuid } from "@/lib/api";
 import { SERVICES } from "@/lib/catalog";
 import type { Candidate, StoredCase } from "@/lib/types";
 
@@ -34,39 +34,75 @@ export default function PredloziPage() {
   const [retryOpen, setRetryOpen] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     const raw = sessionStorage.getItem("nasalter-case");
+    let cached: StoredCase | null = null;
     if (raw) {
       try {
         const parsed = JSON.parse(raw) as StoredCase;
-        if (parsed.case_id === caseId) {
-          setStored(parsed);
-          setRetryOpen(parsed.need_clarification && parsed.source !== "catalog");
-          return;
-        }
+        if (parsed.case_id === caseId) cached = parsed;
       } catch {
         sessionStorage.removeItem("nasalter-case");
       }
     }
+    if (cached) {
+      setStored(cached);
+      setRetryOpen(cached.need_clarification && cached.source !== "catalog");
+    }
     if (!isUuid(caseId)) {
-      router.replace("/");
+      if (!cached) router.replace("/");
       return;
     }
-    void fetchCase(caseId)
-      .then((row) => {
-        if (!row) {
-          router.replace("/");
+
+    async function hydrate() {
+      try {
+        const row = await fetchCase(caseId);
+        if (cancelled) return;
+        if (row) {
+          const next: StoredCase = {
+            ...cached,
+            ...row,
+            text: row.text || cached?.text || "",
+            source: cached?.source ?? "typed",
+            fileName: cached?.fileName,
+            pickedSlug: cached?.pickedSlug,
+            pickedTitle: cached?.pickedTitle,
+          };
+          sessionStorage.setItem("nasalter-case", JSON.stringify(next));
+          setStored(next);
+          setRetryOpen(next.need_clarification && next.source !== "catalog");
           return;
         }
-        const next: StoredCase = {
-          ...row,
-          text: row.text,
-          source: "typed",
-        };
-        sessionStorage.setItem("nasalter-case", JSON.stringify(next));
-        setStored(next);
-        setRetryOpen(next.need_clarification);
-      })
-      .catch(() => router.replace("/"));
+        if (!cached) router.replace("/");
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.status === 404 && cached?.text) {
+          try {
+            const result = await createCase(cached.text);
+            if (cancelled) return;
+            const next: StoredCase = {
+              ...result,
+              text: cached.text,
+              source: cached.source,
+              fileName: cached.fileName,
+              pickedSlug: cached.pickedSlug,
+              pickedTitle: cached.pickedTitle,
+            };
+            sessionStorage.setItem("nasalter-case", JSON.stringify(next));
+            router.replace(`/predlozi/${result.case_id}`);
+            return;
+          } catch {
+            router.replace("/");
+            return;
+          }
+        }
+        if (!cached) router.replace("/");
+      }
+    }
+    void hydrate();
+    return () => {
+      cancelled = true;
+    };
   }, [caseId, router]);
 
   const cards = useMemo(
