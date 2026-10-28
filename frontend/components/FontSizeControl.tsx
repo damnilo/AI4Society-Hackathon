@@ -22,8 +22,7 @@ export function FontSizeControl() {
 
   useEffect(() => {
     try {
-      const saved =
-        localStorage.getItem(KEY) || localStorage.getItem("putokaz-font-scale");
+      const saved = localStorage.getItem(KEY);
       if (saved) setScale(clamp(Number(saved)));
     } catch {
       /* localStorage nedostupan — ostaje podrazumevano */

@@ -8,6 +8,7 @@ const ACCESS_KEY = "nasalter-access";
 const REFRESH_KEY = "nasalter-refresh";
 const USER_KEY = "nasalter-user";
 const LEGACY_NAME_KEY = "nasalter-name";
+/** One-shot copy from the old Putokaz localStorage keys, then delete them. */
 const LEGACY_KEYS: [string, string][] = [
   [ACCESS_KEY, "putokaz-access"],
   [REFRESH_KEY, "putokaz-refresh"],

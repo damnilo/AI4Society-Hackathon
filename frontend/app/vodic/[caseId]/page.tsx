@@ -437,9 +437,11 @@ function VodicBody() {
         <button className="btn btn-primary" type="button" onClick={() => void speakGuide()}>
           Pročitaj vodič
         </button>
-        <button className="btn btn-ghost" type="button" onClick={stopSpeech}>
-          Stani
-        </button>
+        {speaking || speechLoading ? (
+          <button className="btn btn-ghost" type="button" onClick={stopSpeech}>
+            Stani
+          </button>
+        ) : null}
         <button className="btn btn-ghost" type="button" onClick={() => window.print()}>
           Štampaj vodič
         </button>

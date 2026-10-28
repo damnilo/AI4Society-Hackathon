@@ -20,6 +20,7 @@ MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 
 
 def _key_for(owner: str) -> bytes:
+    # Salt is a stable HKDF label (old product name). Changing it cannot decrypt existing files.
     return HKDF(
         algorithm=hashes.SHA256(),
         length=32,
