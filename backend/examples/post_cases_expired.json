@@ -8,7 +8,7 @@
         "title": "Zamena lične karte (istekla, oštećena, promena podataka)",
         "plain_summary": "Nova lična karta kad je stara istekla, oštećena, izgubljena ili su se promenili podaci.",
         "score": 0.92,
-        "rationale": "Pominješ da je lična istekla — to je zamena postojeće lične karte, ne prvo izdavanje."
+        "rationale": "Pominjete da je lična istekla — to je zamena postojeće lične karte, ne prvo izdavanje."
       },
       {
         "slug": "pasos-izdavanje",
@@ -22,7 +22,7 @@
         "title": "Prvo izdavanje lične karte",
         "plain_summary": "Prva biometrijska lična karta.",
         "score": 0.28,
-        "rationale": "Prva lična karta je ako nikad nisi imao ličnu."
+        "rationale": "Prva lična karta je ako nikad niste imali ličnu."
       }
     ],
     "need_clarification": false,

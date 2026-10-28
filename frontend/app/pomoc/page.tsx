@@ -33,7 +33,7 @@ export default function PomocPage() {
         <h2>Kako se koristi</h2>
         <ol className="howto">
           <li>
-            Na početnoj opišite šta treba, recite naglas („Reci naglas“ /
+            Na početnoj opišite šta treba, recite naglas („Recite naglas“ /
             „Slušam…“), ili izaberite brzi pristup.
           </li>
           <li>Po želji priložite sken (JPG, PNG, PDF) uz zahtev.</li>

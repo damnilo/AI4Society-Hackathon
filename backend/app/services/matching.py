@@ -56,7 +56,7 @@ Pravila:
 - 2 ili 3 kandidata kada postoji makar jedan pogodak. Prvi je najbolji; ostali su bliski parovi za kontrast (npr. lična karta vs pasoš, prebivalište vs boravište), sa NIŽIM score.
 - Samo 0 kandidata ako namera nema veze sa katalogom.
 - score od 0 do 1. Sortiraj opadajuće.
-- rationale: 1-2 rečenice na srpskom, zašto namera odgovara TOJ proceduri. Bez naslova usluge kao citata iz MUP-a.
+- rationale: 1-2 rečenice na srpskom, zašto namera odgovara TOJ proceduri. Obraćaj se sa „vi“. Bez naslova usluge kao citata iz MUP-a.
 - NE pominji instituciju (MUP, APR, RFZO, matičar), ulicu, telefon, šalter, gradsku upravu.
 - title, adresu i korake NE pišeš — sistem ih dodaje iz kataloga.
 - Razlikuj parove: prebivalište vs boravište; zamena lične karte vs prva lična karta; lična karta vs pasoš; prva vozačka vs zamena; vozačka vs registracija vozila.
@@ -192,7 +192,7 @@ def _demo_match(
                 (
                     "licna-karta-zamena",
                     0.92,
-                    "Pominješ da je lična istekla — to je zamena postojeće lične karte, ne prvo izdavanje.",
+                    "Pominjete da je lična istekla — to je zamena postojeće lične karte, ne prvo izdavanje.",
                 ),
                 (
                     "pasos-izdavanje",
@@ -202,7 +202,7 @@ def _demo_match(
                 (
                     "licna-karta-prvo-izdavanje",
                     0.28,
-                    "Prva lična karta je ako nikad nisi imao ličnu, ne ako je stara istekla.",
+                    "Prva lična karta je ako nikad niste imali ličnu, ne ako je stara istekla.",
                 ),
             ],
         )
@@ -300,7 +300,7 @@ def _ensure_contrast(
     extras = CONTRAST.get(candidates[0].slug, ())
     scores = (0.4, 0.28)
     reasons = (
-        "Slična usluga, često se meša sa onom koju tražiš.",
+        "Slična usluga, često se meša sa onom koju tražite.",
         "Povezana procedura, ali obično nije prvi korak.",
     )
     padded = list(candidates)

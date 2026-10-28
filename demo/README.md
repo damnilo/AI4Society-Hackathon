@@ -17,7 +17,7 @@ Pred live demo na Renderu (Free se gasi posle mirovanja):
 bash demo/warmup.sh
 ```
 
-Na sceni, pored skenova: „Reci naglas“ (Chrome/Edge, dozvola mikrofona) i prilog **na vodiču** (`demo/istekla-licna-karta.png`).
+Na sceni, pored skenova: „Recite naglas“ (Chrome/Edge, dozvola mikrofona) i prilog **na vodiču** (`demo/istekla-licna-karta.png`).
 
 Koristiti samo ova imena:
 

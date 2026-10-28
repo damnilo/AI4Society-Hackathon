@@ -14,7 +14,7 @@ def get_optional_user(
     if not authorization:
         return None
     if not authorization.lower().startswith("bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
+        raise HTTPException(status_code=401, detail="Prijava je istekla. Prijavite se ponovo.")
     token = authorization.split(" ", 1)[1].strip()
     if not token:
         return None
@@ -24,14 +24,14 @@ def get_optional_user(
             raise JWTError("wrong type")
         user_id = str(payload["sub"])
     except (JWTError, KeyError, ValueError) as exc:
-        raise HTTPException(status_code=401, detail="Invalid token") from exc
+        raise HTTPException(status_code=401, detail="Prijava je istekla. Prijavite se ponovo.") from exc
     user = session.get(User, user_id)
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+        raise HTTPException(status_code=401, detail="Prijava je istekla. Prijavite se ponovo.")
     return user
 
 
 def get_current_user(user: User | None = Depends(get_optional_user)) -> User:
     if user is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        raise HTTPException(status_code=401, detail="Prijava je istekla. Prijavite se ponovo.")
     return user

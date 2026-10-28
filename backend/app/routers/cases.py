@@ -85,7 +85,7 @@ def _run_match(
     with SessionLocal() as session:
         row = session.get(Case, case_id)
         if not row:
-            raise HTTPException(status_code=404, detail="Case not found")
+            raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
         from_place, to_place = extract_from_to(session, text)
         place_ids = active_place_ids(
             session,
@@ -107,7 +107,7 @@ def _run_match(
     with SessionLocal() as session:
         row = session.get(Case, case_id)
         if not row:
-            raise HTTPException(status_code=404, detail="Case not found")
+            raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
         if persist_text:
             row.raw_text = text
         row.from_place = from_place
@@ -180,7 +180,7 @@ async def create_case(
     for item in body.document_ids:
         doc = session.get(Document, str(item))
         if not doc or not storage.allowed_document(doc, user_id=user.id if user else None, case_id=None):
-            raise HTTPException(status_code=404, detail="Document not found")
+            raise HTTPException(status_code=404, detail="Dokument nije pronađen.")
         ids.append(str(doc.id))
     row = Case(
         raw_text=body.text,
@@ -219,7 +219,7 @@ async def create_case(
 def get_case(case_id: UUID, session: Session = Depends(get_session)) -> CaseOut:
     row = session.get(Case, str(case_id))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
     return _case_out(row)
 
 
@@ -229,7 +229,7 @@ async def retry_case(
 ) -> CaseOut:
     row = session.get(Case, str(case_id))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
     row.extra_answers = {}
     session.add(row)
     session.commit()
@@ -254,7 +254,7 @@ async def clarify_case(
 ) -> CaseOut:
     row = session.get(Case, str(case_id))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
     row.extra_answers = {**(row.extra_answers or {}), **body.answers}
     extra = " ".join(str(value) for value in body.answers.values())
     combined = f"{row.raw_text}\n{extra}".strip()
@@ -324,10 +324,10 @@ def select_procedure(
 ) -> GuideOut:
     row = session.get(Case, str(case_id))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
     procedure = session.get(Procedure, body.slug)
     if not procedure:
-        raise HTTPException(status_code=404, detail="Procedure not found")
+        raise HTTPException(status_code=404, detail="Procedura nije pronađena.")
     return _resolve_guide(session, row, procedure, user)
 
 
@@ -341,7 +341,7 @@ def add_place(
     """Dopuni mesto i ponovo nađi šalter. Ne zove matching."""
     row = session.get(Case, str(case_id))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
     city = body.place.strip()
     if not city:
         raise HTTPException(status_code=400, detail="Unesite mesto.")
@@ -354,7 +354,7 @@ def add_place(
     slug = (body.slug or row.selected_slug or "").strip()
     procedure = session.get(Procedure, slug) if slug else None
     if not procedure:
-        raise HTTPException(status_code=404, detail="Procedure not found")
+        raise HTTPException(status_code=404, detail="Procedura nije pronađena.")
     return _resolve_guide(session, row, procedure, user)
 
 
@@ -362,10 +362,10 @@ def add_place(
 def get_guide(case_id: UUID, session: Session = Depends(get_session)) -> GuideOut:
     row = session.get(Case, str(case_id))
     if not row or not row.selected_slug:
-        raise HTTPException(status_code=404, detail="Case or selection not found")
+        raise HTTPException(status_code=404, detail="Zahtev ili izbor procedure nije pronađen.")
     procedure = session.get(Procedure, row.selected_slug)
     if not procedure:
-        raise HTTPException(status_code=404, detail="Procedure not found")
+        raise HTTPException(status_code=404, detail="Procedura nije pronađena.")
     return _guide(session, row, procedure)
 
 
@@ -378,15 +378,15 @@ async def attach_document(
 ) -> DocumentOut:
     row = session.get(Case, str(case_id))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
     if row.user_id and (user is None or row.user_id != user.id):
-        raise HTTPException(status_code=403, detail="Not allowed to attach to this case")
+        raise HTTPException(status_code=403, detail="Nemate dozvolu da priložite fajl uz ovaj zahtev.")
     data = await file.read(storage.MAX_UPLOAD_BYTES + 1)
     user_id = user.id if user else None
     try:
         path = storage.save_upload(data, user_id=user_id, case_id=row.id)
     except ValueError:
-        raise HTTPException(status_code=413, detail="File too large (max 8 MB)")
+        raise HTTPException(status_code=413, detail="Fajl je prevelik (najviše 8 MB).")
     stored = Document(
         case_id=row.id,
         user_id=user_id,
@@ -407,7 +407,7 @@ async def attach_document(
     session.expire_all()
     stored = session.get(Document, doc_id)
     if not stored:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise HTTPException(status_code=404, detail="Dokument nije pronađen.")
     return DocumentOut(
         id=stored.id,
         original_filename=stored.original_filename,
@@ -425,12 +425,12 @@ async def attach_document(
 def document_status(case_id: UUID, session: Session = Depends(get_session)) -> DocumentStatusOut:
     row = session.get(Case, str(case_id))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
     if not row.selected_slug:
-        raise HTTPException(status_code=400, detail="Select a procedure first")
+        raise HTTPException(status_code=400, detail="Prvo izaberite proceduru.")
     procedure = session.get(Procedure, row.selected_slug)
     if not procedure:
-        raise HTTPException(status_code=404, detail="Procedure not found")
+        raise HTTPException(status_code=404, detail="Procedura nije pronađena.")
     attached, pool = collect_pool(session, row)
     items = build_checklist(
         required_documents=procedure.required_documents,
@@ -452,14 +452,14 @@ async def speak_guide(
     if row and row.selected_slug == body.slug:
         procedure = session.get(Procedure, body.slug)
         if not procedure:
-            raise HTTPException(status_code=404, detail="Procedure not found")
+            raise HTTPException(status_code=404, detail="Procedura nije pronađena.")
         guide = _guide(session, row, procedure)
     else:
         guide = select_procedure(case_id, body, session, user)
         row = session.get(Case, str(case_id))
         procedure = session.get(Procedure, guide.selected_slug) if row else None
         if not row or not procedure:
-            raise HTTPException(status_code=404, detail="Case or selection not found")
+            raise HTTPException(status_code=404, detail="Zahtev ili izbor procedure nije pronađen.")
     attached, pool = collect_pool(session, row)
     items = build_checklist(
         required_documents=procedure.required_documents,
