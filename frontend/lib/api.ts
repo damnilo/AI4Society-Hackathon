@@ -355,6 +355,28 @@ export async function refreshGuideDocuments(guide: Guide, caseId: string): Promi
   return mergeDocStatus(guide, status);
 }
 
+export async function resolveGuidePlace(
+  caseId: string,
+  slug: string,
+  place: string,
+): Promise<Guide> {
+  if (!isUuid(caseId)) {
+    throw new ApiError(0, "Vodič nije dostupan. Proverite da li API radi.");
+  }
+  const row = await requestJson<BackendGuide>(`/cases/${caseId}/place`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ place, slug }),
+  });
+  if (!row) {
+    throw new ApiError(0, "Vodič nije dostupan. Proverite da li API radi.");
+  }
+  const guide = toGuide(row);
+  const status = await fetchDocumentStatus(caseId);
+  if (!status?.items) return guide;
+  return mergeDocStatus(guide, status);
+}
+
 export async function fetchGuide(caseId: string, slug: string): Promise<Guide> {
   if (!isUuid(caseId)) {
     throw new ApiError(0, "Vodič nije dostupan. Proverite da li API radi.");

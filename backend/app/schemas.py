@@ -54,6 +54,11 @@ class SelectBody(BaseModel):
     slug: str
 
 
+class PlaceBody(BaseModel):
+    place: str = Field(min_length=1)
+    slug: str | None = None
+
+
 class OfficeOut(BaseModel):
     id: str
     name: str
