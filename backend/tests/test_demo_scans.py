@@ -26,6 +26,10 @@ class DemoScanAssetsTests(unittest.TestCase):
         self.assertTrue((DEMO / "pasos.png").is_file())
         self.assertTrue((DEMO / "necitko-sken.pdf").is_file())
         self.assertTrue((DEMO / "README.md").is_file())
+        self.assertFalse((DEMO / "istekla-lk.png").exists())
+        self.assertFalse((DEMO / "necitko.png").exists())
+        self.assertFalse((DEMO / "pasos-umesto-lk.png").exists())
+        self.assertFalse((DEMO / "make_scans.py").exists())
 
     def test_sniff_types(self) -> None:
         lk = (DEMO / "istekla-licna-karta.png").read_bytes()

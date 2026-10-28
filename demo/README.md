@@ -10,7 +10,7 @@ cd backend
 .venv\Scripts\python.exe scripts/make_demo_scans.py
 ```
 
-Koristiti **ova** imena (stari trio `istekla-lk.png` / `necitko.png` / `pasos-umesto-lk.png` je isti sadržaj, ne mešati na sceni):
+Koristiti samo ova imena:
 
 | Fajl | Scena | Očekivani badge |
 |------|--------|-----------------|

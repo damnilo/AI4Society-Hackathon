@@ -8,6 +8,10 @@ import { ApiError, createCase, fetchCase, isUuid } from "@/lib/api";
 import { SERVICES } from "@/lib/catalog";
 import type { Candidate, StoredCase } from "@/lib/types";
 
+function quoteIntent(value: string | undefined): string {
+  return (value ?? "").replace(/\s+/g, " ").trim();
+}
+
 function withPickedFirst(candidates: Candidate[], pickedSlug?: string): Candidate[] {
   if (!pickedSlug) return candidates;
   const chosen = candidates.find((c) => c.slug === pickedSlug);
@@ -131,19 +135,19 @@ export default function PredloziPage() {
       <p className="lede">
         {fromCatalog ? (
           <>
-            Izabrali ste proceduru „{stored.pickedTitle}“. Ako je to to, kliknite
-            tu karticu. Ako je slična druga, izaberite nju. Institucija i adresa
-            dolaze posle izbora.
+            Izabrali ste proceduru „{quoteIntent(stored.pickedTitle)}“. Ako je to to,
+            kliknite tu karticu. Ako je slična druga, izaberite nju. Institucija i
+            adresa dolaze posle izbora.
           </>
         ) : asking && showCards.length === 0 ? (
           <>
-            Pisali ste: „{stored.text.trim()}“. Odgovorite ispod — kartice
+            Pisali ste: „{quoteIntent(stored.text)}“. Odgovorite ispod — kartice
             izlaze kad budemo sigurni koja je procedura.
           </>
         ) : (
           <>
-            Pisali ste: „{stored.text.trim()}“. Izaberite jednu karticu. Institucija i
-            adresa dolaze posle izbora — ovde samo procedura.
+            Pisali ste: „{quoteIntent(stored.text)}“. Izaberite jednu karticu.
+            Institucija i adresa dolaze posle izbora — ovde samo procedura.
           </>
         )}
       </p>
