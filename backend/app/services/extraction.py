@@ -264,6 +264,16 @@ def run_extraction(document_id: str) -> None:
         session.commit()
 
 
+def types_marked_unreadable(required_types: list[str]) -> frozenset[str]:
+    """Nečitak prilog važi za identitet (ili prvu stavku), ne za uplatnicu koja nije ni pokušana."""
+    ident = [item for item in required_types if item in IDENTITY_TYPES]
+    if ident:
+        return frozenset([ident[0]])
+    if required_types:
+        return frozenset([required_types[0]])
+    return frozenset()
+
+
 def checklist_item(
     *,
     doc_type: str,
@@ -271,6 +281,7 @@ def checklist_item(
     pool: list[_DocView],
     attached: list[_DocView],
     as_of: date,
+    unreadable_for: frozenset[str] | None = None,
 ) -> DocumentStatusItem:
     match = next((doc for doc in pool if doc.extracted_type == doc_type), None)
     if match is not None:
@@ -315,13 +326,19 @@ def checklist_item(
             how_to_obtain=how_to_obtain,
         )
     if unread and not typed_on_case:
-        return DocumentStatusItem(
-            type=doc_type,
-            status="unreadable",
-            message=UNREADABLE_MSG,
-            how_to_obtain=how_to_obtain,
-            document_id=unread[0].id,  # type: ignore[arg-type]
+        marked = (
+            unreadable_for
+            if unreadable_for is not None
+            else (frozenset([doc_type]) if doc_type in IDENTITY_TYPES else frozenset())
         )
+        if doc_type in marked:
+            return DocumentStatusItem(
+                type=doc_type,
+                status="unreadable",
+                message=UNREADABLE_MSG,
+                how_to_obtain=how_to_obtain,
+                document_id=unread[0].id,  # type: ignore[arg-type]
+            )
     if doc_type in IDENTITY_TYPES:
         other = next(
             (
@@ -358,6 +375,8 @@ def build_checklist(
     attached: list[Document],
     as_of: date,
 ) -> list[DocumentStatusItem]:
+    required_types = [str(req.get("type") or "") for req in required_documents]
+    marked = types_marked_unreadable(required_types)
     items: list[DocumentStatusItem] = []
     for req in required_documents:
         items.append(
@@ -367,6 +386,7 @@ def build_checklist(
                 pool=pool,
                 attached=attached,
                 as_of=as_of,
+                unreadable_for=marked,
             )
         )
     return items

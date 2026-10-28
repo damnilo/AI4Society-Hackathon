@@ -17,6 +17,8 @@ from app.services.match_parse import (
     UNCERTAIN_QUESTIONS,
     CatalogProc,
     candidate_out,
+    finalize_match,
+    is_vague_intent,
     parse_xai_payload,
 )
 
@@ -59,6 +61,7 @@ Pravila:
 - title, adresu i korake NE pišeš — sistem ih dodaje iz kataloga.
 - Razlikuj parove: prebivalište vs boravište; zamena lične karte vs prva lična karta; lična karta vs pasoš; prva vozačka vs zamena; vozačka vs registracija vozila.
 - Ako je namera nejasna, dve procedure su blizu, ili nijedna ne odgovara: need_clarification=true i najviše 2 kratka pitanja.
+- Ako je namera prekratka ili generička (npr. „treba mi papir“): candidates=[] i need_clarification=true.
 - Ako nijedna ne odgovara: candidates=[] .
 - Ako postoji blok [skenovi] sa type/expiry/status, koristi ga uz tekst (npr. istekla lična → zamena lične karte). Ne citiraj ime sa isprave.
 - Ne koristi skraćenicu LK. Piši „lična karta“.
@@ -141,12 +144,18 @@ def rank_procedures(
         if demo is not None:
             return demo
 
+    if is_vague_intent(text):
+        return [], True, list(UNCERTAIN_QUESTIONS)
+
     xai = _xai_match(by_slug, text)
     if xai is not None:
         candidates, need, questions = xai
     else:
         candidates, need, questions = _keyword_match(by_slug, text)
-    return _ensure_contrast(by_slug, candidates), need, questions
+    candidates, need, questions = finalize_match(candidates, need, questions)
+    if not need:
+        candidates = _ensure_contrast(by_slug, candidates)
+    return candidates, need, questions
 
 
 def match_procedures(
@@ -268,6 +277,8 @@ def _keyword_match(
 
     gap = (top[0][0] - top[1][0]) if len(top) > 1 else 1.0
     need = top[0][0] < 0.35 or gap < SCORE_GAP_MIN
+    if top[0][0] < 0.35:
+        return [], True, list(UNCERTAIN_QUESTIONS)
     candidates = [
         candidate_out(
             proc,

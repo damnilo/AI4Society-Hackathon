@@ -47,7 +47,7 @@ export default function PredloziPage() {
     }
     if (cached) {
       setStored(cached);
-      setRetryOpen(cached.need_clarification && cached.source !== "catalog");
+      setRetryOpen(false);
     }
     if (!isUuid(caseId)) {
       if (!cached) router.replace("/");
@@ -70,7 +70,7 @@ export default function PredloziPage() {
           };
           sessionStorage.setItem("nasalter-case", JSON.stringify(next));
           setStored(next);
-          setRetryOpen(next.need_clarification && next.source !== "catalog");
+          setRetryOpen(false);
           return;
         }
         if (!cached) router.replace("/");
@@ -115,10 +115,19 @@ export default function PredloziPage() {
   }
 
   const fromCatalog = stored.source === "catalog" && stored.pickedTitle;
+  const asking =
+    stored.need_clarification && (stored.questions?.length ?? 0) > 0;
+  const showCards = asking ? cards.filter((c) => c.score >= 0.42) : cards;
 
   return (
     <>
-      <h1>{fromCatalog ? "Potvrdite proceduru" : "Da li je nešto od ovoga?"}</h1>
+      <h1>
+        {fromCatalog
+          ? "Potvrdite proceduru"
+          : asking && showCards.length === 0
+            ? "Nismo sigurni šta treba"
+            : "Da li je nešto od ovoga?"}
+      </h1>
       <p className="lede">
         {fromCatalog ? (
           <>
@@ -126,31 +135,38 @@ export default function PredloziPage() {
             tu karticu. Ako je slična druga, izaberite nju. Institucija i adresa
             dolaze posle izbora.
           </>
+        ) : asking && showCards.length === 0 ? (
+          <>
+            Pisali ste: „{stored.text.trim()}“. Odgovorite ispod — kartice
+            izlaze kad budemo sigurni koja je procedura.
+          </>
         ) : (
           <>
-            Pisali ste: „{stored.text}“. Izaberite jednu karticu. Institucija i
+            Pisali ste: „{stored.text.trim()}“. Izaberite jednu karticu. Institucija i
             adresa dolaze posle izbora — ovde samo procedura.
           </>
         )}
       </p>
-      {stored.need_clarification && stored.questions && stored.questions.length > 0 ? (
+      {asking ? (
         <ClarifyBox
           caseId={caseId}
-          questions={stored.questions}
+          questions={stored.questions ?? []}
           originalText={stored.text}
         />
       ) : null}
 
-      {cards.length === 0 ? (
-        <div className="panel">
-          <p>
-            Nismo sigurni šta treba. Dopunite opis — bez toga ne možemo da
-            predložimo proceduru.
-          </p>
-        </div>
+      {showCards.length === 0 ? (
+        asking ? null : (
+          <div className="panel">
+            <p>
+              Nismo sigurni šta treba. Dopunite opis — bez toga ne možemo da
+              predložimo proceduru.
+            </p>
+          </div>
+        )
       ) : (
         <div className="cards">
-          {cards.map((c) => (
+          {showCards.map((c) => (
             <button
               key={c.slug}
               className="card"

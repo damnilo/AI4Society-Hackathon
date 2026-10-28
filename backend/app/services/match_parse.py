@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from dataclasses import dataclass, field
 
 from app.schemas import CandidateOut
@@ -15,6 +16,29 @@ UNCERTAIN_QUESTIONS = [
     "Da li ti treba lični dokument (lična karta, pasoš, vozačka) ili promena adrese?",
     "Da li je selidba stalna ili privremena?",
 ]
+VAGUE_TOKENS = frozenset(
+    {
+        "papir",
+        "papira",
+        "dokument",
+        "dokumenta",
+        "isprava",
+        "ispravu",
+        "isprave",
+        "treba",
+        "trebam",
+        "trebalo",
+        "molim",
+        "pomoc",
+        "pomozite",
+        "nesto",
+        "stvar",
+        "zahtev",
+        "obrazac",
+        "upit",
+        "informacija",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -33,6 +57,40 @@ def candidate_out(proc: CatalogProc, score: float, rationale: str) -> CandidateO
         score=score,
         rationale=rationale,
     )
+
+
+def _fold_match_text(text: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", text.lower())
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+
+
+def is_vague_intent(text: str) -> bool:
+    """Kratak/generički unos (npr. „treba mi papir“) nije pogodak u katalogu."""
+    user = text.split("[skenovi]", 1)[0]
+    folded = _fold_match_text(user)
+    tokens = {tok for tok in re.split(r"\W+", folded) if len(tok) > 3}
+    if len(tokens) <= 1:
+        return True
+    return not (tokens - VAGUE_TOKENS)
+
+
+def finalize_match(
+    candidates: list[CandidateOut],
+    need: bool,
+    questions: list[str],
+) -> tuple[list[CandidateOut], bool, list[str]]:
+    """Kartice samo uz jasan pobednik; nagađanje ide na pitanja, ne na 75% score."""
+    if not candidates:
+        return [], True, questions or list(UNCERTAIN_QUESTIONS)
+    top = candidates[0].score
+    gap = (candidates[0].score - candidates[1].score) if len(candidates) > 1 else 1.0
+    if top < CONFIDENCE_MIN:
+        qs = questions or list(UNCERTAIN_QUESTIONS)
+        return [], True, qs[:2]
+    if gap < SCORE_GAP_MIN:
+        qs = questions or ["Koja od prve dve kartice je bliža onome što trebaš?"]
+        return candidates[:2], True, qs[:2]
+    return candidates, False, []
 
 
 def parse_xai_payload(
