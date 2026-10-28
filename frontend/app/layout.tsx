@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: `${APP_NAME} — ${APP_TAGLINE.replace(/\.$/, "")}`,
   description:
-    "Opišite šta želite da završite. NaŠalter predlaže proceduru, šta da ponesete i gde da odete.",
+    "Opišite šta treba da obavite. NaŠalter predlaže proceduru, šta da ponesete i gde da odete.",
   icons: {
     icon: "/brand/nasalter-icon.png",
     apple: "/brand/nasalter-icon.png",

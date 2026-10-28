@@ -13,7 +13,7 @@ export default function PomocPage() {
         <h2>Šta je {APP_NAME}</h2>
         <p>
           {APP_NAME} je vodič kroz administrativne procedure u Srbiji. Opišete
-          svojim rečima šta želite da završite, a {APP_NAME} vam kaže koja je
+          svojim rečima šta treba da obavite, a {APP_NAME} vam kaže koja je
           procedura, šta treba da ponesete i na koji šalter da odete.
         </p>
         <p>
