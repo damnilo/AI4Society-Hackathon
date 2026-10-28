@@ -30,8 +30,9 @@ export default function HomePage() {
       <section className="hero">
         <h1>Dobrodošli{name ? `, ${name}` : ""}</h1>
         <p className="lede">
-          Opišite svojim rečima šta želite da završite. Predložićemo proceduru,
-          šta da ponesete i gde da odete. Ne podnosimo zahtev umesto vas.
+          Svojim rečima navedite administrativnu proceduru koju tražite.
+          Predložićemo korake, šta da ponesete i gde da odete. Ne podnosimo
+          zahtev umesto vas.
         </p>
         <div className="hero-steps">
           <span className="hero-step">
@@ -47,7 +48,7 @@ export default function HomePage() {
             →
           </span>
           <span className="hero-step">
-            <b>3</b> Idete na šalter
+            <b>3</b> Odlazak na šalter
           </span>
         </div>
       </section>

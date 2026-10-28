@@ -29,7 +29,7 @@ function isAllowedFile(file: File): boolean {
 }
 
 export function DescribeBox({
-  heading = "Šta želite da završite?",
+  heading = "Opišite šta treba da obavite",
   preset = "",
   caseId,
 }: {

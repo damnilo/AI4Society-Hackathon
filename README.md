@@ -1,30 +1,31 @@
-# Team The Merge Conflicts
-
 # NaŠalter
 
-**Live demo:**
-https://nasalter.onrender.com/
+**From a question to a concrete next step.**
 
-**Od pitanja do rešenja.**
+A guide through administrative procedures in Serbia. You describe what you need in your own words (or by voice), optionally attach a scan, and get the matching procedure, what to bring, and which counter to visit.
 
-Vodič kroz državne procedure u Srbiji. Građanin opiše nameru svojim rečima (ili glasom), opciono priloži sken, i dobije proceduru, šta da ponese i na koji šalter da ode.
+Live demo: [nasalter.onrender.com](https://nasalter.onrender.com/)
 
-Nije eUprava: **ne podnosimo zahtev, ne zakazujemo termin i ne overavamo dokumenta.**
+Built for the AI4Society Hackathon (Challenge A) by team **The Merge Conflicts**.
 
-## Šta radi
+NaŠalter is **not** eUprava: it does not file requests, book appointments, or legally certify documents.
 
-1. Unos namere (tekst ili „Reci naglas“).
-2. 2–3 kartice procedura (bez institucije na kartici).
-3. Vodič: koraci, checklist papira, adresa šaltera, mapa, glasovno čitanje, štampa.
-4. Opcioni nalog = novčanik skenova + mesto (Pirot / Beograd / Niš). Gost sme matching i prilog uz zahtev.
+![NaŠalter home](docs/homepage.png)
 
-Adresa šaltera dolazi **samo iz tabele `offices`**. LLM ne piše ulicu. Checklist je provera polja sa skena (ima / fali / isteklo / nečitko / ne odgovara), nije pravna overa originala.
+## What it does
 
-Lokalne usluge Grada Pirota u katalogu se nude samo ako je Pirot u tekstu ili na nalogu.
+1. Capture intent (typed text or “Recite naglas”).
+2. Offer 2–3 procedure cards (no institution on the card).
+3. Open a guide: steps, document checklist, counter address, map, read-aloud, print.
+4. Optional account = scan wallet + default place (Pirot / Belgrade / Niš). Guests can still match and attach files to a case.
 
-## Pokretanje (lokalno)
+Counter addresses come **only from the `offices` table**. The LLM never invents a street. The checklist reads fields from a scan (present / missing / expired / unreadable / mismatch). It is not a legal verification of the original.
 
-Dva terminala, iz korena repo-a.
+City of Pirot local services appear only when Pirot is in the text or on the account.
+
+## Local setup
+
+Two terminals, from the repository root.
 
 ```bash
 cd backend
@@ -34,11 +35,11 @@ pip install -r requirements.txt
 cp .env.example .env               # Windows: copy .env.example .env
 ```
 
-U `backend/.env` ubaciti:
+In `backend/.env` set:
 
 - `XAI_API_KEY` (xAI / Grok, matching)
 - `OPENAI_API_KEY` (Vision + TTS)
-- `JWT_SECRET` i `MASTER_KEY` — jedinstvene vrednosti, ne `change-me` / `dev-only`:
+- unique `JWT_SECRET` and `MASTER_KEY` — not `change-me` / `dev-only`:
 
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(48))"
@@ -62,55 +63,55 @@ npm run dev
 | Health | http://localhost:8000/health |
 | LLM health | http://localhost:8000/health/llm |
 
-Frontend čita `NEXT_PUBLIC_API_URL` (podrazumevano `http://localhost:8000`). Seed kataloga se upsert-uje pri startu API-ja. SQLite je default (`backend/nasalter.db`).
+The frontend reads `NEXT_PUBLIC_API_URL` (default `http://localhost:8000`). The catalog seed upserts on API start. SQLite is the default (`backend/nasalter.db`).
 
-Opciono Postgres + API: `cd backend && docker compose up --build` (samo ako treba persistencija).
+Optional Postgres + API: `cd backend && docker compose up --build` (only if you need persistence).
 
-## Demo pred žirijem
+## Demo sentences
 
-Free Render gasi servise posle mirovanja. **1–2 minuta pre nastupa** probudi oba URL-a (FE često ~30 s):
+Free Render instances spin down after idle time. Wake both URLs **1–2 minutes** before a demo (the frontend often takes ~30 s):
 
 ```bash
 bash demo/warmup.sh
 ```
 
-ili u pregledaču: [nasalter.onrender.com](https://nasalter.onrender.com/) i [API /health](https://ai4society-hackathon.onrender.com/health).
+or open [nasalter.onrender.com](https://nasalter.onrender.com/) and [API /health](https://ai4society-hackathon.onrender.com/health).
 
-Tačne rečenice na **prvi** `POST /cases` (ne substring, ne retry/clarify). Cheat-sheet: [`demo/README.md`](demo/README.md). Skenovi su **sintetika**, nisu prave isprave.
+These sentences must match the **first** `POST /cases` exactly (not a substring, retry, or clarify). Cheat sheet: [`demo/README.md`](demo/README.md). Scans are **synthetic**, not real IDs.
 
-| Unos | Ishod |
+| Input | Outcome |
 |------|--------|
-| `istekla mi je lična` | zamena lične karte |
-| + `demo/istekla-licna-karta.png` | checklist **Isteklo** (važi do 2024-03-01) |
-| + `demo/necitko-sken.pdf` | **Nečitko** (PDF, Vision se ne zove) |
-| + `demo/pasos.png` | **Ne odgovara** |
-| `selim se iz Pirota u Beograd` | prijava prebivališta, šalter **Ljermontova 12a** |
+| `istekla mi je lična` | ID card replacement |
+| + `demo/istekla-licna-karta.png` | checklist **Expired** (valid until 2024-03-01) |
+| + `demo/necitko-sken.pdf` | **Unreadable** (PDF; Vision is not called) |
+| + `demo/pasos.png` | **Mismatch** |
+| `selim se iz Pirota u Beograd` | residence registration, counter **Ljermontova 12a** |
 
-Kartice izlaze odmah (matching na tekst). Status skena se crta posle uploada. Ako piše „Čitam sken…“, sačekati par sekundi.
+Cards appear immediately (matching on text). Scan status is drawn after upload. If the UI says it is still reading the scan, wait a few seconds.
 
-Prioritet mesta za šalter: tekst (Pirot→Beograd) **uvek** pobedi nalog. Inače `municipality` sa naloga. Inače pitanje „U kom mestu ste?“ na vodiču.
+Place priority for the counter: the text (Pirot→Belgrade) **always** wins over the account. Otherwise `municipality` on the account. Otherwise the guide asks “U kom mestu ste?”.
 
-## Stek
+## Stack
 
-| Sloj | Tehnologija |
+| Layer | Technology |
 |------|-------------|
 | Frontend | Next.js 15 (App Router), React 19 |
-| Backend | FastAPI, SQLAlchemy 2, SQLite (opciono Postgres) |
-| Matching | demo keš → xAI Grok → keyword fallback |
-| Skenovi | OpenAI Vision (`gpt-4o-mini`), PDF = nečitko |
-| Glas vodiča | OpenAI TTS (`gpt-4o-mini-tts`); fallback `speechSynthesis` |
-| Fajlovi | AES-GCM na disku; gost ~48h retention |
+| Backend | FastAPI, SQLAlchemy 2, SQLite (optional Postgres) |
+| Matching | demo cache → xAI Grok → keyword fallback |
+| Scans | OpenAI Vision (`gpt-4o-mini`); PDF = unreadable |
+| Guide audio | OpenAI TTS (`gpt-4o-mini-tts`); fallback `speechSynthesis` |
+| Files | AES-GCM on disk; guest retention ~48h |
 
-## Matching, šalter, Vision
+## Matching, counter, Vision
 
-- Demo keš samo za gornje dve rečenice na `POST /cases`.
-- Kartice nemaju instituciju; institucija i adresa dolaze posle izbora.
+- Demo cache only for the two sentences above on `POST /cases`.
+- Cards omit the institution; institution and address appear after a selection.
 - `GET /cases/{id}/document-status`: complete / missing / expired / unreadable / mismatch.
-- `POST /cases/{id}/speech` → mp3. Tekst je sa vodiča/kataloga, ne iz LLM-a. Ako 503, UI čita glas pregledača.
+- `POST /cases/{id}/speech` → mp3. The script comes from the guide/catalog, not from an LLM. On 503, the UI uses the browser voice.
 
-## Testovi (backend)
+## Tests (backend)
 
-Jedan fajl: `python tests/test_bug_regressions.py`. Više fajlova **ne** kao `python tests/a.py tests/b.py` (unittest tretira drugi argument kao ime testa). Umesto toga:
+One file: `python tests/test_bug_regressions.py`. Do **not** run `python tests/a.py tests/b.py` (unittest treats the second argument as a test name). Use:
 
 ```bash
 cd backend
@@ -121,22 +122,23 @@ python scripts/smoke_phase2.py
 
 ## Render
 
-App Router (nije `output: export`) → dva web servisa iz [`render.yaml`](render.yaml):
+App Router (not `output: export`) → two web services from [`render.yaml`](render.yaml):
 
-1. **nasalter-api** — `rootDir: backend`, SQLite, `JWT_SECRET` / `MASTER_KEY` se generišu. U dashboard ubaciti `XAI_API_KEY` i `OPENAI_API_KEY`. `FRONTEND_ORIGIN` se veže na host FE servisa. Localhost CORS ostaje; FE URL ide u `FRONTEND_ORIGIN` ili `CORS_ORIGINS`.
-2. **nasalter-web** — `npm ci && npm run build`, zatim `npx next start --hostname 0.0.0.0 --port $PORT`. **Build-time:** `NEXT_PUBLIC_API_URL=https://nasalter-api.onrender.com` (ako Render doda sufiks na ime, uskladiti URL).
+1. **nasalter-api** — `rootDir: backend`, SQLite, generated `JWT_SECRET` / `MASTER_KEY`. Put `XAI_API_KEY` and `OPENAI_API_KEY` in the dashboard. `FRONTEND_ORIGIN` is bound to the frontend host. Localhost CORS stays; the public frontend URL goes in `FRONTEND_ORIGIN` or `CORS_ORIGINS`.
+2. **nasalter-web** — `npm ci && npm run build`, then `npx next start --hostname 0.0.0.0 --port $PORT`. **Build-time:** `NEXT_PUBLIC_API_URL` must point at the live API (currently `https://ai4society-hackathon.onrender.com`).
 
-SQLite na Renderu se gubi posle restarta. Postgres samo ako treba persistencija. Slabi defaulti za `JWT_SECRET` / `MASTER_KEY` ruše start kada je `RENDER=true` ili `ENVIRONMENT=production`.
+SQLite on Render is lost after a restart. Use Postgres only if you need persistence. Weak defaults for `JWT_SECRET` / `MASTER_KEY` refuse to start when `RENDER=true` or `ENVIRONMENT=production`.
 
-Free plan: FE i API se gase posle ~15 min bez saobraćaja. Prvi zahtev posle toga može da traje desetine sekundi ili da istekne — zato `demo/warmup.sh` pred nastup. Trajniji hosting (Starter+) ako treba da ostane budan.
+Free plan: frontend and API sleep after ~15 minutes of idle traffic. The first request after that can take tens of seconds or time out — use `demo/warmup.sh` first. Use a paid instance if it must stay awake.
 
-## Struktura
+## Layout
 
 ```
-backend/     FastAPI, seed, testovi
+backend/     FastAPI, seed, tests
 frontend/    Next.js UI
-demo/        sintetski skenovi i uputstvo za žiri
+demo/        synthetic scans and demo notes
+docs/        README screenshot
 render.yaml  Render blueprint
 ```
 
-Detalji API-ja: [`backend/README.md`](backend/README.md).
+API details: [`backend/README.md`](backend/README.md).
