@@ -24,7 +24,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var s=localStorage.getItem('nasalter-font-scale')||localStorage.getItem('putokaz-font-scale');if(s){document.documentElement.style.setProperty('--font-scale',s);}}catch(e){}})();",
+              "(function(){try{var k='nasalter-font-scale';var s=localStorage.getItem(k);if(!s){s=localStorage.getItem('putokaz-font-scale');if(s){localStorage.setItem(k,s);localStorage.removeItem('putokaz-font-scale');}}if(s){document.documentElement.style.setProperty('--font-scale',s);}}catch(e){}})();",
           }}
         />
       </head>
