@@ -20,7 +20,7 @@ import {
 } from "@/lib/places";
 
 const GDPR =
-  "Nalog nije obavezan da biste našli proceduru. Čuvamo email, ime, mesto i skenove koje sami otpremite, da ih ne unosite svaki put. Prilog gosta se briše posle 48 sati ako ga nalogom ne preuzmete. NaŠalter nije eUprava i ne šalje zahtev umesto vas.";
+  "Nalog nije obavezan da biste našli proceduru. Čuvamo email, ime, mesto i skenove koje sami priložite, da ih ne unosite svaki put. Prilog gosta se briše posle 48 sati ako ga nalogom ne preuzmete. NaŠalter nije eUprava i ne šalje zahtev umesto vas.";
 
 export default function PrijavaPage() {
   const router = useRouter();
@@ -109,7 +109,7 @@ export default function PrijavaPage() {
       <>
         <h1>Nalog</h1>
         <p className="lede">
-          Prijavljeni ste. Matching i dalje radi i bez naloga — nalog je
+          Prijavljeni ste. Pretraga procedure radi i bez naloga — nalog je
           novčanik dokumenata i mesto za šalter kad u tekstu nema grada.
         </p>
         <div className="panel">
@@ -159,7 +159,7 @@ export default function PrijavaPage() {
                 setUser(null);
               }}
             >
-              Odjavi se
+              Odjavite se
             </button>
             <Link className="btn btn-ghost" href="/dokumenta">
               Dokumenta
@@ -271,7 +271,7 @@ export default function PrijavaPage() {
 
         <div className="row">
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            {busy ? "Sačekajte…" : mode === "login" ? "Prijavi se" : "Napravi nalog"}
+            {busy ? "Sačekajte…" : mode === "login" ? "Prijavite se" : "Napravite nalog"}
           </button>
         </div>
       </form>

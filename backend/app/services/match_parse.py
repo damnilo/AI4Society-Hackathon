@@ -13,7 +13,7 @@ CONFIDENCE_MIN = 0.42
 SCORE_GAP_MIN = 0.08
 MAX_CANDIDATES = 3
 UNCERTAIN_QUESTIONS = [
-    "Da li ti treba lični dokument (lična karta, pasoš, vozačka) ili promena adrese?",
+    "Da li vam treba lični dokument (lična karta, pasoš, vozačka) ili promena adrese?",
     "Da li je selidba stalna ili privremena?",
 ]
 VAGUE_TOKENS = frozenset(
@@ -88,7 +88,7 @@ def finalize_match(
         qs = questions or list(UNCERTAIN_QUESTIONS)
         return [], True, qs[:2]
     if gap < SCORE_GAP_MIN:
-        qs = questions or ["Koja od prve dve kartice je bliža onome što trebaš?"]
+        qs = questions or ["Koja od prve dve kartice je bliža onome što vam treba?"]
         return candidates[:2], True, qs[:2]
     return candidates, False, []
 
@@ -149,7 +149,7 @@ def parse_xai_payload(
     elif len(candidates) >= 2 and (candidates[0].score - candidates[1].score) < SCORE_GAP_MIN:
         need = True
         if not questions:
-            questions = ["Koja od prve dve kartice je bliža onome što trebaš?"]
+            questions = ["Koja od prve dve kartice je bliža onome što vam treba?"]
     if not need:
         questions = []
     return candidates, need, questions

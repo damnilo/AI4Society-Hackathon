@@ -97,9 +97,9 @@ def claim_case(
 ) -> CaseOut:
     row = session.get(Case, str(body.case_id))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(status_code=404, detail="Zahtev nije pronađen.")
     if row.user_id and row.user_id != user.id:
-        raise HTTPException(status_code=403, detail="Case belongs to another user")
+        raise HTTPException(status_code=403, detail="Ovaj zahtev pripada drugom nalogu.")
     row.user_id = user.id
     docs = session.scalars(select(Document).where(Document.case_id == row.id)).all()
     for doc in docs:
@@ -132,7 +132,7 @@ async def upload_document(
     try:
         path = storage.save_upload(data, user_id=user.id, case_id=None)
     except ValueError:
-        raise HTTPException(status_code=413, detail="File too large (max 8 MB)")
+        raise HTTPException(status_code=413, detail="Fajl je prevelik (najviše 8 MB).")
     stored = Document(
         user_id=user.id,
         original_filename=file.filename or "upload.bin",
@@ -148,7 +148,7 @@ async def upload_document(
     session.expire_all()
     stored = session.get(Document, doc_id)
     if not stored:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise HTTPException(status_code=404, detail="Dokument nije pronađen.")
     return to_document_out(stored)
 
 
@@ -160,7 +160,7 @@ def delete_document(
 ) -> dict[str, str]:
     doc = session.get(Document, str(document_id))
     if not doc or doc.user_id != user.id:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise HTTPException(status_code=404, detail="Dokument nije pronađen.")
     storage.delete_file(doc.storage_path)
     session.delete(doc)
     session.commit()

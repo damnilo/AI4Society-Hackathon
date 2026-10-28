@@ -62,7 +62,7 @@ function UslugeBody() {
       );
       router.push(`/vodic/${result.case_id}?slug=${encodeURIComponent(slug)}`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Matching nije uspeo.");
+      setError(err instanceof ApiError ? err.message : "Pretraga nije uspela.");
     } finally {
       setBusy(null);
     }

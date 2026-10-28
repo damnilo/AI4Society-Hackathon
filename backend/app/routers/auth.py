@@ -48,7 +48,7 @@ def _tokens(user: User) -> TokenOut:
 def register(body: AuthRegister, session: Session = Depends(get_session)) -> TokenOut:
     existing = session.scalars(select(User).where(User.email == body.email.lower())).first()
     if existing:
-        raise HTTPException(status_code=409, detail="Email already registered")
+        raise HTTPException(status_code=409, detail="Ovaj email je već registrovan.")
     try:
         municipality = normalize_account_municipality(session, body.municipality)
     except ValueError as exc:
@@ -69,7 +69,7 @@ def register(body: AuthRegister, session: Session = Depends(get_session)) -> Tok
 def login(body: AuthLogin, session: Session = Depends(get_session)) -> TokenOut:
     user = session.scalars(select(User).where(User.email == body.email.lower())).first()
     if not user or not _verify_password(body.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Pogrešan email ili lozinka.")
     return _tokens(user)
 
 
@@ -81,7 +81,7 @@ def refresh(body: RefreshBody, session: Session = Depends(get_session)) -> Token
             raise JWTError("wrong type")
         user = session.get(User, str(payload["sub"]))
         if not user:
-            raise HTTPException(status_code=401, detail="User not found")
+            raise HTTPException(status_code=401, detail="Prijava je istekla. Prijavite se ponovo.")
         return _tokens(user)
     except JWTError as exc:
-        raise HTTPException(status_code=401, detail="Invalid refresh token") from exc
+        raise HTTPException(status_code=401, detail="Prijava je istekla. Prijavite se ponovo.") from exc

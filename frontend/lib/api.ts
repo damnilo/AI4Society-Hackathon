@@ -125,12 +125,30 @@ export class ApiError extends Error {
 }
 
 function explainError(status: number, detail: string): string {
-  if (detail === "Email already registered") return "Ovaj email je već registrovan.";
-  if (detail === "Invalid credentials") return "Pogrešan email ili lozinka.";
-  if (detail === "Not authenticated" || detail === "Invalid token") {
+  if (
+    detail === "Email already registered" ||
+    detail === "Ovaj email je već registrovan."
+  ) {
+    return "Ovaj email je već registrovan.";
+  }
+  if (detail === "Invalid credentials" || detail === "Pogrešan email ili lozinka.") {
+    return "Pogrešan email ili lozinka.";
+  }
+  if (
+    detail === "Not authenticated" ||
+    detail === "Invalid token" ||
+    detail === "Invalid refresh token" ||
+    detail === "Invalid authorization header" ||
+    detail === "User not found"
+  ) {
     return "Prijava je istekla. Prijavite se ponovo.";
   }
   if (status === 401) return "Prijava je istekla. Prijavite se ponovo.";
+  if (detail === "Case not found") return "Zahtev nije pronađen.";
+  if (detail === "Document not found") return "Dokument nije pronađen.";
+  if (detail === "Procedure not found") return "Procedura nije pronađena.";
+  if (detail === "File too large (max 8 MB)") return "Fajl je prevelik (najviše 8 MB).";
+  if (detail === "Select a procedure first") return "Prvo izaberite proceduru.";
   if (detail) return detail;
   return "Nešto nije u redu. Pokušajte ponovo.";
 }
@@ -190,7 +208,7 @@ async function requestJson<T>(
   } catch (err) {
     if (err instanceof ApiError) throw err;
     if (isAbortError(err)) {
-      throw new ApiError(0, "Matching traje predugo. Pokušajte kraći opis ili ponovo.");
+      throw new ApiError(0, "Pretraga traje predugo. Pokušajte kraći opis ili ponovo.");
     }
     return null;
   }

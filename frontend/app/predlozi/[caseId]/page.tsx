@@ -191,7 +191,7 @@ export default function PredloziPage() {
                   Poklapanje {Math.round(c.score * 100)}%
                 </span>
                 <span className="card-go" aria-hidden="true">
-                  Izaberi →
+                  Izaberite →
                 </span>
               </div>
             </button>
@@ -205,7 +205,7 @@ export default function PredloziPage() {
           type="button"
           onClick={() => setRetryOpen((v) => !v)}
         >
-          Nijedna nije to — dopuni opis
+          Nijedna nije to — dopunite opis
         </button>
         {retryOpen ? (
           <div style={{ marginTop: 18 }}>

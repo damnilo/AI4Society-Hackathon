@@ -24,7 +24,7 @@ function walletCaption(doc: WalletDocument): { title: string; detail: string } {
   if (doc.status && doc.status in STATUS_LABEL) {
     parts.push(STATUS_LABEL[doc.status as DocumentStatus]);
   }
-  if (doc.purge_at) parts.push("gostov prilog, preuzet u nalog");
+  if (doc.purge_at) parts.push("prilog gosta, preuzet u nalog");
   if (parts.length === 0) parts.push(doc.content_type || "fajl");
   return { title, detail: parts.join(" · ") };
 }
@@ -66,7 +66,7 @@ export default function DokumentaPage() {
       const saved = await uploadWalletDocument(file);
       setDocs((current) => [saved, ...current]);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Otpremanje nije uspelo.");
+      setError(err instanceof ApiError ? err.message : "Prilog nije primljen.");
     } finally {
       setBusy(false);
     }
@@ -116,7 +116,7 @@ export default function DokumentaPage() {
         <div className="panel">
           <div className="row" style={{ marginTop: 0 }}>
             <label className="file">
-              {busy ? "Otpremanje…" : "Dodaj sken"}
+              {busy ? "Šaljem sken…" : "Dodajte sken"}
               <input
                 type="file"
                 accept="image/*,.pdf"
@@ -152,7 +152,7 @@ export default function DokumentaPage() {
                     disabled={busy}
                     onClick={() => void onDelete(doc.id)}
                   >
-                    Obriši
+                    Obrišite
                   </button>
                 </div>
               );

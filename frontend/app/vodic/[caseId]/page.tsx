@@ -19,7 +19,7 @@ import type { Guide, RequiredDoc, StoredCase } from "@/lib/types";
 
 const SCAN_PENDING = "Provera skena";
 const ACCEPT = ".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf";
-const TTS_DISCLAIMER = "NaŠalter nije eUprava i ne overava dokumenta.";
+const TTS_DISCLAIMER = "NaŠalter nije eUprava i ne overava dokumente.";
 
 function readStoredText(caseId: string): string {
   if (typeof window === "undefined") return "";
@@ -476,7 +476,7 @@ function VodicBody() {
         ))}
         <div className="row no-print">
           <label className="file">
-            {attachBusy ? "Šaljem sken…" : "Priloži papir uz ovaj vodič"}
+            {attachBusy ? "Šaljem sken…" : "Priložite papir uz ovaj vodič"}
             <input
               type="file"
               accept={ACCEPT}

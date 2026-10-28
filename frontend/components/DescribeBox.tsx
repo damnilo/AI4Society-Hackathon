@@ -144,7 +144,7 @@ export function DescribeBox({
       setNote(
         err instanceof Error
           ? err.message
-          : "Matching nije uspeo. Proverite da li API radi na localhost:8000.",
+          : "Pretraga nije uspela. Proverite da li je usluga dostupna, pa pokušajte ponovo.",
       );
     } finally {
       setBusy(false);
@@ -210,10 +210,10 @@ export function DescribeBox({
           {busy ? "Tražim u katalogu…" : "Nađi proceduru"}
         </button>
         <button className="btn btn-ghost" type="button" onClick={listen}>
-          {listening ? "Slušam…" : "Reci naglas"}
+          {listening ? "Slušam…" : "Recite naglas"}
         </button>
         <label className="file">
-          Priloži papire (nije obavezno)
+          Priložite papire (nije obavezno)
           <input
             type="file"
             accept={ACCEPT}
@@ -245,7 +245,7 @@ export function DescribeBox({
       ) : null}
       {loggedIn && wallet.length > 0 && !caseId ? (
         <div style={{ marginTop: 18 }}>
-          <p className="note">Sačuvano u novčaniku — štiklirajte šta ide uz ovaj zahtev:</p>
+          <p className="note">Sačuvano u novčaniku — označite šta ide uz ovaj zahtev:</p>
           {wallet.map((doc) => {
             const checked = pickedWallet.includes(doc.id);
             return (

@@ -85,7 +85,7 @@ export function mockMatch(text: string): MatchResponse {
             "Privremeni boravak, bez promene stalnog prebivališta.",
           score: 0.47,
           rationale:
-            "Ako se seliš samo na par meseci, možda je boravište, ne prebivalište.",
+            "Ako se selite samo na par meseci, možda je boravište, ne prebivalište.",
         },
         {
           slug: "izbor-izabranog-lekara",
@@ -151,17 +151,17 @@ export function mockGuide(slug: string): Guide {
       office_missing_reason: undefined,
       steps: [
         {
-          title: "Pripremi dokumenta i uplatnicu",
+          title: "Pripremite dokumenta i uplatnicu",
           description:
-            "Na eUpravi generiši uplatnicu. Ponesi važeću ličnu, dokaz o stanu i saglasnost vlasnika ako stan nije tvoj.",
+            "Na eUpravi generišite uplatnicu. Ponesite važeću ličnu, dokaz o stanu i saglasnost vlasnika ako stan nije vaš.",
         },
         {
-          title: "Idi na šalter po NOVOJ adresi",
+          title: "Idite na šalter po NOVOJ adresi",
           description:
-            "Ako se seliš iz Pirota u Beograd, ne ideš u PU Pirot. U Beogradu: Ljermontova 12a.",
+            "Ako se selite iz Pirota u Beograd, ne idete u PU Pirot. U Beogradu: Ljermontova 12a.",
         },
         {
-          title: "Ažuriraj adresu na ličnoj karti",
+          title: "Ažurirajte adresu na ličnoj karti",
           description:
             "Posle prijave, adresa se upisuje u čip ili ide nova lična karta.",
         },
@@ -176,7 +176,7 @@ export function mockGuide(slug: string): Guide {
         {
           type: "uplatnica_euprava",
           label: "Uplatnica sa eUprave",
-          how_to_obtain: "Generiši na portalu pre odlaska.",
+          how_to_obtain: "Generišite na portalu pre odlaska.",
           status: "missing",
         },
         {
@@ -188,7 +188,7 @@ export function mockGuide(slug: string): Guide {
         {
           type: "saglasnost_vlasnika",
           label: "Saglasnost vlasnika",
-          how_to_obtain: "Samo ako nisi vlasnik stana.",
+          how_to_obtain: "Samo ako niste vlasnik stana.",
           status: "missing",
         },
       ],
@@ -214,24 +214,24 @@ export function mockGuide(slug: string): Guide {
     office_missing_reason: "Nedostaje mesto prebivališta",
     steps: [
       {
-        title: "Proveri datum na ličnoj",
+        title: "Proverite datum na ličnoj",
         description:
-          "Ako je rok prošao, treba zamena. Ako je nestala, ponesi pasoš ili vozačku.",
+          "Ako je rok prošao, treba zamena. Ako je nestala, ponesite pasoš ili vozačku.",
       },
       {
         title: "Uplatnica i termin",
-        description: "Na eUpravi možeš da generišeš uplatnicu i da zakažeš.",
+        description: "Na eUpravi možete da generišete uplatnicu i da zakažete.",
       },
       {
         title: "Šalter po prebivalištu",
-        description: "Idi lično. Staru ličnu ponesi čak i ako je istekla.",
+        description: "Dođite lično. Staru ličnu ponesite čak i ako je istekla.",
       },
     ],
     documents: [
       {
         type: "licna_karta",
         label: "Stara lična karta",
-        how_to_obtain: "Ponesi je i ako je istekla.",
+        how_to_obtain: "Ponesite je i ako je istekla.",
         status: "expired",
         note: "Na skenu piše da važi do datuma u prošlosti — rok je istekao. Ovo nije overa da je dokument originalan.",
       },
