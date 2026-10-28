@@ -3,10 +3,10 @@
 ```bash
 cd backend
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-copy .env.example .env
-# ubaci XAI_API_KEY iz api_keys.txt (SPACEX_API_KEY)
+cp .env.example .env               # Windows: copy .env.example .env
+# ubaci XAI_API_KEY i OPENAI_API_KEY
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -41,14 +41,12 @@ Faza 5: `POST /auth/register` i `PATCH /me` primaju `municipality` (`beograd` | 
 TTS: `POST /cases/{id}/speech` → mp3 preko OpenAI `gpt-4o-mini-tts` (srpski). Ako 503, FE čita `speechSynthesis`.
 
 ```bash
-python tests/test_bug_regressions.py
-python tests/test_config.py
-python tests/test_phase3_documents.py
-python tests/test_tts.py
-python tests/test_demo_scans.py
+python -m unittest tests.test_bug_regressions tests.test_config tests.test_phase3_documents tests.test_tts tests.test_demo_scans
 python scripts/smoke_phase1.py
 python scripts/smoke_phase2.py
 ```
+
+Jedan fajl i dalje: `python tests/test_config.py`. Ne pokretati `python tests/a.py tests/b.py`.
 
 Demo POST `/cases`: `"istekla mi je lična"` i `"selim se iz Pirota u Beograd"`.
 Sintetski skenovi: `../demo/` (vidi `../demo/README.md`). Regeneracija: `python scripts/make_demo_scans.py` (treba Pillow, nije u requirements).

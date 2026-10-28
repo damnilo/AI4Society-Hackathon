@@ -1,8 +1,8 @@
 """Sintetski skenovi za žiri (nije prava isprava).
 
 Pokretanje iz backend/:
-  .venv\\Scripts\\python.exe -m pip install pillow
-  .venv\\Scripts\\python.exe scripts/make_demo_scans.py
+  python -m pip install pillow
+  python scripts/make_demo_scans.py
 
 Izlaz: ../demo/*.png i ../demo/necitko-sken.pdf
 Pillow nije runtime zavisnost API-ja — samo ovaj skript.
