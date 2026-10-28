@@ -6,9 +6,18 @@ Regeneracija (opciono):
 
 ```bash
 cd backend
-.venv\Scripts\python.exe -m pip install pillow
-.venv\Scripts\python.exe scripts/make_demo_scans.py
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+python -m pip install pillow
+python scripts/make_demo_scans.py
 ```
+
+Pred live demo na Renderu (Free se gasi posle mirovanja):
+
+```bash
+bash demo/warmup.sh
+```
+
+Na sceni, pored skenova: „Reci naglas“ (Chrome/Edge, dozvola mikrofona) i prilog **na vodiču** (`demo/istekla-licna-karta.png`).
 
 Koristiti samo ova imena:
 

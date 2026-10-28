@@ -29,9 +29,9 @@ Dva terminala, iz korena repo-a.
 ```bash
 cd backend
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-copy .env.example .env
+cp .env.example .env               # Windows: copy .env.example .env
 ```
 
 U `backend/.env` ubaciti:
@@ -68,6 +68,14 @@ Opciono Postgres + API: `cd backend && docker compose up --build` (samo ako treb
 
 ## Demo pred žirijem
 
+Free Render gasi servise posle mirovanja. **1–2 minuta pre nastupa** probudi oba URL-a (FE često ~30 s):
+
+```bash
+bash demo/warmup.sh
+```
+
+ili u pregledaču: [nasalter.onrender.com](https://nasalter.onrender.com/) i [API /health](https://ai4society-hackathon.onrender.com/health).
+
 Tačne rečenice na **prvi** `POST /cases` (ne substring, ne retry/clarify). Cheat-sheet: [`demo/README.md`](demo/README.md). Skenovi su **sintetika**, nisu prave isprave.
 
 | Unos | Ishod |
@@ -102,13 +110,11 @@ Prioritet mesta za šalter: tekst (Pirot→Beograd) **uvek** pobedi nalog. Inač
 
 ## Testovi (backend)
 
+Jedan fajl: `python tests/test_bug_regressions.py`. Više fajlova **ne** kao `python tests/a.py tests/b.py` (unittest tretira drugi argument kao ime testa). Umesto toga:
+
 ```bash
 cd backend
-python tests/test_bug_regressions.py
-python tests/test_config.py
-python tests/test_phase3_documents.py
-python tests/test_tts.py
-python tests/test_demo_scans.py
+python -m unittest tests.test_bug_regressions tests.test_config tests.test_phase3_documents tests.test_tts tests.test_demo_scans
 python scripts/smoke_phase1.py
 python scripts/smoke_phase2.py
 ```
@@ -121,6 +127,8 @@ App Router (nije `output: export`) → dva web servisa iz [`render.yaml`](render
 2. **nasalter-web** — `npm ci && npm run build`, zatim `npx next start --hostname 0.0.0.0 --port $PORT`. **Build-time:** `NEXT_PUBLIC_API_URL=https://nasalter-api.onrender.com` (ako Render doda sufiks na ime, uskladiti URL).
 
 SQLite na Renderu se gubi posle restarta. Postgres samo ako treba persistencija. Slabi defaulti za `JWT_SECRET` / `MASTER_KEY` ruše start kada je `RENDER=true` ili `ENVIRONMENT=production`.
+
+Free plan: FE i API se gase posle ~15 min bez saobraćaja. Prvi zahtev posle toga može da traje desetine sekundi ili da istekne — zato `demo/warmup.sh` pred nastup. Trajniji hosting (Starter+) ako treba da ostane budan.
 
 ## Struktura
 
