@@ -351,6 +351,38 @@ class ApiRegressionTests(unittest.TestCase):
         self.assertIn("Jevrejska", guide["office"]["address"])
         self.assertNotIn("Ljermontova", guide["office"]["address"])
 
+    def test_lk_zamena_related_skips_first_issue(self) -> None:
+        created = self.client.post("/cases", json={"text": "istekla mi je lična"}).json()
+        guide = self.client.post(
+            f"/cases/{created['case_id']}/select",
+            json={"slug": "licna-karta-zamena"},
+        ).json()
+        slugs = [item["slug"] for item in guide["related"]]
+        self.assertNotIn("licna-karta-prvo-izdavanje", slugs)
+        self.assertEqual(
+            slugs,
+            ["ezakazivanje-licna-pasos", "pasos-izdavanje", "prijava-prebivalista"],
+        )
+
+    def test_place_resolves_office_without_matching(self) -> None:
+        created = self.client.post("/cases", json={"text": "istekla mi je lična"}).json()
+        self.client.post(
+            f"/cases/{created['case_id']}/select",
+            json={"slug": "licna-karta-zamena"},
+        )
+        with patch("app.routers.cases.rank_procedures") as mocked:
+            placed = self.client.post(
+                f"/cases/{created['case_id']}/place",
+                json={"place": "Beograd", "slug": "licna-karta-zamena"},
+            )
+            mocked.assert_not_called()
+        self.assertEqual(placed.status_code, 200, placed.text)
+        body = placed.json()
+        self.assertIn("Ljermontova", body["office"]["address"])
+        self.assertFalse(body["office_missing"])
+        loaded = self.client.get(f"/cases/{created['case_id']}")
+        self.assertIn("Beograd", loaded.json()["text"])
+
     def test_move_resolves_new_residence_not_old_town(self) -> None:
         created = self.client.post("/cases", json={"text": "selim se iz Pirota u Beograd"}).json()
         guide = self.client.post(

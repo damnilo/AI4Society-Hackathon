@@ -170,7 +170,7 @@
     "institution": "mup",
     "jurisdiction_rule": "current_residence",
     "channel": "both",
-    "related_slugs": ["licna-karta-prvo-izdavanje", "pasos-izdavanje", "prijava-prebivalista"],
+    "related_slugs": ["ezakazivanje-licna-pasos", "pasos-izdavanje", "prijava-prebivalista"],
     "fees_note": "Taksa preko eUprave. Istovremeno lična karta i pasoš ima posebno uputstvo MUP-a.",
     "source_name": "MUP — Lična karta",
     "source_url": "https://www.mup.gov.rs/wps/portal/sr/gradjani/dokumenta/licna%20karta",

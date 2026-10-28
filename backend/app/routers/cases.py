@@ -20,6 +20,7 @@ from app.schemas import (
     DocumentStatusOut,
     GuideOut,
     OfficeOut,
+    PlaceBody,
     RelatedOut,
     RetryBody,
     SelectBody,
@@ -273,19 +274,12 @@ async def clarify_case(
     return _case_out(matched)
 
 
-@router.post("/cases/{case_id}/select", response_model=GuideOut)
-def select_procedure(
-    case_id: UUID,
-    body: SelectBody,
-    session: Session = Depends(get_session),
-    user: User | None = Depends(get_optional_user),
+def _resolve_guide(
+    session: Session,
+    row: Case,
+    procedure: Procedure,
+    user: User | None,
 ) -> GuideOut:
-    row = session.get(Case, str(case_id))
-    if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
-    procedure = session.get(Procedure, body.slug)
-    if not procedure:
-        raise HTTPException(status_code=404, detail="Procedure not found")
     from_place, to_place = apply_account_municipality(
         session,
         jurisdiction_rule=procedure.jurisdiction_rule,
@@ -319,6 +313,49 @@ def select_procedure(
     session.commit()
     session.refresh(row)
     return _guide(session, row, procedure)
+
+
+@router.post("/cases/{case_id}/select", response_model=GuideOut)
+def select_procedure(
+    case_id: UUID,
+    body: SelectBody,
+    session: Session = Depends(get_session),
+    user: User | None = Depends(get_optional_user),
+) -> GuideOut:
+    row = session.get(Case, str(case_id))
+    if not row:
+        raise HTTPException(status_code=404, detail="Case not found")
+    procedure = session.get(Procedure, body.slug)
+    if not procedure:
+        raise HTTPException(status_code=404, detail="Procedure not found")
+    return _resolve_guide(session, row, procedure, user)
+
+
+@router.post("/cases/{case_id}/place", response_model=GuideOut)
+def add_place(
+    case_id: UUID,
+    body: PlaceBody,
+    session: Session = Depends(get_session),
+    user: User | None = Depends(get_optional_user),
+) -> GuideOut:
+    """Dopuni mesto i ponovo nađi šalter. Ne zove matching."""
+    row = session.get(Case, str(case_id))
+    if not row:
+        raise HTTPException(status_code=404, detail="Case not found")
+    city = body.place.strip()
+    if not city:
+        raise HTTPException(status_code=400, detail="Unesite mesto.")
+    text = row.raw_text or ""
+    if city.casefold() not in text.casefold():
+        row.raw_text = f"{text}\n{city}".strip()
+    from_place, to_place = extract_from_to(session, row.raw_text)
+    row.from_place = from_place
+    row.to_place = to_place
+    slug = (body.slug or row.selected_slug or "").strip()
+    procedure = session.get(Procedure, slug) if slug else None
+    if not procedure:
+        raise HTTPException(status_code=404, detail="Procedure not found")
+    return _resolve_guide(session, row, procedure, user)
 
 
 @router.get("/cases/{case_id}/guide", response_model=GuideOut)

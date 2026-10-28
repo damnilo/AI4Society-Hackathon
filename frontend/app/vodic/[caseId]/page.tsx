@@ -11,7 +11,7 @@ import {
   fetchGuide,
   fetchGuideSpeech,
   refreshGuideDocuments,
-  retryCase,
+  resolveGuidePlace,
 } from "@/lib/api";
 import { formatScanExpiry, STATUS_LABEL } from "@/lib/labels";
 import { clearCaseSession } from "@/lib/session";
@@ -259,16 +259,21 @@ function VodicBody() {
         setPlaceNote("Unesite mesto, npr. Pirot ili Beograd.");
         return;
       }
-      const result = await retryCase(caseId, nextText);
-      sessionStorage.setItem(
-        "nasalter-case",
-        JSON.stringify({
-          ...result,
-          text: nextText,
-          source: "typed",
-        }),
-      );
-      const nextGuide = await fetchGuide(caseId, slug);
+      const nextGuide = await resolveGuidePlace(caseId, slug, city);
+      const raw = sessionStorage.getItem("nasalter-case");
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as StoredCase;
+          if (parsed.case_id === caseId) {
+            sessionStorage.setItem(
+              "nasalter-case",
+              JSON.stringify({ ...parsed, text: nextText }),
+            );
+          }
+        } catch {
+          /* vodič i bez sessionStorage */
+        }
+      }
       setGuide(nextGuide);
       if (nextGuide.office_missing || !nextGuide.office) {
         setPlaceNote("To mesto još nije u katalogu šaltera. Probajte Pirot, Beograd ili Niš.");
