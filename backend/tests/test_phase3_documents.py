@@ -155,6 +155,25 @@ class ExtractionUnitTests(unittest.TestCase):
         )
         self.assertEqual(empty.message, MISSING_MSG)
 
+        unread = _FakeDoc(status="unreadable", extracted_type=None)
+        unread_id = checklist_item(
+            doc_type="licna_karta",
+            how_to_obtain="",
+            pool=[unread],
+            attached=[unread],
+            as_of=as_of,
+        )
+        self.assertEqual(unread_id.status, "unreadable")
+        unread_slip = checklist_item(
+            doc_type="uplatnica_euprava",
+            how_to_obtain="eUprava",
+            pool=[unread],
+            attached=[unread],
+            as_of=as_of,
+        )
+        self.assertEqual(unread_slip.status, "missing")
+        self.assertEqual(unread_slip.message, MISSING_MSG)
+
 
 def _vision(raw: str):
     def _fake(_image_bytes: bytes, *, mime: str = "image/jpeg", timeout: float = 20.0):
@@ -194,6 +213,9 @@ class Phase3ApiTests(unittest.TestCase):
         self.assertEqual(lk["status"], "unreadable")
         self.assertEqual(lk["message"], UNREADABLE_MSG)
         self.assertNotIn("originalan", lk["message"].lower())
+        slip = next(item for item in status["items"] if item["type"] == "uplatnica_euprava")
+        self.assertEqual(slip["status"], "missing")
+        self.assertEqual(slip["message"], MISSING_MSG)
 
     def test_expired_id_scan(self) -> None:
         case_id = self._select_lk()

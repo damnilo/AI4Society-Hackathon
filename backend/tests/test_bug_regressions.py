@@ -42,7 +42,12 @@ from app.services.catalog import (  # noqa: E402
     office_target,
     resolve_office,
 )
-from app.services.match_parse import CatalogProc, candidate_out  # noqa: E402
+from app.services.match_parse import (  # noqa: E402
+    CatalogProc,
+    candidate_out,
+    finalize_match,
+    is_vague_intent,
+)
 from app.db import SessionLocal  # noqa: E402
 
 settings.xai_api_key = ""
@@ -110,6 +115,35 @@ class DemoCacheUnitTests(unittest.TestCase):
         self.assertIn("licna_karta", clipped)
         self.assertIn("2020-01-01", clipped)
         self.assertLess(len(clipped.split("[skenovi]", 1)[0]), 1300)
+
+    def test_vague_intent_has_no_guess_cards(self) -> None:
+        self.assertTrue(is_vague_intent("treba mi papir"))
+        self.assertTrue(is_vague_intent("papir"))
+        self.assertFalse(is_vague_intent("istekla mi je lična"))
+        self.assertFalse(is_vague_intent("treba mi papir za ličnu kartu"))
+        by_slug = _stub_catalog()
+        cards, need, questions = matching.rank_procedures(
+            by_slug, "treba mi papir", use_demo_cache=True
+        )
+        self.assertEqual(cards, [])
+        self.assertTrue(need)
+        self.assertGreaterEqual(len(questions), 1)
+
+    def test_finalize_keeps_close_pair_hides_weak_guess(self) -> None:
+        by_slug = _stub_catalog()
+        weak = [candidate_out(by_slug["prijava-prebivalista"], 0.3, "x")]
+        cards, need, _ = finalize_match(weak, False, [])
+        self.assertEqual(cards, [])
+        self.assertTrue(need)
+        pair = [
+            candidate_out(by_slug["prijava-prebivalista"], 0.8, "a"),
+            candidate_out(by_slug["prijava-boravista"], 0.76, "b"),
+            candidate_out(by_slug["izbor-izabranog-lekara"], 0.4, "c"),
+        ]
+        cards, need, questions = finalize_match(pair, False, [])
+        self.assertEqual([c.slug for c in cards], ["prijava-prebivalista", "prijava-boravista"])
+        self.assertTrue(need)
+        self.assertTrue(questions)
 
 
 class OfficeReasonUnitTests(unittest.TestCase):
@@ -484,9 +518,11 @@ class ApiRegressionTests(unittest.TestCase):
         self.assertIsNone(attached.json().get("extracted_type"))
         scanned = self.client.get(f"/cases/{created['case_id']}/document-status")
         items = scanned.json()["items"]
-        self.assertTrue(all(item["status"] == "unreadable" for item in items))
-        self.assertTrue(all("čitljiv" in item["message"].lower() for item in items))
-        self.assertFalse(any("nije priložen" in item["message"].lower() for item in items))
+        by_type = {item["type"]: item for item in items}
+        self.assertEqual(by_type["licna_karta"]["status"], "unreadable")
+        self.assertIn("čitljiv", by_type["licna_karta"]["message"].lower())
+        self.assertEqual(by_type["uplatnica_euprava"]["status"], "missing")
+        self.assertEqual(by_type["uplatnica_euprava"]["message"], "Nije priložen.")
 
     def test_file_on_other_case_does_not_count(self) -> None:
         first = self.client.post("/cases", json={"text": "istekla mi je lična"}).json()
